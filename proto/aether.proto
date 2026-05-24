@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package aether;
+
+service AetherTest {
+    rpc GetComponentTree(Empty) returns (JSONString);
+    rpc GetProperty(PropertyRequest) returns (JSONValue);
+    rpc SetProperty(SetPropertyRequest) returns (Result);
+    rpc InjectMouseEvent(MouseEventRequest) returns (Empty);
+    rpc InjectKeyEvent(KeyEventRequest) returns (Empty);
+    rpc InjectTextInput(TextInputRequest) returns (Empty);
+    rpc TakeSnapshot(Empty) returns (Snapshot);
+    rpc WaitForCondition(WaitConditionRequest) returns (WaitConditionResponse);
+    rpc GetEventLog(Empty) returns (EventLog);
+    rpc AdvanceTime(AdvanceTimeRequest) returns (Empty);
+    rpc StartRecording(Empty) returns (RecordingSession);
+    rpc StopRecording(StopRecordingRequest) returns (RecordingData);
+    rpc Playback(PlaybackRequest) returns (PlaybackResult);
+}
+
+message Empty {}
+
+message JSONString {
+    string json = 1;
+}
+
+message PropertyRequest {
+    string id = 1;
+    string prop = 2;
+}
+
+message JSONValue {
+    string value = 1;
+}
+
+message SetPropertyRequest {
+    string id = 1;
+    string prop = 2;
+    string value_json = 3;
+}
+
+message Result {
+    bool success = 1;
+    string error = 2;
+}
+
+message MouseEventRequest {
+    string type = 1;
+    int32 x = 2;
+    int32 y = 3;
+    int32 button = 4;
+}
+
+message KeyEventRequest {
+    string type = 1;
+    int32 key_code = 2;
+    int32 modifiers = 3;
+}
+
+message TextInputRequest {
+    string text = 1;
+}
+
+message Snapshot {
+    string json = 1;
+    int64 timestamp = 2;
+}
+
+message WaitConditionRequest {
+    string json_path = 1;
+    string expected_value = 2;
+    int32 timeout_ms = 3;
+}
+
+message WaitConditionResponse {
+    bool satisfied = 1;
+    string actual_value = 2;
+    int64 elapsed_ms = 3;
+}
+
+message EventLog {
+    repeated string events = 1;
+}
+
+message AdvanceTimeRequest {
+    int32 ms = 1;
+}
+
+message RecordingSession {
+    string session_id = 1;
+    int64 start_time = 2;
+}
+
+message StopRecordingRequest {
+    string session_id = 1;
+}
+
+message RecordingData {
+    string session_id = 1;
+    repeated RecordedEvent events = 2;
+    int64 duration_ms = 3;
+}
+
+message RecordedEvent {
+    int64 timestamp = 1;
+    string event_type = 2;
+    oneof event_data {
+        MouseEventRequest mouse = 3;
+        KeyEventRequest key = 4;
+        TextInputRequest text = 5;
+    }
+}
+
+message PlaybackRequest {
+    RecordingData recording = 1;
+    bool validate_results = 2;
+    Snapshot expected_final_state = 3;
+}
+
+message PlaybackResult {
+    bool success = 1;
+    repeated string errors = 2;
+    Snapshot actual_final_state = 3;
+    bool state_matched = 4;
+}

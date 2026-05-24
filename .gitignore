@@ -1,0 +1,38 @@
+# Build directories
+build*/
+build5/
+Debug/
+Release/
+[xX]64/
+[xX]86/
+
+# Generated files
+*.exe
+*.lib
+*.dll
+*.obj
+*.pdb
+*.idb
+*.pch
+*.ilk
+
+# IDE files
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# External dependencies
+_deps/
+
+# Test results
+test_results.xml
+*.log

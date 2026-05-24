@@ -1,4 +1,4 @@
-﻿// EventDispatcher.cpp
+// EventDispatcher.cpp
 // 事件分发器模块 - 负责处理用户输入事件的分发
 //
 // 功能:
@@ -24,15 +24,15 @@ EventDispatcher::EventDispatcher(ComponentStorage& storage)
 void EventDispatcher::onLayoutComplete() {
     std::vector<ComponentHandle> interactive;
     
-    // 收集所有非容器、可见且启用的组件
-    for (size_t i = 0; i < storage_.size(); ++i) {
-        auto* entry = storage_.getComponent(ComponentHandle{static_cast<int32_t>(i), 0});
-        if (entry && entry->id != INVALID_COMPONENT_ID && entry->visible && entry->enabled) {
+    // 使用forEach收集所有非容器、可见且启用的组件
+    storage_.forEach([this, &interactive](ComponentHandle h) {
+        auto* entry = storage_.getComponent(h);
+        if (entry && entry->visible && entry->enabled) {
             if (entry->type != ComponentType::Container) {
-                interactive.push_back(ComponentHandle{static_cast<int32_t>(i), entry->generation});
+                interactive.push_back(h);
             }
         }
-    }
+    });
     
     // 重建四叉树
     quadTree_.rebuild(interactive, [this](ComponentHandle h) {
@@ -236,6 +236,10 @@ void EventDispatcher::dispatchTextInput(const std::string& text) {
 // 处理鼠标移动
 // 参数: x, y - 鼠标坐标
 void EventDispatcher::onMouseMove(float x, float y) {
+    // 记录鼠标位置
+    lastMouseX_ = x;
+    lastMouseY_ = y;
+    
     MouseEvent event;
     event.type = EventType::MouseMove;
     event.position = Point{x, y};
@@ -247,6 +251,10 @@ void EventDispatcher::onMouseMove(float x, float y) {
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
 void EventDispatcher::onMouseDown(float x, float y, int button) {
+    // 记录鼠标位置
+    lastMouseX_ = x;
+    lastMouseY_ = y;
+    
     MouseEvent event;
     event.type = EventType::MouseDown;
     event.position = Point{x, y};
@@ -271,6 +279,10 @@ void EventDispatcher::onMouseUp(float x, float y, int button) {
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
 void EventDispatcher::onClick(float x, float y, int button) {
+    // 记录鼠标位置
+    lastMouseX_ = x;
+    lastMouseY_ = y;
+    
     MouseEvent event;
     event.type = EventType::Click;
     event.position = Point{x, y};

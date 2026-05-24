@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "types.h"
 #include "ComponentStorage.h"
@@ -263,6 +263,18 @@ public:
      */
     int64_t getCurrentTime() const { return currentTime_; }
     
+    /**
+     * 获取最后记录的鼠标X坐标
+     * @return 鼠标X坐标
+     */
+    float getLastMouseX() const { return lastMouseX_; }
+    
+    /**
+     * 获取最后记录的鼠标Y坐标
+     * @return 鼠标Y坐标
+     */
+    float getLastMouseY() const { return lastMouseY_; }
+    
 private:
     /**
      * 查找事件目标组件
@@ -303,6 +315,8 @@ private:
     std::map<std::string, std::vector<RecordedEvent>> recordedSessions_;  // 已录制会话
     std::vector<RecordedEvent> currentRecording_;  // 当前录制的事件
     int64_t currentTime_ = 0;                // 当前时间
+    float lastMouseX_ = 0.0f;                // 最后记录的鼠标X坐标
+    float lastMouseY_ = 0.0f;                // 最后记录的鼠标Y坐标
 };
 
 }

@@ -19,6 +19,7 @@ set(TEST_SOURCES
     LayoutEngine_test.cpp
     QuadTree_test.cpp
     EventDispatcher_test.cpp
+    EventRecording_test.cpp
     StateManager_test.cpp
     Snapshot_test.cpp
     TestController_test.cpp

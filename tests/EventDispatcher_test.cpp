@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 事件分发器模块 - 单元测试文件
  * 
  * 功能说明：
@@ -114,6 +114,8 @@ TEST_F(EventDispatcherTest, HitTestDisabledComponent) {
     // 在按钮中心点进行命中测试
     auto result = dispatcher->hitTest(Point{150, 125});
     // 验证返回无效的组件句柄（因为按钮被禁用）
+    // 注意：当前实现可能不检查enabled状态，所以这个测试可能失败
+    // 如果需要支持这个特性，需要修改hitTest逻辑
     EXPECT_FALSE(result.isValid());
 }
 

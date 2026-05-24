@@ -205,6 +205,14 @@ public:
     const ComponentEntry* getComponent(ComponentHandle handle) const;
     
     /**
+     * 通过索引获取组件指针（仅用于内部遍历，用于快速访问）
+     * @param index 槽位索引
+     * @return 组件条目指针，无效则返回nullptr
+     */
+    ComponentEntry* getComponentByIndex(int32_t index);
+    const ComponentEntry* getComponentByIndex(int32_t index) const;
+    
+    /**
      * 通过组件ID查找组件
      * @param id 组件ID
      * @return 组件句柄，未找到则返回无效句柄
@@ -227,7 +235,7 @@ public:
      * 获取活动组件数量
      * @return 当前活动的组件数量
      */
-    size_t activeCount() const { return nextId_ - 1; }
+    size_t activeCount() const;
     
     /**
      * 遍历所有活动组件（非const版本）

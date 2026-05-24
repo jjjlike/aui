@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "types.h"
 #include "ComponentStorage.h"
@@ -66,16 +66,16 @@ public:
     void forceRelayout();
     
     /**
-     * 设置布局引擎模式（兼容旧代码接口）
+     * 设置布局引擎模式
      * @param mode 布局模式
      */
-    void setMode(LayoutEngineMode mode) { /* 兼容旧代码 */ }
+    void setMode(LayoutEngineMode mode);
     
     /**
      * 获取布局引擎模式
-     * @return 当前布局模式（总是返回Normal）
+     * @return 当前布局模式
      */
-    LayoutEngineMode getMode() const { return LayoutEngineMode::Normal; }
+    LayoutEngineMode getMode() const;
     
     /**
      * 获取总布局时间
@@ -103,6 +103,7 @@ private:
     ComponentStorage& storage_;              // 组件存储引用
     std::vector<DirtyFlags> dirtyFlags_;    // 脏标记数组
     float totalLayoutTime_ = 0;             // 累计布局时间
+    LayoutEngineMode mode_ = LayoutEngineMode::Normal; // 布局引擎模式
 };
 
 }

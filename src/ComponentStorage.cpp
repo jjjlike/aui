@@ -1,4 +1,4 @@
-﻿// ComponentStorage.cpp
+// ComponentStorage.cpp
 // 组件存储模块 - 管理所有UI组件的创建、销毁和层次结构
 //
 // 功能:
@@ -9,6 +9,7 @@
 // - 使用空闲链表优化内存使用
 
 #include "aether/ComponentStorage.h"
+#include "aether/Logger.h"
 #include <algorithm>
 
 namespace aether {
@@ -70,7 +71,12 @@ ComponentHandle ComponentStorage::createComponent(ComponentType type, ComponentH
         root_ = ComponentHandle{slot, entry.generation};
     }
     
-    return ComponentHandle{slot, entry.generation};
+    ComponentHandle handle{slot, entry.generation};
+    
+    // 输出日志
+    Logger::getInstance().logComponentCreate(handle, type, parent);
+    
+    return handle;
 }
 
 // 销毁指定的组件及其所有子组件
@@ -99,6 +105,9 @@ void ComponentStorage::destroyComponent(ComponentHandle handle) {
     if (root_.index == handle.index) {
         root_ = ComponentHandle{};
     }
+    
+    // 输出日志
+    Logger::getInstance().logComponentDestroy(handle);
     
     // 释放槽位
     freeSlot(handle.index);
@@ -131,6 +140,35 @@ ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) {
 const ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) const {
     if (!isValid(handle)) return nullptr;
     return &entries_[handle.index];
+}
+
+// 通过索引获取组件的可变指针
+// 参数: index - 槽位索引
+// 返回值: 组件指针，无效索引返回nullptr
+ComponentEntry* ComponentStorage::getComponentByIndex(int32_t index) {
+    if (index < 0 || index >= static_cast<int32_t>(entries_.size())) return nullptr;
+    if (entries_[index].id == INVALID_COMPONENT_ID) return nullptr;
+    return &entries_[index];
+}
+
+// 通过索引获取组件的常量指针
+// 参数: index - 槽位索引
+// 返回值: 组件指针，无效索引返回nullptr
+const ComponentEntry* ComponentStorage::getComponentByIndex(int32_t index) const {
+    if (index < 0 || index >= static_cast<int32_t>(entries_.size())) return nullptr;
+    if (entries_[index].id == INVALID_COMPONENT_ID) return nullptr;
+    return &entries_[index];
+}
+
+// 获取活动组件数量（活跃的）
+size_t ComponentStorage::activeCount() const {
+    size_t count = 0;
+    for (const auto& entry : entries_) {
+        if (entry.id != INVALID_COMPONENT_ID) {
+            count++;
+        }
+    }
+    return count;
 }
 
 // 通过组件ID查找组件

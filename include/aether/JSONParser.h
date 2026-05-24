@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <string>
 #include <vector>
@@ -63,6 +63,7 @@ public:
     static std::string stringify(const JSONValue& value);
 
 private:
+    static JSONValue parseInternal(const std::string& json, size_t& pos);
     static void skipWhitespace(const std::string& json, size_t& pos);
     static std::string parseString(const std::string& json, size_t& pos);
     static JSONValue parseNumber(const std::string& json, size_t& pos);

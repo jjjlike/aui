@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 逻辑层模块 - 单元测试文件
  * 
  * 功能说明：
@@ -154,13 +154,13 @@ TEST_F(LogicLayerTest, DestroyComponent) {
     auto child = layer->createComponent(ComponentType::Button, root);
     
     // 验证按钮组件句柄有效
-    EXPECT_TRUE(child.isValid());
+    EXPECT_TRUE(layer->getStorage().isValid(child));
     
     // 销毁按钮组件
     layer->destroyComponent(child);
     
     // 验证按钮组件句柄无效
-    EXPECT_FALSE(child.isValid());
+    EXPECT_FALSE(layer->getStorage().isValid(child));
 }
 
 /**

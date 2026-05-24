@@ -1,4 +1,4 @@
-﻿// AetherApplication.cpp
+// AetherApplication.cpp
 // Aether应用程序主模块 - Windows GUI应用程序
 //
 // 功能:
@@ -383,6 +383,7 @@ void AetherApplication::update() {
     if (logicLayer_) {
         logicLayer_->runFrame();
     }
+    
     InvalidateRect(hwnd_, NULL, FALSE);
 }
 

@@ -1,4 +1,4 @@
-﻿// Direct2DRenderer.cpp
+// Direct2DRenderer.cpp
 // Direct2D渲染器模块 - Windows平台2D图形渲染
 //
 // 功能:
@@ -9,6 +9,7 @@
 // - 资源缓存（画刷、文本格式）
 
 #include "aether/Direct2DRenderer.h"
+#include "aether/Logger.h"
 #include <iostream>
 #include <wchar.h>
 
@@ -167,15 +168,21 @@ void Direct2DRenderer::releaseDeviceIndependentResources() {
 
 // 开始绘制
 void Direct2DRenderer::beginDraw() {
+    Logger::getInstance().debug("[Direct2DRenderer] beginDraw 调用");
     if (renderTarget_) {
         renderTarget_->BeginDraw();
+    } else {
+        Logger::getInstance().warning("[Direct2DRenderer] beginDraw 失败：renderTarget_ 为空");
     }
 }
 
 // 结束绘制
 void Direct2DRenderer::endDraw() {
+    Logger::getInstance().debug("[Direct2DRenderer] endDraw 调用");
     if (renderTarget_) {
         renderTarget_->EndDraw();
+    } else {
+        Logger::getInstance().warning("[Direct2DRenderer] endDraw 失败：renderTarget_ 为空");
     }
 }
 
@@ -265,12 +272,23 @@ void Direct2DRenderer::drawRoundedRect(const Rect& rect, float radiusX, float ra
 //   radiusX, radiusY - 圆角半径
 //   color - 颜色
 void Direct2DRenderer::fillRoundedRect(const Rect& rect, float radiusX, float radiusY, const Color& color) {
-    if (!renderTarget_) return;
+    Logger::getInstance().debug("[Direct2DRenderer] fillRoundedRect 调用: "
+        "rect=(" + std::to_string(static_cast<int>(rect.x)) + "," + std::to_string(static_cast<int>(rect.y)) + "," 
+        + std::to_string(static_cast<int>(rect.width)) + "x" + std::to_string(static_cast<int>(rect.height)) + ") "
+        "radiusX=" + std::to_string(radiusX) + " radiusY=" + std::to_string(radiusY));
+    
+    if (!renderTarget_) {
+        Logger::getInstance().warning("[Direct2DRenderer] fillRoundedRect 失败：renderTarget_ 为空");
+        return;
+    }
     
     ID2D1SolidColorBrush* brush = getBrush(color);
     if (brush) {
         D2D1_ROUNDED_RECT roundedRect = D2D1::RoundedRect(toD2D(rect), radiusX, radiusY);
         renderTarget_->FillRoundedRectangle(roundedRect, brush);
+        Logger::getInstance().debug("[Direct2DRenderer] fillRoundedRect 绘制完成");
+    } else {
+        Logger::getInstance().warning("[Direct2DRenderer] fillRoundedRect 失败：获取画刷失败");
     }
 }
 

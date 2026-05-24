@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 
 #include "types.h"
 #include "ComponentStorage.h"
 #include <memory>
 #include <vector>
 #include <functional>
+#include <map>
 
 namespace aether {
 
@@ -146,7 +147,7 @@ private:
     
     Node root_;                                // 根节点
     std::vector<ComponentHandle> allComponents_;  // 所有组件列表
-    std::vector<Rect> allBounds_;              // 所有组件边界
+    std::map<std::pair<int, int>, Rect> componentBounds_;  // 组件句柄到边界的映射
     int nodeCount_ = 0;                        // 节点计数
     int maxDepth_ = 0;                         // 最大深度
 };

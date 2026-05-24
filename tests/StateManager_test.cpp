@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 状态管理器模块 - 单元测试文件
  * 
  * 功能说明：
@@ -67,13 +67,13 @@ TEST_F(StateManagerTest, DestroyComponent) {
     // 创建一个按钮组件
     auto handle = stateManager->createComponent(ComponentType::Button);
     // 验证返回的组件句柄有效
-    EXPECT_TRUE(handle.isValid());
+    EXPECT_TRUE(storage->isValid(handle));
     
     // 销毁组件
     stateManager->destroyComponent(handle);
     
     // 验证组件句柄无效
-    EXPECT_FALSE(handle.isValid());
+    EXPECT_FALSE(storage->isValid(handle));
     // 验证活动组件数量为 0
     EXPECT_EQ(storage->activeCount(), 0);
 }
@@ -148,12 +148,16 @@ TEST_F(StateManagerTest, BatchUpdates) {
     
     // 开始批量更新
     stateManager->beginBatch();
+    // 验证在批量更新中
+    EXPECT_TRUE(stateManager->isInBatch());
     
     // 设置多个属性
     stateManager->setProperty(handle1, PropertyId::Width, PropertyValue(100));
     stateManager->setProperty(handle2, PropertyId::Height, PropertyValue(50));
     
-    // 验证批量更新状态
+    // 结束批量更新
+    stateManager->endBatch();
+    // 验证不在批量更新中
     EXPECT_FALSE(stateManager->isInBatch());
 }
 

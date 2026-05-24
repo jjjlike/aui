@@ -1,4 +1,4 @@
-﻿#include "aether/JSONParser.h"
+#include "aether/JSONParser.h"
 #include <cctype>
 #include <sstream>
 #include <stdexcept>
@@ -7,6 +7,10 @@ namespace aether {
 
 JSONValue JSONParser::parse(const std::string& json) {
     size_t pos = 0;
+    return parseInternal(json, pos);
+}
+
+JSONValue JSONParser::parseInternal(const std::string& json, size_t& pos) {
     skipWhitespace(json, pos);
 
     if (pos >= json.size()) {
@@ -179,7 +183,7 @@ JSONArray JSONParser::parseArray(const std::string& json, size_t& pos) {
 
     skipWhitespace(json, pos);
     while (pos < json.size() && json[pos] != ']') {
-        arr.push_back(parse(json));
+        arr.push_back(parseInternal(json, pos));
         skipWhitespace(json, pos);
         if (pos < json.size() && json[pos] == ',') {
             ++pos;
@@ -202,7 +206,7 @@ JSONObject JSONParser::parseObject(const std::string& json, size_t& pos) {
         if (pos < json.size() && json[pos] == ':') {
             ++pos;
             skipWhitespace(json, pos);
-            obj[key] = parse(json);
+            obj[key] = parseInternal(json, pos);
         }
         skipWhitespace(json, pos);
         if (pos < json.size() && json[pos] == ',') {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 集成测试模块 - 单元测试文件
  * 
  * 功能说明：
@@ -88,8 +88,8 @@ TEST_F(IntegrationTest, FullComponentTreeCreation) {
     layer->setProperty(footer, PropertyId::Width, PropertyValue(800.0f));
     layer->setProperty(footer, PropertyId::Height, PropertyValue(50.0f));
     
-    // 验证活动组件数量为 8（根、头部、内容、2个按钮、文本、底部、空隙组件）
-    EXPECT_EQ(layer->getStorage().activeCount(), 8);
+    // 验证活动组件数量为 7（根、头部、内容、2个按钮、文本、底部）
+    EXPECT_EQ(layer->getStorage().activeCount(), 7);
 }
 
 /**

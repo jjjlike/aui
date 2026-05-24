@@ -1,4 +1,4 @@
-﻿// QuadTree.cpp
+// QuadTree.cpp
 // 四叉树空间索引模块 - 用于高效进行空间查询
 //
 // 功能:
@@ -105,8 +105,10 @@ void QuadTree::insert(ComponentHandle h, const Rect& bounds, Node& node, int dep
         node.components.clear();
         
         for (auto& oldHandle : oldComponents) {
-            if (static_cast<size_t>(oldHandle.index) < allBounds_.size()) {
-                insert(oldHandle, allBounds_[oldHandle.index], node, depth);
+            auto key = std::make_pair(oldHandle.index, oldHandle.generation);
+            auto it = componentBounds_.find(key);
+            if (it != componentBounds_.end()) {
+                insert(oldHandle, it->second, node, depth);
             }
         }
     }
@@ -160,10 +162,10 @@ void QuadTree::queryNode(const Node& node, const Point& p, std::vector<Component
     
     // 检查当前节点中的组件
     for (const auto& h : node.components) {
-        if (static_cast<size_t>(h.index) < allBounds_.size()) {
-            if (allBounds_[h.index].contains(p)) {
-                out.push_back(h);
-            }
+        auto key = std::make_pair(h.index, h.generation);
+        auto it = componentBounds_.find(key);
+        if (it != componentBounds_.end() && it->second.contains(p)) {
+            out.push_back(h);
         }
     }
     
@@ -190,10 +192,10 @@ void QuadTree::queryNode(const Node& node, const Rect& rect, std::vector<Compone
     
     // 检查当前节点中的组件
     for (const auto& h : node.components) {
-        if (static_cast<size_t>(h.index) < allBounds_.size()) {
-            if (intersects(allBounds_[h.index], rect)) {
-                out.push_back(h);
-            }
+        auto key = std::make_pair(h.index, h.generation);
+        auto it = componentBounds_.find(key);
+        if (it != componentBounds_.end() && intersects(it->second, rect)) {
+            out.push_back(h);
         }
     }
     
@@ -217,16 +219,17 @@ void QuadTree::rebuild(const std::vector<ComponentHandle>& components,
     
     // 保存所有组件和边界
     allComponents_ = components;
-    allBounds_.resize(components.size());
     
-    // 收集所有组件的边界
-    for (size_t i = 0; i < components.size(); ++i) {
-        allBounds_[i] = getBounds(components[i]);
+    // 收集所有组件的边界，使用句柄作为键
+    for (const auto& h : components) {
+        auto key = std::make_pair(h.index, h.generation);
+        componentBounds_[key] = getBounds(h);
     }
     
     // 插入所有组件
-    for (size_t i = 0; i < components.size(); ++i) {
-        insert(components[i], allBounds_[i], root_, 0);
+    for (const auto& h : components) {
+        auto key = std::make_pair(h.index, h.generation);
+        insert(h, componentBounds_[key], root_, 0);
     }
 }
 
@@ -235,10 +238,12 @@ void QuadTree::rebuild(const std::vector<ComponentHandle>& components,
 //   h - 组件句柄
 //   newBounds - 新的边界
 void QuadTree::update(ComponentHandle h, const Rect& newBounds) {
-    if (h.index >= 0 && h.index < static_cast<int32_t>(allBounds_.size())) {
+    auto key = std::make_pair(h.index, h.generation);
+    auto it = componentBounds_.find(key);
+    if (it != componentBounds_.end()) {
         // 先移除再重新插入
         remove(h, root_);
-        allBounds_[h.index] = newBounds;
+        componentBounds_[key] = newBounds;
         insert(h, newBounds, root_, 0);
     }
 }
@@ -267,7 +272,7 @@ void QuadTree::clear() {
     root_.bounds = Rect::infinite();
     root_.isLeaf = true;
     allComponents_.clear();
-    allBounds_.clear();
+    componentBounds_.clear();
     nodeCount_ = 1;
     maxDepth_ = 0;
 }

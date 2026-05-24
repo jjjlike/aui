@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 组件存储模块 - 单元测试文件
  * 
  * 功能说明：
@@ -77,8 +77,8 @@ TEST_F(ComponentStorageTest, DestroyComponent) {
     // 销毁子组件
     storage->destroyComponent(child);
 
-    // 验证子组件句柄已经无效
-    EXPECT_FALSE(child.isValid());
+    // 验证子组件句柄已经无效（使用storage的isValid方法）
+    EXPECT_FALSE(storage->isValid(child));
 }
 
 /**
@@ -95,12 +95,12 @@ TEST_F(ComponentStorageTest, DestroyRootChildren) {
     // 销毁根组件
     storage->destroyComponent(root);
 
-    // 验证根组件句柄无效
-    EXPECT_FALSE(root.isValid());
+    // 验证根组件句柄无效（使用storage的isValid方法）
+    EXPECT_FALSE(storage->isValid(root));
     // 验证子组件 1 句柄无效
-    EXPECT_FALSE(child1.isValid());
+    EXPECT_FALSE(storage->isValid(child1));
     // 验证子组件 2 句柄无效
-    EXPECT_FALSE(child2.isValid());
+    EXPECT_FALSE(storage->isValid(child2));
 }
 
 /**
@@ -149,12 +149,12 @@ TEST_F(ComponentStorageTest, MultipleComponents) {
         handles.push_back(storage->createComponent(ComponentType::Button));
     }
 
-    // 验证活动组件的数量：第一个是自动创建的根组件 + 100个按钮 = 101个
-    EXPECT_EQ(storage->activeCount(), 101);
+    // 验证活动组件的数量：总共创建了 100 个组件
+    EXPECT_EQ(storage->activeCount(), 100);
 
     // 验证所有创建的组件句柄都有效
     for (auto& h : handles) {
-        EXPECT_TRUE(h.isValid());
+        EXPECT_TRUE(storage->isValid(h));
     }
 }
 

@@ -163,10 +163,17 @@ public:
         int width = clientRect.right - clientRect.left;
         int height = clientRect.bottom - clientRect.top;
         
-        aether::Logger::getInstance().info("窗口客户区大小: " + std::to_string(width) + "x" + std::to_string(height));
-        aether::Logger::getInstance().info("更新根容器尺寸为: " + std::to_string(width) + "x" + std::to_string(height));
-        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(static_cast<float>(width)));
-        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(static_cast<float>(height)));
+        float dpiScaleX = 96.0f / renderer_->getDpiX();
+        float dpiScaleY = 96.0f / renderer_->getDpiY();
+        float dipWidth = static_cast<float>(width) * dpiScaleX;
+        float dipHeight = static_cast<float>(height) * dpiScaleY;
+        
+        aether::Logger::getInstance().info("窗口客户区大小: " + std::to_string(width) + "x" + std::to_string(height) +
+            " DPI: " + std::to_string(static_cast<int>(renderer_->getDpiX())));
+        aether::Logger::getInstance().info("DIP尺寸: " + std::to_string(static_cast<int>(dipWidth)) + "x" + std::to_string(static_cast<int>(dipHeight)));
+        aether::Logger::getInstance().info("更新根容器尺寸为: " + std::to_string(dipWidth) + "x" + std::to_string(dipHeight));
+        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(dipWidth));
+        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(dipHeight));
         aether::Logger::getInstance().info("调用runFrame()计算布局");
         logicLayer_->runFrame();
         aether::Logger::getInstance().info("布局计算完成");
@@ -216,34 +223,43 @@ public:
             renderer_->resize(width, height);
         }
         
-        // 更新根容器尺寸以适应窗口大小
-        if (logicLayer_ && todoApp_) {
-            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(static_cast<float>(width)));
-            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(static_cast<float>(height)));
+        if (logicLayer_ && todoApp_ && renderer_) {
+            float dpiScaleX = 96.0f / renderer_->getDpiX();
+            float dpiScaleY = 96.0f / renderer_->getDpiY();
+            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(static_cast<float>(width) * dpiScaleX));
+            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(static_cast<float>(height) * dpiScaleY));
         }
     }
 
     void onMouseMove(int x, int y) {
-        if (logicLayer_) {
-            logicLayer_->dispatchMouseMove(static_cast<float>(x), static_cast<float>(y));
+        if (logicLayer_ && renderer_) {
+            float dpiScaleX = 96.0f / renderer_->getDpiX();
+            float dpiScaleY = 96.0f / renderer_->getDpiY();
+            logicLayer_->dispatchMouseMove(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY);
         }
     }
 
     void onMouseDown(int x, int y, int button) {
-        if (logicLayer_) {
-            logicLayer_->dispatchMouseDown(static_cast<float>(x), static_cast<float>(y), button);
+        if (logicLayer_ && renderer_) {
+            float dpiScaleX = 96.0f / renderer_->getDpiX();
+            float dpiScaleY = 96.0f / renderer_->getDpiY();
+            logicLayer_->dispatchMouseDown(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
         }
     }
 
     void onMouseUp(int x, int y, int button) {
-        if (logicLayer_) {
-            logicLayer_->dispatchMouseUp(static_cast<float>(x), static_cast<float>(y), button);
+        if (logicLayer_ && renderer_) {
+            float dpiScaleX = 96.0f / renderer_->getDpiX();
+            float dpiScaleY = 96.0f / renderer_->getDpiY();
+            logicLayer_->dispatchMouseUp(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
         }
     }
 
     void onClick(int x, int y, int button) {
-        if (logicLayer_) {
-            logicLayer_->dispatchClick(static_cast<float>(x), static_cast<float>(y), button);
+        if (logicLayer_ && renderer_) {
+            float dpiScaleX = 96.0f / renderer_->getDpiX();
+            float dpiScaleY = 96.0f / renderer_->getDpiY();
+            logicLayer_->dispatchClick(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
         }
     }
 

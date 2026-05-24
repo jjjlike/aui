@@ -124,6 +124,8 @@ bool Direct2DRenderer::createDeviceResources() {
         return false;
     }
     
+    renderTarget_->GetDpi(&dpiX_, &dpiY_);
+    
     return true;
 }
 

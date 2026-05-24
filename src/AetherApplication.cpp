@@ -269,8 +269,10 @@ void AetherApplication::onResize(int width, int height) {
 // 鼠标移动回调
 // 参数: x, y - 鼠标坐标
 void AetherApplication::onMouseMove(int x, int y) {
-    if (logicLayer_) {
-        logicLayer_->dispatchMouseMove(static_cast<float>(x), static_cast<float>(y));
+    if (logicLayer_ && renderer_) {
+        float dpiScaleX = 96.0f / renderer_->getDpiX();
+        float dpiScaleY = 96.0f / renderer_->getDpiY();
+        logicLayer_->dispatchMouseMove(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY);
     }
 }
 
@@ -279,8 +281,10 @@ void AetherApplication::onMouseMove(int x, int y) {
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
 void AetherApplication::onMouseDown(int x, int y, int button) {
-    if (logicLayer_) {
-        logicLayer_->dispatchMouseDown(static_cast<float>(x), static_cast<float>(y), button);
+    if (logicLayer_ && renderer_) {
+        float dpiScaleX = 96.0f / renderer_->getDpiX();
+        float dpiScaleY = 96.0f / renderer_->getDpiY();
+        logicLayer_->dispatchMouseDown(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
     }
 }
 
@@ -289,8 +293,10 @@ void AetherApplication::onMouseDown(int x, int y, int button) {
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
 void AetherApplication::onMouseUp(int x, int y, int button) {
-    if (logicLayer_) {
-        logicLayer_->dispatchMouseUp(static_cast<float>(x), static_cast<float>(y), button);
+    if (logicLayer_ && renderer_) {
+        float dpiScaleX = 96.0f / renderer_->getDpiX();
+        float dpiScaleY = 96.0f / renderer_->getDpiY();
+        logicLayer_->dispatchMouseUp(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
     }
 }
 
@@ -299,8 +305,10 @@ void AetherApplication::onMouseUp(int x, int y, int button) {
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
 void AetherApplication::dispatchClick(int x, int y, int button) {
-    if (logicLayer_) {
-        logicLayer_->dispatchClick(static_cast<float>(x), static_cast<float>(y), button);
+    if (logicLayer_ && renderer_) {
+        float dpiScaleX = 96.0f / renderer_->getDpiX();
+        float dpiScaleY = 96.0f / renderer_->getDpiY();
+        logicLayer_->dispatchClick(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY, button);
     }
 }
 
@@ -342,7 +350,7 @@ void AetherApplication::render() {
         auto* entry = storage.getComponent(handle);
         if (!entry) return;
         
-        Rect rect(entry->layoutResult.x, entry->layoutResult.y, entry->layoutResult.width, entry->layoutResult.height);
+        Rect rect = storage.getAbsoluteBounds(handle);
         
         switch (entry->type) {
             case ComponentType::Container:

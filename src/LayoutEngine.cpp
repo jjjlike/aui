@@ -217,12 +217,21 @@ void LayoutEngine::computeLayout(int32_t nodeIdx) {
     if (node.layoutResult.width < 0.0f) node.layoutResult.width = 0.0f;
     if (node.layoutResult.height < 0.0f) node.layoutResult.height = 0.0f;
     
-    // 从属性中读取当前组件的大小，只有在布局结果没有设置时才使用属性值（注意：x/y 位置是由父组件布局时设置的，不要在这里覆盖！）
-    if (node.layoutResult.width <= 0.0f) {
-        node.layoutResult.width = getPropertyFloat(node, PropertyId::Width, 0.0f);
+    // 从属性中读取当前组件的大小
+    // 如果是根组件(没有父组件)或尺寸尚未设置，则从属性读取
+    // 否则保持父组件通过布局算法设置的尺寸
+    bool isRoot = (node.parentIndex == -1);
+    if (isRoot || node.layoutResult.width <= 0.0f) {
+        float propWidth = getPropertyFloat(node, PropertyId::Width, 0.0f);
+        if (propWidth > 0.0f) {
+            node.layoutResult.width = propWidth;
+        }
     }
-    if (node.layoutResult.height <= 0.0f) {
-        node.layoutResult.height = getPropertyFloat(node, PropertyId::Height, 0.0f);
+    if (isRoot || node.layoutResult.height <= 0.0f) {
+        float propHeight = getPropertyFloat(node, PropertyId::Height, 0.0f);
+        if (propHeight > 0.0f) {
+            node.layoutResult.height = propHeight;
+        }
     }
     
     // 获取容器尺寸（不强制设置默认值，保留组件自己设置的尺寸）

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "aether/types.h"
 #include <d2d1.h>
@@ -129,6 +129,18 @@ public:
      */
     ID2D1HwndRenderTarget* getRenderTarget() { return renderTarget_; }
     
+    /**
+     * 获取当前DPI X方向
+     * @return DPI值
+     */
+    float getDpiX() const { return dpiX_; }
+    
+    /**
+     * 获取当前DPI Y方向
+     * @return DPI值
+     */
+    float getDpiY() const { return dpiY_; }
+    
 private:
     /**
      * 将Color转换为Direct2D颜色
@@ -187,6 +199,9 @@ private:
     
     std::unordered_map<uint32_t, ID2D1SolidColorBrush*> brushCache_;  // 画刷缓存
     std::unordered_map<std::string, IDWriteTextFormat*> textFormatCache_;  // 文本格式缓存
+    
+    float dpiX_ = 96.0f;  // 当前DPI X方向
+    float dpiY_ = 96.0f;  // 当前DPI Y方向
     
     HWND hwnd_ = nullptr;  // 窗口句柄
 };

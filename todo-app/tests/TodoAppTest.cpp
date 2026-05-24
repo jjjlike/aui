@@ -1,6 +1,6 @@
 // TodoAppTest.cpp
 // 待办列表应用测试
-// 
+//
 // 功能测试:
 // - 应用初始化
 // - 添加待办项
@@ -10,6 +10,7 @@
 
 #include "TodoApp.h"
 #include "aether/LogicLayer.h"
+#include "aether/EventDispatcher.h"
 #include <gtest/gtest.h>
 #include <string>
 
@@ -403,6 +404,91 @@ TEST_F(TodoAppTest, DeleteCompletedTodo) {
     
     EXPECT_EQ(todoApp_->getTotalCount(), 1);
     EXPECT_EQ(todoApp_->getCompletedCount(), 0);
+}
+
+/**
+ * 测试用例 16: 按钮点击事件测试
+ * 测试目标: 验证点击添加按钮时能正确触发addTodo
+ *
+ * 覆盖分析:
+ * - 事件系统测试: 事件分发和处理
+ * - 点击检测: isComponentClicked方法
+ * - 事件日志: 事件日志的记录和读取
+ */
+TEST_F(TodoAppTest, ButtonClickEventTest) {
+    // 初始化应用
+    todoApp_->initialize();
+
+    // 确保布局完成
+    logicLayer_->runFrame();
+
+    // 获取组件句柄
+    auto addButtonHandle = todoApp_->getAddButton();
+    auto inputBoxHandle = todoApp_->getInputBox();
+
+    // 获取EventDispatcher
+    auto& dispatcher = logicLayer_->getEventDispatcher();
+    auto& storage = logicLayer_->getStorage();
+
+    // ==== 第一步：获取输入框位置，设置焦点 ====
+    auto* inputEntry = storage.getComponent(inputBoxHandle);
+    ASSERT_TRUE(inputEntry != nullptr);
+
+    // 计算输入框的绝对位置
+    float inputAbsX = inputEntry->layoutResult.x;
+    float inputAbsY = inputEntry->layoutResult.y;
+
+    int32_t inputParentIdx = inputEntry->parentIndex;
+    while (inputParentIdx != -1) {
+        const auto* parentEntry = storage.getComponentByIndex(inputParentIdx);
+        if (!parentEntry) break;
+
+        inputAbsX += parentEntry->layoutResult.x;
+        inputAbsY += parentEntry->layoutResult.y;
+
+        inputParentIdx = parentEntry->parentIndex;
+    }
+
+    // 点击输入框设置焦点
+    dispatcher.onMouseDown(inputAbsX + 5, inputAbsY + 5, 0);
+
+    // ==== 第二步：模拟文本输入 ====
+    logicLayer_->dispatchTextInput("测试待办");
+
+    // 调用update处理文本输入
+    todoApp_->update();
+
+    // ==== 第三步：获取按钮位置并点击 ====
+    auto* buttonEntry = storage.getComponent(addButtonHandle);
+    ASSERT_TRUE(buttonEntry != nullptr);
+
+    // 计算按钮的绝对位置
+    float btnAbsX = buttonEntry->layoutResult.x;
+    float btnAbsY = buttonEntry->layoutResult.y;
+
+    int32_t btnParentIdx = buttonEntry->parentIndex;
+    while (btnParentIdx != -1) {
+        const auto* parentEntry = storage.getComponentByIndex(btnParentIdx);
+        if (!parentEntry) break;
+
+        btnAbsX += parentEntry->layoutResult.x;
+        btnAbsY += parentEntry->layoutResult.y;
+
+        btnParentIdx = parentEntry->parentIndex;
+    }
+
+    // 点击按钮中心位置
+    float clickX = btnAbsX + buttonEntry->layoutResult.width / 2.0f;
+    float clickY = btnAbsY + buttonEntry->layoutResult.height / 2.0f;
+
+    // 模拟点击
+    logicLayer_->dispatchClick(clickX, clickY, 0);
+
+    // 调用update处理点击事件
+    todoApp_->update();
+
+    // 验证是否添加了待办项
+    EXPECT_EQ(todoApp_->getTotalCount(), 1);
 }
 
 } // namespace test

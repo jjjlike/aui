@@ -270,6 +270,44 @@ public:
      */
     void clear();
     
+    /**
+     * 计算组件的绝对位置
+     * @param index 组件索引
+     * @return 组件的绝对矩形
+     */
+    Rect getAbsoluteBounds(int32_t index) const;
+    
+    /**
+     * 计算组件的绝对位置
+     * @param handle 组件句柄
+     * @return 组件的绝对矩形
+     */
+    Rect getAbsoluteBounds(ComponentHandle handle) const;
+    
+    /**
+     * 获取组件的相对位置（相对于父组件）
+     * @param handle 组件句柄
+     * @return 组件的相对矩形
+     */
+    Rect getRelativeBounds(ComponentHandle handle) const;
+    
+    /**
+     * 检查点是否在组件的绝对位置范围内
+     * @param handle 组件句柄
+     * @param x 点的x坐标
+     * @param y 点的y坐标
+     * @return 是否在范围内
+     */
+    bool containsPoint(ComponentHandle handle, float x, float y) const;
+    
+    /**
+     * 检查点是否在组件的绝对位置范围内
+     * @param handle 组件句柄
+     * @param point 点
+     * @return 是否在范围内
+     */
+    bool containsPoint(ComponentHandle handle, Point point) const;
+    
 private:
     /**
      * 分配一个槽位

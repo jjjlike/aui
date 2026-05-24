@@ -94,6 +94,18 @@ public:
      */
     ComponentHandle getRootContainer() const { return rootContainer_; }
     
+    /**
+     * 获取添加按钮组件句柄
+     * @return 添加按钮句柄
+     */
+    ComponentHandle getAddButton() const { return addButton_; }
+    
+    /**
+     * 获取输入框组件句柄
+     * @return 输入框句柄
+     */
+    ComponentHandle getInputBox() const { return inputBox_; }
+    
 private:
     /**
      * 创建UI组件

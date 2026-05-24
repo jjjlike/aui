@@ -192,4 +192,70 @@ void ComponentStorage::clear() {
     root_ = ComponentHandle{};
 }
 
+// 计算组件的绝对位置（通过索引）
+// 参数: index - 组件索引
+// 返回值: 组件的绝对矩形
+Rect ComponentStorage::getAbsoluteBounds(int32_t index) const {
+    if (index < 0 || index >= static_cast<int32_t>(entries_.size())) {
+        return Rect{0, 0, 0, 0};
+    }
+    
+    const auto& entry = entries_[index];
+    
+    // 初始化绝对位置为相对位置
+    Rect absoluteBounds = entry.layoutResult;
+    
+    // 遍历所有父组件，累加位置
+    int32_t currentParentIdx = entry.parentIndex;
+    while (currentParentIdx != -1) {
+        const auto* parentEntry = getComponentByIndex(currentParentIdx);
+        if (!parentEntry) break;
+        
+        absoluteBounds.x += parentEntry->layoutResult.x;
+        absoluteBounds.y += parentEntry->layoutResult.y;
+        
+        currentParentIdx = parentEntry->parentIndex;
+    }
+    
+    return absoluteBounds;
+}
+
+// 计算组件的绝对位置（通过句柄）
+// 参数: handle - 组件句柄
+// 返回值: 组件的绝对矩形
+Rect ComponentStorage::getAbsoluteBounds(ComponentHandle handle) const {
+    if (!isValid(handle)) {
+        return Rect{0, 0, 0, 0};
+    }
+    
+    return getAbsoluteBounds(handle.index);
+}
+
+// 获取组件的相对位置（相对于父组件）
+// 参数: handle - 组件句柄
+// 返回值: 组件的相对矩形
+Rect ComponentStorage::getRelativeBounds(ComponentHandle handle) const {
+    if (!isValid(handle)) {
+        return Rect{0, 0, 0, 0};
+    }
+    
+    const auto& entry = entries_[handle.index];
+    return entry.layoutResult;
+}
+
+// 检查点是否在组件的绝对位置范围内
+// 参数: handle - 组件句柄, x - 点的x坐标, y - 点的y坐标
+// 返回值: 是否在范围内
+bool ComponentStorage::containsPoint(ComponentHandle handle, float x, float y) const {
+    Rect absoluteBounds = getAbsoluteBounds(handle);
+    return absoluteBounds.contains(x, y);
+}
+
+// 检查点是否在组件的绝对位置范围内
+// 参数: handle - 组件句柄, point - 点
+// 返回值: 是否在范围内
+bool ComponentStorage::containsPoint(ComponentHandle handle, Point point) const {
+    return containsPoint(handle, point.x, point.y);
+}
+
 } // namespace aether

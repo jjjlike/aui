@@ -66,7 +66,7 @@ void TodoApp::initialize() {
     // 创建输入框
     inputBox_ = logicLayer_.createComponent(ComponentType::Input, inputContainer_);
     Logger::getInstance().info("创建输入框，handle=" + std::to_string(inputBox_.index));
-    logicLayer_.setProperty(inputBox_, PropertyId::Width, PropertyValue(600.0f));
+    logicLayer_.setProperty(inputBox_, PropertyId::Width, PropertyValue(400.0f));
     logicLayer_.setProperty(inputBox_, PropertyId::Height, PropertyValue(40.0f));
     logicLayer_.setProperty(inputBox_, PropertyId::PaddingLeft, PropertyValue(10.0f));
     logicLayer_.setProperty(inputBox_, PropertyId::PaddingTop, PropertyValue(10.0f));
@@ -254,17 +254,28 @@ size_t TodoApp::getCompletedCount() const {
  */
 bool TodoApp::isComponentClicked(ComponentHandle handle, float x, float y) {
     if (!handle.isValid()) {
+        Logger::getInstance().debug("isComponentClicked - handle无效");
         return false;
     }
     
-    auto* entry = logicLayer_.getStorage().getComponent(handle);
-    if (!entry) {
-        return false;
-    }
+    // 使用统一的绝对位置命中检测接口
+    bool result = logicLayer_.getStorage().containsPoint(handle, x, y);
     
-    const auto& rect = entry->layoutResult;
-    return x >= rect.x && x < rect.x + rect.width &&
-           y >= rect.y && y < rect.y + rect.height;
+    // 同时获取位置信息用于日志输出
+    Rect absoluteBounds = logicLayer_.getStorage().getAbsoluteBounds(handle);
+    
+    Logger::getInstance().debug("isComponentClicked - 点击坐标: (" + 
+        std::to_string(static_cast<int>(x)) + ", " + 
+        std::to_string(static_cast<int>(y)) + "), " +
+        "组件绝对位置: (" + 
+        std::to_string(static_cast<int>(absoluteBounds.x)) + ", " + 
+        std::to_string(static_cast<int>(absoluteBounds.y)) + "), " +
+        "组件尺寸: (" + 
+        std::to_string(static_cast<int>(absoluteBounds.width)) + "x" + 
+        std::to_string(static_cast<int>(absoluteBounds.height)) + "), " +
+        "结果: " + std::string(result ? "命中" : "未命中"));
+    
+    return result;
 }
 
 /**
@@ -276,17 +287,30 @@ void TodoApp::update() {
     auto& dispatcher = logicLayer_.getEventDispatcher();
     auto& eventLog = dispatcher.getEventLog();
     
+    Logger::getInstance().debug("TodoApp::update() - 事件数量: " + std::to_string(eventLog.size()));
+    
     // 处理事件
     for (const auto& event : eventLog) {
+        Logger::getInstance().debug("TodoApp::update() - 事件类型: " + std::to_string(static_cast<int>(event.type)));
+        
         if (event.type == EventType::Click) {
             float x = event.mouse.position.x;
             float y = event.mouse.position.y;
             
+            Logger::getInstance().debug("TodoApp::update() - 点击坐标: (" + 
+                std::to_string(static_cast<int>(x)) + ", " + 
+                std::to_string(static_cast<int>(y)) + ")");
+            Logger::getInstance().debug("TodoApp::update() - 添加按钮位置: handle=" + 
+                std::to_string(addButton_.index));
+            
             // 检查添加按钮
             if (isComponentClicked(addButton_, x, y)) {
+                Logger::getInstance().info("TodoApp::update() - 检测到添加按钮被点击！");
                 addTodo(currentInputText_);
                 currentInputText_.clear();
                 logicLayer_.setProperty(inputBox_, PropertyId::Text, PropertyValue(std::string()));
+            } else {
+                Logger::getInstance().debug("TodoApp::update() - 添加按钮未被点击");
             }
             
             // 检查待办项

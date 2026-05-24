@@ -279,24 +279,6 @@ public:
         }
     }
 
-    aether::Rect getAbsoluteRect(const aether::ComponentEntry* entry, aether::ComponentStorage& storage) {
-        float absX = entry->layoutResult.x;
-        float absY = entry->layoutResult.y;
-        
-        int32_t parentIdx = entry->parentIndex;
-        while (parentIdx != -1) {
-            const auto* parentEntry = storage.getComponentByIndex(parentIdx);
-            if (!parentEntry) break;
-            
-            absX += parentEntry->layoutResult.x;
-            absY += parentEntry->layoutResult.y;
-            
-            parentIdx = parentEntry->parentIndex;
-        }
-        
-        return {absX, absY, entry->layoutResult.width, entry->layoutResult.height};
-    }
-    
     void render() {
         PAINTSTRUCT ps;
         BeginPaint(hwnd_, &ps);
@@ -320,7 +302,8 @@ public:
                 auto* entry = storage.getComponent(handle);
                 if (!entry || !entry->visible) return;
 
-                aether::Rect rect = getAbsoluteRect(entry, storage);
+                // 使用组件存储中的绝对位置计算函数
+                aether::Rect rect = storage.getAbsoluteBounds(handle);
 
                 // 输出组件布局信息
                 if (renderFrameCount_ <= 3) {
@@ -351,15 +334,27 @@ public:
                             aether::Logger::getInstance().info("  [渲染按钮 handle=" + std::to_string(handle.index) + " 开始");
                         }
                         
-                        // 检查鼠标是否在按钮上
-                        bool isHovered = (mouseX >= rect.x && mouseX <= rect.x + rect.width &&
-                                        mouseY >= rect.y && mouseY <= rect.y + rect.height);
+                        // 打印按钮位置对比信息
+                        aether::Rect relativeRect = entry->layoutResult;
+                        aether::Logger::getInstance().info("  [渲染按钮位置对比] 相对位置: (" + 
+                            std::to_string(static_cast<int>(relativeRect.x)) + "," + 
+                            std::to_string(static_cast<int>(relativeRect.y)) + "," + 
+                            std::to_string(static_cast<int>(relativeRect.width)) + "x" + 
+                            std::to_string(static_cast<int>(relativeRect.height)) + "), " + 
+                            "绝对位置: (" + 
+                            std::to_string(static_cast<int>(rect.x)) + "," + 
+                            std::to_string(static_cast<int>(rect.y)) + "," + 
+                            std::to_string(static_cast<int>(rect.width)) + "x" + 
+                            std::to_string(static_cast<int>(rect.height)) + ")");
+                        
+                        // 检查鼠标是否在按钮上（使用统一接口）
+                        bool isHovered = storage.containsPoint(handle, mouseX, mouseY);
                         
                         // 红色按钮，不同状态透明度不同
                         aether::Color btnColor;
                         if (isHovered) {
                             // 悬停状态：半透明红色
-                            btnColor = aether::Color(1.0f, 0.0f, 0.0f, 0.8f);
+                            btnColor = aether::Color(1.0f, 1.0f, 0.0f, 1.0f);
                         } else {
                             // 普通状态：完全不透明红色
                             btnColor = aether::Color(1.0f, 0.0f, 0.0f, 1.0f);

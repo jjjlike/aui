@@ -9,6 +9,7 @@
 // - 事件记录 - 支持记录和重放事件序列
 
 #include "aether/EventDispatcher.h"
+#include "aether/Logger.h"
 #include <algorithm>
 #include <chrono>
 
@@ -34,10 +35,9 @@ void EventDispatcher::onLayoutComplete() {
         }
     });
     
-    // 重建四叉树
+    // 重建四叉树 - 使用绝对位置
     quadTree_.rebuild(interactive, [this](ComponentHandle h) {
-        auto* entry = storage_.getComponent(h);
-        return entry ? entry->layoutResult : Rect{0, 0, 0, 0};
+        return storage_.getAbsoluteBounds(h);
     });
 }
 
@@ -45,18 +45,43 @@ void EventDispatcher::onLayoutComplete() {
 // 参数: p - 鼠标位置
 // 返回值: 最上层的组件句柄
 ComponentHandle EventDispatcher::hitTest(const Point& p) {
+    Logger::getInstance().info("[hitTest] 开始命中测试，鼠标位置: (" + 
+        std::to_string(static_cast<int>(p.x)) + ", " + 
+        std::to_string(static_cast<int>(p.y)) + ")");
+    
     auto candidates = quadTree_.query(p);
+    Logger::getInstance().info("[hitTest] 四叉树查询到 " + 
+        std::to_string(candidates.size()) + " 个候选组件");
     
     // 反向遍历（最上层最后插入）
     for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
         auto* entry = storage_.getComponent(*it);
         if (entry && entry->visible && entry->enabled) {
-            if (entry->layoutResult.contains(p)) {
+            // 使用绝对位置进行检查
+            Rect absoluteBounds = storage_.getAbsoluteBounds(*it);
+            std::string typeName;
+            switch (entry->type) {
+                case ComponentType::Container: typeName = "Container"; break;
+                case ComponentType::Button: typeName = "Button"; break;
+                case ComponentType::Text: typeName = "Text"; break;
+                case ComponentType::Input: typeName = "Input"; break;
+                default: typeName = "Unknown"; break;
+            }
+            Logger::getInstance().info("[hitTest] 检查组件: type=" + typeName + 
+                ", absoluteBounds=(" + std::to_string(static_cast<int>(absoluteBounds.x)) + 
+                ", " + std::to_string(static_cast<int>(absoluteBounds.y)) + ", " + 
+                std::to_string(static_cast<int>(absoluteBounds.width)) + "x" + 
+                std::to_string(static_cast<int>(absoluteBounds.height)) + "), " +
+                "contains? " + (absoluteBounds.contains(p) ? "是" : "否"));
+            
+            if (absoluteBounds.contains(p)) {
+                Logger::getInstance().info("[hitTest] 找到命中组件: type=" + typeName);
                 return *it;
             }
         }
     }
     
+    Logger::getInstance().info("[hitTest] 未找到命中组件");
     return ComponentHandle{};
 }
 
@@ -71,7 +96,9 @@ std::vector<ComponentHandle> EventDispatcher::hitTestAll(const Point& p) {
     for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
         auto* entry = storage_.getComponent(*it);
         if (entry && entry->visible && entry->enabled) {
-            if (entry->layoutResult.contains(p)) {
+            // 使用绝对位置进行检查
+            Rect absoluteBounds = storage_.getAbsoluteBounds(*it);
+            if (absoluteBounds.contains(p)) {
                 result.push_back(*it);
             }
         }
@@ -187,6 +214,9 @@ void EventDispatcher::dispatchMouseEvent(const MouseEvent& mouseEvent) {
         if (mouseCallback_) {
             mouseCallback_(event);
         }
+    } else {
+        // 即使没有目标，也要记录事件到日志
+        eventLog_.push_back(event);
     }
     
     // 处理点击和按下事件 - 设置焦点
@@ -223,14 +253,17 @@ void EventDispatcher::dispatchKeyEvent(const KeyEvent& keyEvent) {
 // 分发文本输入事件
 // 参数: text - 输入的文本
 void EventDispatcher::dispatchTextInput(const std::string& text) {
-    if (!focusedComponent_.isValid()) return;
-    
     Event event;
     event.type = EventType::TextInput;
     event.text = text;
-    event.target = focusedComponent_;
     
-    dispatchEvent(event);
+    if (focusedComponent_.isValid()) {
+        event.target = focusedComponent_;
+        dispatchEvent(event);
+    } else {
+        // 即使没有焦点组件，也要记录事件到日志
+        eventLog_.push_back(event);
+    }
 }
 
 // 处理鼠标移动

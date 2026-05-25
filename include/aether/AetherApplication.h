@@ -24,13 +24,20 @@ namespace jaether {
 class JRendererFacade;
 
 /**
- * Aether应用程序类
+ * Aether应用程序基础类
  * 
- * 整合所有模块的高层应用类
- * 提供完整的UI应用程序功能
+ * 封装窗口创建、消息循环、渲染循环等通用基础设施
+ * 不包含任何测试/样例代码，保持框架纯净
+ * 应用层通过getLogicLayer()等访问器在外部创建UI
  */
 class JAetherApplication {
 public:
+    /**
+     * 帧回调函数类型
+     * 每帧update时被调用，参数为逻辑层引用，应用层在此处理业务逻辑
+     */
+    using FrameCallback = std::function<void(JLogicLayer&)>;
+
     /**
      * 构造函数
      */
@@ -42,7 +49,7 @@ public:
     ~JAetherApplication();
     
     /**
-     * 初始化应用程序
+     * 初始化应用程序（创建窗口、逻辑层、渲染器）
      * @param hInstance 应用程序实例句柄
      * @param nCmdShow 显示命令
      * @return 是否初始化成功
@@ -50,76 +57,39 @@ public:
     bool initialize(HINSTANCE hInstance, int nCmdShow);
     
     /**
-     * 关闭应用程序
-     * 清理所有资源
+     * 关闭应用程序，清理所有资源
      */
     void shutdown();
     
     /**
-     * 运行应用程序主循环
+     * 运行消息循环（阻塞直到窗口关闭）
      */
     void run();
     
     /**
-     * 处理绘制消息
+     * 设置每帧回调
+     * 在每帧update时被调用，应用层在此处理自定义逻辑（如点击事件分发）
+     * @param callback 回调函数，参数为JLogicLayer引用
      */
-    void onPaint();
+    void setFrameCallback(FrameCallback callback) { frameCallback_ = std::move(callback); }
     
     /**
-     * 处理窗口大小调整
-     * @param width 新宽度
-     * @param height 新高度
+     * 获取逻辑层指针（应用层通过此访问器创建UI组件）
+     * @return 逻辑层指针，未初始化返回nullptr
      */
-    void onResize(int width, int height);
+    JLogicLayer* getLogicLayer() { return logicLayer_.get(); }
     
     /**
-     * 处理鼠标移动
-     * @param x X坐标
-     * @param y Y坐标
+     * 获取Direct2D渲染器指针
+     * @return 渲染器指针，未初始化返回nullptr
      */
-    void onMouseMove(int x, int y);
+    JDirect2DRenderer* getRenderer() { return renderer_.get(); }
     
     /**
-     * 处理鼠标按下
-     * @param x X坐标
-     * @param y Y坐标
-     * @param button 鼠标按钮
+     * 获取控件渲染门面指针
+     * @return 门面指针，未初始化返回nullptr
      */
-    void onMouseDown(int x, int y, int button);
-    
-    /**
-     * 处理鼠标释放
-     * @param x X坐标
-     * @param y Y坐标
-     * @param button 鼠标按钮
-     */
-    void onMouseUp(int x, int y, int button);
-    
-    /**
-     * 处理鼠标点击
-     * @param x X坐标
-     * @param y Y坐标
-     * @param button 鼠标按钮
-     */
-    void dispatchClick(int x, int y, int button);
-    
-    /**
-     * 处理键盘按下
-     * @param keyCode 键码
-     */
-    void onKeyDown(int keyCode);
-    
-    /**
-     * 处理键盘释放
-     * @param keyCode 键码
-     */
-    void onKeyUp(int keyCode);
-    
-    /**
-     * 处理字符输入
-     * @param ch 字符
-     */
-    void onChar(char ch);
+    JRendererFacade* getRenderFacade() { return renderFacade_.get(); }
     
     /**
      * 获取窗口句柄
@@ -127,42 +97,39 @@ public:
      */
     HWND getHwnd() const { return hwnd_; }
     
+    // ========== 消息处理（由WindowProc调用，public用于外部触发重绘） ==========
+    
+    void onPaint();
+    void onResize(int width, int height);
+    void onMouseMove(int x, int y);
+    void onMouseDown(int x, int y, int button);
+    void onMouseUp(int x, int y, int button);
+    void dispatchClick(int x, int y, int button);
+    void onKeyDown(int keyCode);
+    void onKeyUp(int keyCode);
+    void onChar(char ch);
+    
+    /** 触发重绘（应用层在修改UI后调用） */
+    void requestRedraw();
+
 private:
-    /**
-     * 窗口过程回调函数
-     * @param hwnd 窗口句柄
-     * @param uMsg 消息ID
-     * @param wParam 消息参数
-     * @param lParam 消息参数
-     * @return 处理结果
-     */
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     
-    /**
-     * 创建测试UI
-     */
-    void createTestUI();
-    
-    /**
-     * 渲染一帧
-     */
     void render();
-    
-    /**
-     * 更新一帧
-     */
     void update();
     
-    std::unique_ptr<JLogicLayer> logicLayer_;          // 逻辑层
-    std::unique_ptr<JDirect2DRenderer> renderer_;       // 渲染器
-    std::unique_ptr<JRendererFacade> renderFacade_;     // 控件渲染门面（惰性初始化）
-    JJSONValue stateNode_;                              // 状态节点
+    std::unique_ptr<JLogicLayer> logicLayer_;
+    std::unique_ptr<JDirect2DRenderer> renderer_;
+    std::unique_ptr<JRendererFacade> renderFacade_;
+    JJSONValue stateNode_;
     
-    HWND hwnd_ = nullptr;       // 窗口句柄
-    HINSTANCE hInstance_ = nullptr;  // 应用实例句柄
-    bool running_ = false;     // 运行状态
-    float lastMouseX_ = -1.0f;  // 最后一次鼠标X坐标
-    float lastMouseY_ = -1.0f;  // 最后一次鼠标Y坐标
+    HWND hwnd_ = nullptr;
+    HINSTANCE hInstance_ = nullptr;
+    bool running_ = false;
+    float lastMouseX_ = -1.0f;
+    float lastMouseY_ = -1.0f;
+    
+    FrameCallback frameCallback_;    // 每帧回调，由应用层设置
 };
 
-}
+} // namespace jaether

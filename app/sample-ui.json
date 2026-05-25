@@ -1,0 +1,58 @@
+{
+  "updateComponents": {
+    "surfaceId": "sample-ui",
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": ["title", "action-row", "card", "footer"]
+      },
+      {
+        "id": "title",
+        "component": "Text",
+        "text": "JSON加载示例",
+        "variant": "h2"
+      },
+      {
+        "id": "action-row",
+        "component": "Row",
+        "children": ["ok-btn", "cancel-btn"]
+      },
+      {
+        "id": "ok-btn",
+        "component": "Button",
+        "child": "ok-text"
+      },
+      {
+        "id": "ok-text",
+        "component": "Text",
+        "text": "确定"
+      },
+      {
+        "id": "cancel-btn",
+        "component": "Button",
+        "child": "cancel-text"
+      },
+      {
+        "id": "cancel-text",
+        "component": "Text",
+        "text": "取消"
+      },
+      {
+        "id": "card",
+        "component": "Card",
+        "child": "card-content"
+      },
+      {
+        "id": "card-content",
+        "component": "Text",
+        "text": "这是从JSON文件加载的卡片内容"
+      },
+      {
+        "id": "footer",
+        "component": "TextField",
+        "label": "输入内容"
+      }
+    ]
+  }
+}

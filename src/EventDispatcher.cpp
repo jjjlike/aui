@@ -54,7 +54,8 @@ void JEventDispatcher::onLayoutComplete() {
 
 // 命中检测 - 找到鼠标位置下最上层的组件
 // 参数: p - 鼠标位置
-// 返回值: 最上层的组件句柄
+// 返回值: 最上层的组件句柄；如果命中的是控件子元素（如Button内的Text），
+//         自动上溯到交互控件本身
 JComponentHandle JEventDispatcher::hitTest(const JPoint& p) {
     JLogger::getInstance().info("[hitTest] 开始命中测试，鼠标位置: (" + 
         std::to_string(static_cast<int>(p.x)) + ", " + 
@@ -70,30 +71,52 @@ JComponentHandle JEventDispatcher::hitTest(const JPoint& p) {
         if (entry && entry->visible && entry->enabled) {
             // 使用绝对位置进行检查
             JRect absoluteBounds = storage_.getAbsoluteBounds(*it);
-            std::string typeName;
-            switch (entry->type) {
-                case JComponentType::Container: typeName = "Container"; break;
-                case JComponentType::Button: typeName = "Button"; break;
-                case JComponentType::Text: typeName = "Text"; break;
-                case JComponentType::Input: typeName = "Input"; break;
-                default: typeName = "Unknown"; break;
-            }
-            JLogger::getInstance().info("[hitTest] 检查组件: type=" + typeName + 
-                ", absoluteBounds=(" + std::to_string(static_cast<int>(absoluteBounds.x)) + 
-                ", " + std::to_string(static_cast<int>(absoluteBounds.y)) + ", " + 
-                std::to_string(static_cast<int>(absoluteBounds.width)) + "x" + 
-                std::to_string(static_cast<int>(absoluteBounds.height)) + "), " +
-                "contains? " + (absoluteBounds.contains(p) ? "是" : "否"));
-            
             if (absoluteBounds.contains(p)) {
-                JLogger::getInstance().info("[hitTest] 找到命中组件: type=" + typeName);
-                return *it;
+                // 命中组件后，向上查找交互控件祖先
+                // 如果命中Text/Card内部Text等叶子节点，
+                // 自动上溯到最近的Button/Input/Card等交互控件
+                JComponentHandle result = findInteractiveAncestor(*it);
+                JLogger::getInstance().info("[hitTest] 找到命中组件: index=" + 
+                    std::to_string(result.index));
+                return result;
             }
         }
     }
     
     JLogger::getInstance().info("[hitTest] 未找到命中组件");
     return JComponentHandle{};
+}
+
+// 查找最近的交互控件祖先
+// 当命中Text等非交互叶子时，上溯到最近的Button/Input/Card等控件
+JComponentHandle JEventDispatcher::findInteractiveAncestor(JComponentHandle h) {
+    auto* entry = storage_.getComponent(h);
+    if (!entry) return h;
+    
+    // 如果当前组件不是Text，不需要上溯
+    if (entry->type != JComponentType::Text) return h;
+    
+    // 沿父链向上查找，直到找到Button/Input/Card或到达根组件
+    int32_t idx = h.index;
+    for (int depth = 0; depth < 10; ++depth) {
+        auto* cur = storage_.getComponentByIndex(idx);
+        if (!cur || cur->parentIndex < 0) break;
+        
+        auto* parent = storage_.getComponentByIndex(cur->parentIndex);
+        if (!parent) break;
+        
+        // 检查父组件是否是交互控件
+        if (parent->type == JComponentType::Button ||
+            parent->type == JComponentType::Input ||
+            parent->type == JComponentType::Card) {
+            return JComponentHandle{cur->parentIndex, parent->generation};
+        }
+        
+        // 继续向上（通过Container链）
+        idx = cur->parentIndex;
+    }
+    
+    return h;  // 未找到交互祖先，返回原始句柄
 }
 
 // 命中检测 - 找到鼠标位置下的所有组件

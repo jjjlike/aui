@@ -286,6 +286,14 @@ public:
      */
     float getLastMouseY() const { return lastMouseY_; }
     
+    /**
+     * 查找最近的交互控件祖先
+     * 当命中Text等叶子节点时，上溯到Button/Input/Card等交互控件
+     * @param h 原始命中组件句柄
+     * @return 应作为事件目标的交互控件句柄
+     */
+    JComponentHandle findInteractiveAncestor(JComponentHandle h);
+    
 private:
     /**
      * 查找事件目标组件

@@ -31,6 +31,7 @@ set(TEST_SOURCES
     DataModel_test.cpp
     A2UIIntegration_test.cpp
     ControlRenderer_test.cpp
+    EventTarget_test.cpp
 )
 
 add_executable(aether_tests ${TEST_SOURCES})

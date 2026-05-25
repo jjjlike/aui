@@ -1,0 +1,42 @@
+{
+  "updateComponents": {
+    "surfaceId": "simple-controls",
+    "components": [
+      {
+        "id": "root",
+        "component": "Column",
+        "children": ["btn1", "btn2", "btn3"]
+      },
+      {
+        "id": "btn1",
+        "component": "Button",
+        "child": "t1"
+      },
+      {
+        "id": "t1",
+        "component": "Text",
+        "text": "动态按钮A"
+      },
+      {
+        "id": "btn2",
+        "component": "Button",
+        "child": "t2"
+      },
+      {
+        "id": "t2",
+        "component": "Text",
+        "text": "动态按钮B"
+      },
+      {
+        "id": "btn3",
+        "component": "Button",
+        "child": "t3"
+      },
+      {
+        "id": "t3",
+        "component": "Text",
+        "text": "动态按钮C"
+      }
+    ]
+  }
+}

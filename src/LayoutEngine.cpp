@@ -429,6 +429,38 @@ void JLayoutEngine::computeLayout(int32_t nodeIdx) {
             auto& item = items[i];
             auto& child = storage_.entries_[item.index];
             
+            // 检查子组件是否有显式设置的X/Y属性
+            // 如果有显式X属性，则使用绝对定位，跳过flexbox布局
+            bool hasExplicitX = child.properties.hasProperty(JPropertyId::X);
+            bool hasExplicitY = child.properties.hasProperty(JPropertyId::Y);
+            
+            if (hasExplicitX || hasExplicitY) {
+                // 显式位置优先：使用属性的X/Y值（如果设置），否则使用flexbox计算的位置
+                if (hasExplicitX) {
+                    child.layoutResult.x = getPropertyFloat(child, JPropertyId::X, child.layoutResult.x);
+                } else {
+                    child.layoutResult.x = mainAxisOffset + item.margin[0];
+                }
+                if (hasExplicitY) {
+                    child.layoutResult.y = getPropertyFloat(child, JPropertyId::Y, child.layoutResult.y);
+                } else {
+                    child.layoutResult.y = crossAxisOffset + item.margin[1];
+                }
+                // 使用显式尺寸或flexbox计算的尺寸
+                if (child.properties.hasProperty(JPropertyId::Width)) {
+                    child.layoutResult.width = getPropertyFloat(child, JPropertyId::Width, child.layoutResult.width);
+                } else {
+                    child.layoutResult.width = item.currentSize;
+                }
+                if (child.properties.hasProperty(JPropertyId::Height)) {
+                    child.layoutResult.height = getPropertyFloat(child, JPropertyId::Height, child.layoutResult.height);
+                } else {
+                    float childHeight = getPropertyFloat(child, JPropertyId::Height, 30.0f);
+                    child.layoutResult.height = childHeight;
+                }
+            } else {
+                // Flexbox默认布局
+            
             // 设置位置
             child.layoutResult.x = mainAxisOffset + item.margin[0];
             child.layoutResult.y = crossAxisOffset + item.margin[1];
@@ -451,6 +483,7 @@ void JLayoutEngine::computeLayout(int32_t nodeIdx) {
             
             // 移动到下一个位置
             mainAxisOffset += item.currentSize + item.margin[2];
+            }  // end else (flexbox default)
         }
     } else {
         // 垂直主轴布局
@@ -502,6 +535,36 @@ void JLayoutEngine::computeLayout(int32_t nodeIdx) {
             auto& item = items[i];
             auto& child = storage_.entries_[item.index];
             
+            // 检查子组件是否有显式设置的X/Y属性
+            bool hasExplicitX = child.properties.hasProperty(JPropertyId::X);
+            bool hasExplicitY = child.properties.hasProperty(JPropertyId::Y);
+            
+            if (hasExplicitX || hasExplicitY) {
+                // 显式位置优先
+                if (hasExplicitX) {
+                    child.layoutResult.x = getPropertyFloat(child, JPropertyId::X, child.layoutResult.x);
+                } else {
+                    child.layoutResult.x = crossAxisOffset + item.margin[0];
+                }
+                if (hasExplicitY) {
+                    child.layoutResult.y = getPropertyFloat(child, JPropertyId::Y, child.layoutResult.y);
+                } else {
+                    child.layoutResult.y = mainAxisOffset + item.margin[1];
+                }
+                if (child.properties.hasProperty(JPropertyId::Width)) {
+                    child.layoutResult.width = getPropertyFloat(child, JPropertyId::Width, child.layoutResult.width);
+                } else {
+                    float childWidth = getPropertyFloat(child, JPropertyId::Width, 100.0f);
+                    child.layoutResult.width = childWidth;
+                }
+                if (child.properties.hasProperty(JPropertyId::Height)) {
+                    child.layoutResult.height = getPropertyFloat(child, JPropertyId::Height, child.layoutResult.height);
+                } else {
+                    child.layoutResult.height = item.currentSize;
+                }
+            } else {
+                // Flexbox默认布局
+            
             // 设置位置
             child.layoutResult.x = crossAxisOffset + item.margin[0];
             child.layoutResult.y = mainAxisOffset + item.margin[1];
@@ -524,6 +587,7 @@ void JLayoutEngine::computeLayout(int32_t nodeIdx) {
             
             // 移动到下一个位置
             mainAxisOffset += item.currentSize + item.margin[3];
+            }  // end else
         }
     }
     

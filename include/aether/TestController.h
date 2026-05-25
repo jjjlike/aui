@@ -9,7 +9,7 @@
 #include <vector>
 #include <chrono>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 测试控制器接口
@@ -98,7 +98,7 @@ public:
      * @param id 组件ID（字符串形式）
      * @return 组件句柄
      */
-    virtual ComponentHandle getComponentById(const std::string& id) = 0;
+    virtual JComponentHandle getComponentById(const std::string& id) = 0;
     
     /**
      * 开始录制会话
@@ -125,14 +125,14 @@ public:
  * 实现ITestController接口
  * 提供UI自动化测试的完整功能
  */
-class TestController : public ITestController {
+class JTestController : public ITestController {
 public:
     /**
      * 构造函数
      * @param stateManager 状态管理器引用
      * @param dispatcher 事件分发器引用
      */
-    explicit TestController(StateManager& stateManager, EventDispatcher& dispatcher);
+    explicit JTestController(JStateManager& stateManager, JEventDispatcher& dispatcher);
     
     /**
      * 获取组件树JSON
@@ -212,7 +212,7 @@ public:
      * @param id 组件ID（字符串形式）
      * @return 组件句柄
      */
-    ComponentHandle getComponentById(const std::string& id) override;
+    JComponentHandle getComponentById(const std::string& id) override;
     
     /**
      * 开始录制会话
@@ -253,7 +253,7 @@ private:
      * @param id 字符串ID
      * @return 组件句柄
      */
-    ComponentHandle findComponentByIdString(const std::string& id);
+    JComponentHandle findComponentByIdString(const std::string& id);
     
     /**
      * 计算JSON路径表达式
@@ -268,8 +268,8 @@ private:
      */
     std::string generateSessionId();
     
-    StateManager& stateManager_;       // 状态管理器引用
-    EventDispatcher& dispatcher_;     // 事件分发器引用
+    JStateManager& stateManager_;       // 状态管理器引用
+    JEventDispatcher& dispatcher_;     // 事件分发器引用
     int64_t currentTime_ = 0;         // 当前时间
     std::chrono::steady_clock::time_point startTime_;  // 开始时间
 };

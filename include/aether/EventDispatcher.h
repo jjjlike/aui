@@ -8,14 +8,14 @@
 #include <string>
 #include <map>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 事件类型枚举
  * 
  * 定义了所有支持的UI事件类型
  */
-enum class EventType {
+enum class JEventType {
     Click,          // 点击事件
     MouseDown,      // 鼠标按下
     MouseUp,        // 鼠标释放
@@ -35,9 +35,9 @@ enum class EventType {
  * 
  * 包含鼠标事件相关的信息
  */
-struct MouseEvent {
-    EventType type = EventType::Click;  // 事件类型
-    Point position;                     // 鼠标位置
+struct JMouseEvent {
+    JEventType type = JEventType::Click;  // 事件类型
+    JPoint position;                     // 鼠标位置
     int button = 0;                     // 鼠标按钮（0-左，1-中，2-右）
     int clickCount = 1;                  // 点击次数
 };
@@ -47,8 +47,8 @@ struct MouseEvent {
  * 
  * 包含键盘事件相关的信息
  */
-struct KeyEvent {
-    EventType type = EventType::KeyDown;  // 事件类型
+struct JKeyEvent {
+    JEventType type = JEventType::KeyDown;  // 事件类型
     int keyCode = 0;                      // 键码
     int modifiers = 0;                   // 修饰键（Shift/Ctrl/Alt等）
     char text = 0;                        // 输入字符
@@ -59,12 +59,12 @@ struct KeyEvent {
  * 
  * 包含事件的所有信息
  */
-struct Event {
-    EventType type;                   // 事件类型
-    ComponentHandle target;           // 事件目标组件
-    ComponentHandle currentTarget;    // 当前处理事件的组件
-    MouseEvent mouse;                 // 鼠标事件信息（如果是鼠标事件）
-    KeyEvent key;                     // 键盘事件信息（如果是键盘事件）
+struct JEvent {
+    JEventType type;                   // 事件类型
+    JComponentHandle target;           // 事件目标组件
+    JComponentHandle currentTarget;    // 当前处理事件的组件
+    JMouseEvent mouse;                 // 鼠标事件信息（如果是鼠标事件）
+    JKeyEvent key;                     // 键盘事件信息（如果是键盘事件）
     std::string text;                 // 文本数据（如果是文本事件）
     bool handled = false;             // 事件是否已处理
     bool bubbles = true;              // 是否冒泡
@@ -73,18 +73,18 @@ struct Event {
 /**
  * 事件回调类型
  */
-using EventCallback = std::function<void(Event&)>;
+using JEventCallback = std::function<void(JEvent&)>;
 
 /**
  * 已记录的事件结构
  * 
  * 用于事件回放和测试
  */
-struct RecordedEvent {
+struct JRecordedEvent {
     int64_t timestamp;                // 时间戳
-    EventType eventType;              // 事件类型
-    MouseEvent mouseEvent;            // 鼠标事件数据
-    KeyEvent keyEvent;                // 键盘事件数据
+    JEventType eventType;              // 事件类型
+    JMouseEvent mouseEvent;            // 鼠标事件数据
+    JKeyEvent keyEvent;                // 键盘事件数据
     std::string textData;             // 文本数据
 };
 
@@ -95,13 +95,13 @@ struct RecordedEvent {
  * 支持事件冒泡、事件监听、事件记录和回放
  * 使用四叉树进行高效的命中测试
  */
-class EventDispatcher {
+class JEventDispatcher {
 public:
     /**
      * 构造函数
      * @param storage 组件存储引用
      */
-    explicit EventDispatcher(ComponentStorage& storage);
+    explicit JEventDispatcher(JComponentStorage& storage);
     
     /**
      * 布局完成回调
@@ -114,26 +114,26 @@ public:
      * @param p 测试点
      * @return 命中的组件句柄
      */
-    ComponentHandle hitTest(const Point& p);
+    JComponentHandle hitTest(const JPoint& p);
     
     /**
      * 命中测试 - 查找指定位置的所有组件
      * @param p 测试点
      * @return 所有命中的组件列表（从下到上）
      */
-    std::vector<ComponentHandle> hitTestAll(const Point& p);
+    std::vector<JComponentHandle> hitTestAll(const JPoint& p);
     
     /**
      * 分发鼠标事件
      * @param event 鼠标事件
      */
-    void dispatchMouseEvent(const MouseEvent& event);
+    void dispatchMouseEvent(const JMouseEvent& event);
     
     /**
      * 分发键盘事件
      * @param event 键盘事件
      */
-    void dispatchKeyEvent(const KeyEvent& event);
+    void dispatchKeyEvent(const JKeyEvent& event);
     
     /**
      * 分发文本输入事件
@@ -194,19 +194,19 @@ public:
      * 设置鼠标事件回调
      * @param callback 回调函数
      */
-    void setMouseCallback(EventCallback callback) { mouseCallback_ = std::move(callback); }
+    void setMouseCallback(JEventCallback callback) { mouseCallback_ = std::move(callback); }
     
     /**
      * 设置键盘事件回调
      * @param callback 回调函数
      */
-    void setKeyCallback(EventCallback callback) { keyCallback_ = std::move(callback); }
+    void setKeyCallback(JEventCallback callback) { keyCallback_ = std::move(callback); }
     
     /**
      * 获取事件日志
      * @return 事件日志列表
      */
-    const std::vector<Event>& getEventLog() const { return eventLog_; }
+    const std::vector<JEvent>& getEventLog() const { return eventLog_; }
     
     /**
      * 清空事件日志
@@ -241,13 +241,13 @@ public:
      * 回放事件
      * @param events 要回放的事件列表
      */
-    void playEvents(const std::vector<RecordedEvent>& events);
+    void playEvents(const std::vector<JRecordedEvent>& events);
     
     /**
      * 获取已录制的所有会话
      * @return 会话映射表
      */
-    const std::map<std::string, std::vector<RecordedEvent>>& getRecordedSessions() const {
+    const std::map<std::string, std::vector<JRecordedEvent>>& getRecordedSessions() const {
         return recordedSessions_;
     }
     
@@ -281,39 +281,39 @@ private:
      * @param p 触发点
      * @return 目标组件句柄
      */
-    ComponentHandle findTarget(const Point& p);
+    JComponentHandle findTarget(const JPoint& p);
     
     /**
      * 分发事件
      * @param event 要分发的事件
      */
-    void dispatchEvent(Event& event);
+    void dispatchEvent(JEvent& event);
     
     /**
      * 向指定组件发送事件
      * @param target 目标组件
      * @param event 事件
      */
-    void fireEvent(ComponentHandle target, Event& event);
+    void fireEvent(JComponentHandle target, JEvent& event);
     
     /**
      * 记录事件
      * @param event 要记录的事件
      */
-    void recordEvent(const Event& event);
+    void recordEvent(const JEvent& event);
     
-    ComponentStorage& storage_;              // 组件存储引用
-    QuadTree quadTree_;                      // 四叉树用于命中测试
-    ComponentHandle focusedComponent_;       // 当前聚焦组件
-    ComponentHandle hoveredComponent_;       // 当前悬停组件
-    std::vector<Event> eventLog_;           // 事件日志
-    EventCallback mouseCallback_;            // 鼠标事件回调
-    EventCallback keyCallback_;              // 键盘事件回调
+    JComponentStorage& storage_;              // 组件存储引用
+    JQuadTree quadTree_;                      // 四叉树用于命中测试
+    JComponentHandle focusedComponent_;       // 当前聚焦组件
+    JComponentHandle hoveredComponent_;       // 当前悬停组件
+    std::vector<JEvent> eventLog_;           // 事件日志
+    JEventCallback mouseCallback_;            // 鼠标事件回调
+    JEventCallback keyCallback_;              // 键盘事件回调
     
     bool isRecording_ = false;               // 是否正在录制
     std::string currentSessionId_;           // 当前会话ID
-    std::map<std::string, std::vector<RecordedEvent>> recordedSessions_;  // 已录制会话
-    std::vector<RecordedEvent> currentRecording_;  // 当前录制的事件
+    std::map<std::string, std::vector<JRecordedEvent>> recordedSessions_;  // 已录制会话
+    std::vector<JRecordedEvent> currentRecording_;  // 当前录制的事件
     int64_t currentTime_ = 0;                // 当前时间
     float lastMouseX_ = 0.0f;                // 最后记录的鼠标X坐标
     float lastMouseY_ = 0.0f;                // 最后记录的鼠标Y坐标

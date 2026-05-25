@@ -5,20 +5,20 @@
 #include <vector>
 #include <map>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 待办项数据结构
  * 
  * 存储单个待办项的信息
  */
-struct TodoItem {
+struct JTodoItem {
     std::string text;                // 待办文本
     bool completed = false;          // 是否完成
-    ComponentHandle handle = {};     // 组件句柄
-    ComponentHandle checkbox = {};   // 复选框组件
-    ComponentHandle textComp = {};   // 文本组件
-    ComponentHandle deleteBtn = {};  // 删除按钮
+    JComponentHandle handle = {};     // 组件句柄
+    JComponentHandle checkbox = {};   // 复选框组件
+    JComponentHandle textComp = {};   // 文本组件
+    JComponentHandle deleteBtn = {};  // 删除按钮
 };
 
 /**
@@ -27,18 +27,18 @@ struct TodoItem {
  * 实现待办列表应用的核心逻辑
  * 管理待办项的添加、删除、状态切换
  */
-class TodoApp {
+class JTodoApp {
 public:
     /**
      * 构造函数
      * @param logicLayer 逻辑层引用
      */
-    explicit TodoApp(LogicLayer& logicLayer);
+    explicit JTodoApp(JLogicLayer& logicLayer);
     
     /**
      * 析构函数
      */
-    ~TodoApp();
+    ~JTodoApp();
     
     /**
      * 初始化应用UI
@@ -92,19 +92,19 @@ public:
      * 获取根容器组件句柄
      * @return 根容器句柄
      */
-    ComponentHandle getRootContainer() const { return rootContainer_; }
+    JComponentHandle getRootContainer() const { return rootContainer_; }
     
     /**
      * 获取添加按钮组件句柄
      * @return 添加按钮句柄
      */
-    ComponentHandle getAddButton() const { return addButton_; }
+    JComponentHandle getAddButton() const { return addButton_; }
     
     /**
      * 获取输入框组件句柄
      * @return 输入框句柄
      */
-    ComponentHandle getInputBox() const { return inputBox_; }
+    JComponentHandle getInputBox() const { return inputBox_; }
     
 private:
     /**
@@ -140,21 +140,21 @@ private:
      * @param y 点击y坐标
      * @return 是否点击了该组件
      */
-    bool isComponentClicked(ComponentHandle handle, float x, float y);
+    bool isComponentClicked(JComponentHandle handle, float x, float y);
     
-    LogicLayer& logicLayer_;              // 逻辑层引用
+    JLogicLayer& logicLayer_;              // 逻辑层引用
     
     // UI组件
-    ComponentHandle rootContainer_;        // 根容器
-    ComponentHandle title_;                // 标题
-    ComponentHandle inputContainer_;       // 输入区域容器
-    ComponentHandle inputBox_;             // 输入框
-    ComponentHandle addButton_;            // 添加按钮
-    ComponentHandle todoListContainer_;    // 待办列表容器
-    ComponentHandle statsText_;            // 统计信息
+    JComponentHandle rootContainer_;        // 根容器
+    JComponentHandle title_;                // 标题
+    JComponentHandle inputContainer_;       // 输入区域容器
+    JComponentHandle inputBox_;             // 输入框
+    JComponentHandle addButton_;            // 添加按钮
+    JComponentHandle todoListContainer_;    // 待办列表容器
+    JComponentHandle statsText_;            // 统计信息
     
-    std::vector<TodoItem> todos_;          // 待办项列表
+    std::vector<JTodoItem> todos_;          // 待办项列表
     std::string currentInputText_;         // 当前输入文本
 };
 
-} // namespace aether
+} // namespace jaether

@@ -14,7 +14,7 @@
 #include <gtest/gtest.h>
 #include <string>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -23,8 +23,8 @@ namespace test {
 class TodoAppTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        logicLayer_ = std::make_unique<LogicLayer>();
-        todoApp_ = std::make_unique<TodoApp>(*logicLayer_);
+        logicLayer_ = std::make_unique<JLogicLayer>();
+        todoApp_ = std::make_unique<JTodoApp>(*logicLayer_);
     }
     
     void TearDown() override {
@@ -32,8 +32,8 @@ protected:
         logicLayer_.reset();
     }
     
-    std::unique_ptr<LogicLayer> logicLayer_;
-    std::unique_ptr<TodoApp> todoApp_;
+    std::unique_ptr<JLogicLayer> logicLayer_;
+    std::unique_ptr<JTodoApp> todoApp_;
 };
 
 /**
@@ -492,4 +492,4 @@ TEST_F(TodoAppTest, ButtonClickEventTest) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

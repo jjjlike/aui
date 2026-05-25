@@ -5,7 +5,7 @@
 #include <thread>
 #include <atomic>
 
-using namespace aether;
+using namespace jaether;
 
 static std::atomic<bool> gRunning(true);
 
@@ -25,22 +25,22 @@ int main(int argc, char* argv[]) {
         pipeName = argv[1];
     }
 
-    LogicLayer logicLayer;
+    JLogicLayer logicLayer;
 
     std::cout << "Creating test components..." << std::endl;
-    auto root = logicLayer.createComponent(ComponentType::Container);
-    logicLayer.setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer.setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = logicLayer.createComponent(JComponentType::Container);
+    logicLayer.setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer.setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
 
-    auto button1 = logicLayer.createComponent(ComponentType::Button, root);
-    logicLayer.setProperty(button1, PropertyId::Width, PropertyValue(200.0f));
-    logicLayer.setProperty(button1, PropertyId::Height, PropertyValue(50.0f));
-    logicLayer.setProperty(button1, PropertyId::Text, PropertyValue(std::string("Click Me")));
+    auto button1 = logicLayer.createComponent(JComponentType::Button, root);
+    logicLayer.setProperty(button1, JPropertyId::Width, JPropertyValue(200.0f));
+    logicLayer.setProperty(button1, JPropertyId::Height, JPropertyValue(50.0f));
+    logicLayer.setProperty(button1, JPropertyId::Text, JPropertyValue(std::string("Click Me")));
 
-    auto button2 = logicLayer.createComponent(ComponentType::Button, root);
-    logicLayer.setProperty(button2, PropertyId::Width, PropertyValue(200.0f));
-    logicLayer.setProperty(button2, PropertyId::Height, PropertyValue(50.0f));
-    logicLayer.setProperty(button2, PropertyId::Text, PropertyValue(std::string("Submit")));
+    auto button2 = logicLayer.createComponent(JComponentType::Button, root);
+    logicLayer.setProperty(button2, JPropertyId::Width, JPropertyValue(200.0f));
+    logicLayer.setProperty(button2, JPropertyId::Height, JPropertyValue(50.0f));
+    logicLayer.setProperty(button2, JPropertyId::Text, JPropertyValue(std::string("Submit")));
 
     logicLayer.runFrame();
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Component tree:" << std::endl;
     std::cout << logicLayer.getTestController().getComponentTreeJSON() << std::endl;
 
-    RPCServer server;
+    JRPCServer server;
 
     std::cout << "Starting RPC server on pipe " << pipeName << "..." << std::endl;
     if (!server.start(pipeName)) {

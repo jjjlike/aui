@@ -5,7 +5,7 @@
 #include "property_id.h"
 #include <vector>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 脏标记结构体
@@ -14,7 +14,7 @@ namespace aether {
  * selfDirty - 自身布局脏标记
  * childrenDirty - 子组件布局脏标记
  */
-struct DirtyFlags {
+struct JDirtyFlags {
     bool selfDirty = false;       // 自身布局是否需要重新计算
     bool childrenDirty = false;   // 子组件布局是否需要重新计算
 };
@@ -26,33 +26,33 @@ struct DirtyFlags {
  * 使用Flexbox布局算法
  * 支持脏标记机制，只重新布局需要更新的组件
  */
-class LayoutEngine {
+class JLayoutEngine {
 public:
     /**
      * 构造函数
      * @param storage 组件存储引用
      */
-    explicit LayoutEngine(ComponentStorage& storage);
+    explicit JLayoutEngine(JComponentStorage& storage);
     
     /**
      * 标记组件为脏状态
      * @param h 组件句柄
      * @param changedProp 改变的属性ID
      */
-    void markDirty(ComponentHandle h, PropertyId changedProp);
+    void markDirty(JComponentHandle h, JPropertyId changedProp);
     
     /**
      * 标记组件为脏状态（重载版本）
      * @param h 组件句柄
      */
-    void markDirty(ComponentHandle h);
+    void markDirty(JComponentHandle h);
     
     /**
      * 检查组件是否为脏状态
      * @param h 组件句柄
      * @return 如果组件是脏状态返回true
      */
-    bool isDirty(ComponentHandle h) const;
+    bool isDirty(JComponentHandle h) const;
     
     /**
      * 执行必要的重新布局
@@ -69,13 +69,13 @@ public:
      * 设置布局引擎模式
      * @param mode 布局模式
      */
-    void setMode(LayoutEngineMode mode);
+    void setMode(JLayoutEngineMode mode);
     
     /**
      * 获取布局引擎模式
      * @return 当前布局模式
      */
-    LayoutEngineMode getMode() const;
+    JLayoutEngineMode getMode() const;
     
     /**
      * 获取总布局时间
@@ -100,10 +100,10 @@ private:
      */
     void clearDirtyFlags();
     
-    ComponentStorage& storage_;              // 组件存储引用
-    std::vector<DirtyFlags> dirtyFlags_;    // 脏标记数组
+    JComponentStorage& storage_;              // 组件存储引用
+    std::vector<JDirtyFlags> dirtyFlags_;    // 脏标记数组
     float totalLayoutTime_ = 0;             // 累计布局时间
-    LayoutEngineMode mode_ = LayoutEngineMode::Normal; // 布局引擎模式
+    JLayoutEngineMode mode_ = JLayoutEngineMode::Normal; // 布局引擎模式
 };
 
 }

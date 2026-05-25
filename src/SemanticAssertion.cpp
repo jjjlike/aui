@@ -1,4 +1,4 @@
-﻿// SemanticAssertion.cpp
+﻿// JSemanticAssertion.cpp
 // 语义断言模块 - 用于验证组件属性和状态
 //
 // 功能:
@@ -10,21 +10,21 @@
 #include "aether/SemanticAssertion.h"
 #include <iostream>
 
-namespace aether {
+namespace jaether {
 
 // 语义断言管理器构造函数
-SemanticAssertion::SemanticAssertion() {
+JSemanticAssertion::JSemanticAssertion() {
 }
 
 // 语义断言管理器析构函数
-SemanticAssertion::~SemanticAssertion() {
+JSemanticAssertion::~JSemanticAssertion() {
 }
 
 // 断言组件存在
 // 参数:
 //   handle - 组件句柄
 //   description - 断言描述
-void SemanticAssertion::assertComponentExists(ComponentHandle handle, const std::string& description) {
+void JSemanticAssertion::assertComponentExists(JComponentHandle handle, const std::string& description) {
     Assertion assertion;
     assertion.type = AssertionType::ComponentExists;
     assertion.componentHandle = handle;
@@ -43,9 +43,9 @@ void SemanticAssertion::assertComponentExists(ComponentHandle handle, const std:
 //   handle - 组件句柄
 //   expectedType - 期望的组件类型
 //   description - 断言描述
-void SemanticAssertion::assertComponentType(ComponentHandle handle, ComponentType expectedType, const std::string& description) {
+void JSemanticAssertion::assertComponentType(JComponentHandle handle, JComponentType expectedType, const std::string& description) {
     Assertion assertion;
-    assertion.type = AssertionType::ComponentType;
+    assertion.type = AssertionType::JComponentType;
     assertion.componentHandle = handle;
     assertion.description = description;
     
@@ -62,9 +62,9 @@ void SemanticAssertion::assertComponentType(ComponentHandle handle, ComponentTyp
 //   propertyId - 属性ID
 //   expectedValue - 期望的属性值
 //   description - 断言描述
-void SemanticAssertion::assertPropertyValue(ComponentHandle handle, PropertyId propertyId, const PropertyValue& expectedValue, const std::string& description) {
+void JSemanticAssertion::assertPropertyValue(JComponentHandle handle, JPropertyId propertyId, const JPropertyValue& expectedValue, const std::string& description) {
     Assertion assertion;
-    assertion.type = AssertionType::PropertyValue;
+    assertion.type = AssertionType::JPropertyValue;
     assertion.componentHandle = handle;
     assertion.propertyId = propertyId;
     assertion.expectedValue = expectedValue;
@@ -82,7 +82,7 @@ void SemanticAssertion::assertPropertyValue(ComponentHandle handle, PropertyId p
 //   handle - 组件句柄
 //   x, y - 期望的位置
 //   description - 断言描述
-void SemanticAssertion::assertLayoutPosition(ComponentHandle handle, float x, float y, const std::string& description) {
+void JSemanticAssertion::assertLayoutPosition(JComponentHandle handle, float x, float y, const std::string& description) {
     Assertion assertion;
     assertion.type = AssertionType::LayoutPosition;
     assertion.componentHandle = handle;
@@ -100,7 +100,7 @@ void SemanticAssertion::assertLayoutPosition(ComponentHandle handle, float x, fl
 //   handle - 组件句柄
 //   width, height - 期望的尺寸
 //   description - 断言描述
-void SemanticAssertion::assertLayoutSize(ComponentHandle handle, float width, float height, const std::string& description) {
+void JSemanticAssertion::assertLayoutSize(JComponentHandle handle, float width, float height, const std::string& description) {
     Assertion assertion;
     assertion.type = AssertionType::LayoutSize;
     assertion.componentHandle = handle;
@@ -118,7 +118,7 @@ void SemanticAssertion::assertLayoutSize(ComponentHandle handle, float width, fl
 //   child - 子组件句柄
 //   parent - 父组件句柄
 //   description - 断言描述
-void SemanticAssertion::assertParentOf(ComponentHandle child, ComponentHandle parent, const std::string& description) {
+void JSemanticAssertion::assertParentOf(JComponentHandle child, JComponentHandle parent, const std::string& description) {
     Assertion assertion;
     assertion.type = AssertionType::ParentOf;
     assertion.componentHandle = child;
@@ -136,7 +136,7 @@ void SemanticAssertion::assertParentOf(ComponentHandle child, ComponentHandle pa
 //   handle - 组件句柄
 //   text - 期望的文本内容
 //   description - 断言描述
-void SemanticAssertion::assertText(ComponentHandle handle, const std::string& text, const std::string& description) {
+void JSemanticAssertion::assertText(JComponentHandle handle, const std::string& text, const std::string& description) {
     Assertion assertion;
     assertion.type = AssertionType::Text;
     assertion.componentHandle = handle;
@@ -151,13 +151,13 @@ void SemanticAssertion::assertText(ComponentHandle handle, const std::string& te
 
 // 获取所有断言
 // 返回值: 断言列表
-const std::vector<Assertion>& SemanticAssertion::getAssertions() const {
+const std::vector<Assertion>& JSemanticAssertion::getAssertions() const {
     return assertions_;
 }
 
 // 获取通过的断言数量
 // 返回值: 通过的断言数量
-size_t SemanticAssertion::getPassedCount() const {
+size_t JSemanticAssertion::getPassedCount() const {
     size_t count = 0;
     for (const auto& assertion : assertions_) {
         if (assertion.passed) {
@@ -169,12 +169,12 @@ size_t SemanticAssertion::getPassedCount() const {
 
 // 获取失败的断言数量
 // 返回值: 失败的断言数量
-size_t SemanticAssertion::getFailedCount() const {
+size_t JSemanticAssertion::getFailedCount() const {
     return assertions_.size() - getPassedCount();
 }
 
 // 打印断言报告
-void SemanticAssertion::printReport() const {
+void JSemanticAssertion::printReport() const {
     std::cout << "Semantic Assertion Report" << std::endl;
     std::cout << "========================" << std::endl;
     std::cout << "Total: " << assertions_.size() << std::endl;
@@ -192,8 +192,8 @@ void SemanticAssertion::printReport() const {
 }
 
 // 清空断言
-void SemanticAssertion::clear() {
+void JSemanticAssertion::clear() {
     assertions_.clear();
 }
 
-} // namespace aether
+} // namespace jaether

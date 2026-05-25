@@ -1,4 +1,4 @@
-﻿// TestController.cpp
+﻿// JTestController.cpp
 // 测试控制器模块 - 提供UI自动化测试的控制接口
 //
 // 功能:
@@ -15,20 +15,20 @@
 #include <thread>
 #include <random>
 
-namespace aether {
+namespace jaether {
 
 // 测试控制器构造函数
 // 参数:
 //   stateManager - 状态管理器引用
 //   dispatcher - 事件分发器引用
-TestController::TestController(StateManager& stateManager, EventDispatcher& dispatcher)
+JTestController::JTestController(JStateManager& stateManager, JEventDispatcher& dispatcher)
     : stateManager_(stateManager), dispatcher_(dispatcher) {
     startTime_ = std::chrono::steady_clock::now();
 }
 
 // 生成会话ID
 // 返回值: 唯一的会话ID字符串
-std::string TestController::generateSessionId() {
+std::string JTestController::generateSessionId() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     static std::uniform_int_distribution<> dis(1000, 9999);
@@ -40,13 +40,13 @@ std::string TestController::generateSessionId() {
 
 // 获取组件树的JSON表示
 // 返回值: 组件树的JSON字符串
-std::string TestController::getComponentTreeJSON() {
+std::string JTestController::getComponentTreeJSON() {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"components\": [\n";
     
     bool first = true;
-    stateManager_.getStorage().forEach([&](ComponentHandle h) {
+    stateManager_.getStorage().forEach([&](JComponentHandle h) {
         auto* entry = stateManager_.getStorage().getComponent(h);
         if (!entry) return;
         
@@ -65,7 +65,7 @@ std::string TestController::getComponentTreeJSON() {
         oss << "\"height\":" << entry->layoutResult.height << "},\n";
         
         // 添加文本属性（如果存在）
-        auto* textProp = entry->properties.getProperty(PropertyId::Text);
+        auto* textProp = entry->properties.getProperty(JPropertyId::Text);
         if (textProp) {
             oss << "      \"text\": \"" << textProp->toString() << "\"\n";
         } else {
@@ -86,12 +86,12 @@ std::string TestController::getComponentTreeJSON() {
 //   idStr - 组件ID字符串
 //   propStr - 属性名称字符串
 // 返回值: 属性值的字符串表示
-std::string TestController::getProperty(const std::string& idStr, const std::string& propStr) {
+std::string JTestController::getProperty(const std::string& idStr, const std::string& propStr) {
     auto handle = findComponentByIdString(idStr);
     if (!handle.isValid()) return "null";
     
-    PropertyId id = getPropertyIdFromName(propStr);
-    if (id == PropertyId::Unknown) return "null";
+    JPropertyId id = getPropertyIdFromName(propStr);
+    if (id == JPropertyId::Unknown) return "null";
     
     auto* value = stateManager_.getProperty(handle, id);
     if (!value) return "null";
@@ -105,14 +105,14 @@ std::string TestController::getProperty(const std::string& idStr, const std::str
 //   propStr - 属性名称字符串
 //   valueJson - 属性值JSON字符串
 // 返回值: 成功返回true，否则返回false
-bool TestController::setProperty(const std::string& idStr, const std::string& propStr, const std::string& valueJson) {
+bool JTestController::setProperty(const std::string& idStr, const std::string& propStr, const std::string& valueJson) {
     auto handle = findComponentByIdString(idStr);
     if (!handle.isValid()) return false;
     
-    PropertyId id = getPropertyIdFromName(propStr);
-    if (id == PropertyId::Unknown) return false;
+    JPropertyId id = getPropertyIdFromName(propStr);
+    if (id == JPropertyId::Unknown) return false;
     
-    auto value = PropertyValue::fromString(id, valueJson);
+    auto value = JPropertyValue::fromString(id, valueJson);
     stateManager_.setProperty(handle, id, value);
     
     return true;
@@ -123,17 +123,17 @@ bool TestController::setProperty(const std::string& idStr, const std::string& pr
 //   type - 事件类型字符串
 //   x, y - 坐标
 //   button - 鼠标按钮
-void TestController::injectMouseEvent(const std::string& type, int x, int y, int button) {
-    MouseEvent event;
+void JTestController::injectMouseEvent(const std::string& type, int x, int y, int button) {
+    JMouseEvent event;
     event.position.x = static_cast<float>(x);
     event.position.y = static_cast<float>(y);
     event.button = button;
     
     // 根据类型字符串设置事件类型
-    if (type == "click") event.type = EventType::Click;
-    else if (type == "mousedown") event.type = EventType::MouseDown;
-    else if (type == "mouseup") event.type = EventType::MouseUp;
-    else if (type == "mousemove") event.type = EventType::MouseMove;
+    if (type == "click") event.type = JEventType::Click;
+    else if (type == "mousedown") event.type = JEventType::MouseDown;
+    else if (type == "mouseup") event.type = JEventType::MouseUp;
+    else if (type == "mousemove") event.type = JEventType::MouseMove;
     else return;
     
     dispatcher_.dispatchMouseEvent(event);
@@ -144,13 +144,13 @@ void TestController::injectMouseEvent(const std::string& type, int x, int y, int
 //   type - 事件类型字符串
 //   keyCode - 按键码
 //   modifiers - 修饰键
-void TestController::injectKeyEvent(const std::string& type, int keyCode, int modifiers) {
-    KeyEvent event;
+void JTestController::injectKeyEvent(const std::string& type, int keyCode, int modifiers) {
+    JKeyEvent event;
     event.keyCode = keyCode;
     event.modifiers = modifiers;
     
-    if (type == "keydown") event.type = EventType::KeyDown;
-    else if (type == "keyup") event.type = EventType::KeyUp;
+    if (type == "keydown") event.type = JEventType::KeyDown;
+    else if (type == "keyup") event.type = JEventType::KeyUp;
     else return;
     
     dispatcher_.dispatchKeyEvent(event);
@@ -158,28 +158,28 @@ void TestController::injectKeyEvent(const std::string& type, int keyCode, int mo
 
 // 注入文本输入
 // 参数: text - 输入的文本
-void TestController::injectTextInput(const std::string& text) {
+void JTestController::injectTextInput(const std::string& text) {
     dispatcher_.dispatchTextInput(text);
 }
 
 // 推进时间
 // 参数: ms - 毫秒数
-void TestController::advanceTime(int ms) {
+void JTestController::advanceTime(int ms) {
     currentTime_ += ms;
     dispatcher_.setCurrentTime(currentTime_);
 }
 
 // 捕获快照
 // 返回值: 快照的JSON字符串
-std::string TestController::takeSnapshot() {
-    auto snapshot = SnapshotSerializer::capture(stateManager_.getStorage());
-    return SnapshotSerializer::toJSON(snapshot);
+std::string JTestController::takeSnapshot() {
+    auto snapshot = JSnapshotSerializer::capture(stateManager_.getStorage());
+    return JSnapshotSerializer::toJSON(snapshot);
 }
 
 // 评估JSON路径
 // 参数: jsonPath - JSON路径字符串
 // 返回值: 路径指向的值的字符串表示
-std::string TestController::evaluateJSONPath(const std::string& jsonPath) {
+std::string JTestController::evaluateJSONPath(const std::string& jsonPath) {
     size_t pos = jsonPath.find('.');
     if (pos == std::string::npos) {
         // 只有组件ID，尝试获取value属性
@@ -207,7 +207,7 @@ std::string TestController::evaluateJSONPath(const std::string& jsonPath) {
 //   expectedValue - 期望值
 //   timeoutMs - 超时时间（毫秒）
 // 返回值: 条件满足返回true，超时返回false
-bool TestController::waitForCondition(const std::string& jsonPath, const std::string& expectedValue, int timeoutMs) {
+bool JTestController::waitForCondition(const std::string& jsonPath, const std::string& expectedValue, int timeoutMs) {
     auto start = std::chrono::steady_clock::now();
     
     while (true) {
@@ -228,12 +228,12 @@ bool TestController::waitForCondition(const std::string& jsonPath, const std::st
 
 // 获取事件日志
 // 返回值: 事件日志的字符串列表
-std::vector<std::string> TestController::getEventLog() {
+std::vector<std::string> JTestController::getEventLog() {
     std::vector<std::string> result;
     
     for (const auto& event : dispatcher_.getEventLog()) {
         std::ostringstream oss;
-        oss << "Event: " << static_cast<int>(event.type);
+        oss << "JEvent: " << static_cast<int>(event.type);
         oss << " target: " << event.target.index;
         result.push_back(oss.str());
     }
@@ -244,30 +244,30 @@ std::vector<std::string> TestController::getEventLog() {
 // 通过ID字符串查找组件
 // 参数: idStr - 组件ID字符串（可带0x前缀表示十六进制）
 // 返回值: 组件句柄
-ComponentHandle TestController::findComponentByIdString(const std::string& idStr) {
+JComponentHandle JTestController::findComponentByIdString(const std::string& idStr) {
     try {
         if (idStr.find("0x") == 0) {
             // 十六进制格式
             unsigned long id = std::stoul(idStr.substr(2), nullptr, 16);
-            return stateManager_.getStorage().findById(static_cast<ComponentId>(id));
+            return stateManager_.getStorage().findById(static_cast<JComponentId>(id));
         } else {
             // 十进制格式
             unsigned long id = std::stoul(idStr);
-            return stateManager_.getStorage().findById(static_cast<ComponentId>(id));
+            return stateManager_.getStorage().findById(static_cast<JComponentId>(id));
         }
     } catch (...) {
-        return ComponentHandle{};
+        return JComponentHandle{};
     }
 }
 
 // 通过ID获取组件（同findComponentByIdString）
-ComponentHandle TestController::getComponentById(const std::string& id) {
+JComponentHandle JTestController::getComponentById(const std::string& id) {
     return findComponentByIdString(id);
 }
 
 // 开始记录事件
 // 返回值: 会话ID
-std::string TestController::startRecording() {
+std::string JTestController::startRecording() {
     std::string sessionId = generateSessionId();
     dispatcher_.startRecording(sessionId);
     return sessionId;
@@ -275,15 +275,15 @@ std::string TestController::startRecording() {
 
 // 停止记录事件
 // 返回值: 会话ID
-std::string TestController::stopRecording() {
+std::string JTestController::stopRecording() {
     std::string sessionId = dispatcher_.stopRecording();
     return sessionId;
 }
 
 // 回放事件
 // 参数: sessionData - 会话数据（CSV格式的事件记录）
-void TestController::playback(const std::string& sessionData) {
-    std::vector<RecordedEvent> events;
+void JTestController::playback(const std::string& sessionData) {
+    std::vector<JRecordedEvent> events;
     
     std::istringstream iss(sessionData);
     std::string line;
@@ -292,7 +292,7 @@ void TestController::playback(const std::string& sessionData) {
     while (std::getline(iss, line)) {
         if (line.empty()) continue;
         
-        RecordedEvent rec;
+        JRecordedEvent rec;
         std::istringstream lineStream(line);
         std::string token;
         
@@ -302,7 +302,7 @@ void TestController::playback(const std::string& sessionData) {
         }
         // 解析事件类型
         if (std::getline(lineStream, token, ',')) {
-            rec.eventType = static_cast<EventType>(std::stoi(token));
+            rec.eventType = static_cast<JEventType>(std::stoi(token));
         }
         // 解析鼠标X坐标
         if (std::getline(lineStream, token, ',')) {
@@ -332,4 +332,4 @@ void TestController::playback(const std::string& sessionData) {
     dispatcher_.playEvents(events);
 }
 
-} // namespace aether
+} // namespace jaether

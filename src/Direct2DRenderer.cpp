@@ -1,4 +1,4 @@
-// Direct2DRenderer.cpp
+// JDirect2DRenderer.cpp
 // Direct2D渲染器模块 - Windows平台2D图形渲染
 //
 // 功能:
@@ -13,12 +13,12 @@
 #include <iostream>
 #include <wchar.h>
 
-namespace aether {
+namespace jaether {
 
 // 将Color转换为D2D1_COLOR_F
 // 参数: color - 颜色对象
 // 返回值: D2D颜色对象
-D2D1_COLOR_F Direct2DRenderer::toD2D(const Color& color) {
+D2D1_COLOR_F JDirect2DRenderer::toD2D(const JColor& color) {
     return D2D1::ColorF(
         static_cast<float>(color.r) / 255.0f,
         static_cast<float>(color.g) / 255.0f,
@@ -30,30 +30,30 @@ D2D1_COLOR_F Direct2DRenderer::toD2D(const Color& color) {
 // 将Rect转换为D2D1_RECT_F
 // 参数: rect - 矩形对象
 // 返回值: D2D矩形对象
-D2D1_RECT_F Direct2DRenderer::toD2D(const Rect& rect) {
+D2D1_RECT_F JDirect2DRenderer::toD2D(const JRect& rect) {
     return D2D1::RectF(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
 }
 
 // 将Point转换为D2D1_POINT_2F
 // 参数: point - 点对象
 // 返回值: D2D点对象
-D2D1_POINT_2F Direct2DRenderer::toD2D(const Point& point) {
+D2D1_POINT_2F JDirect2DRenderer::toD2D(const JPoint& point) {
     return D2D1::Point2F(point.x, point.y);
 }
 
 // Direct2D渲染器构造函数
-Direct2DRenderer::Direct2DRenderer() {
+JDirect2DRenderer::JDirect2DRenderer() {
 }
 
 // Direct2D渲染器析构函数
-Direct2DRenderer::~Direct2DRenderer() {
+JDirect2DRenderer::~JDirect2DRenderer() {
     shutdown();
 }
 
 // 初始化渲染器
 // 参数: hwnd - 窗口句柄
 // 返回值: 成功返回true
-bool Direct2DRenderer::initialize(HWND hwnd) {
+bool JDirect2DRenderer::initialize(HWND hwnd) {
     hwnd_ = hwnd;
     
     if (!createDeviceIndependentResources()) {
@@ -68,14 +68,14 @@ bool Direct2DRenderer::initialize(HWND hwnd) {
 }
 
 // 关闭渲染器
-void Direct2DRenderer::shutdown() {
+void JDirect2DRenderer::shutdown() {
     releaseDeviceResources();
     releaseDeviceIndependentResources();
 }
 
 // 创建与设备无关的资源
 // 返回值: 成功返回true
-bool Direct2DRenderer::createDeviceIndependentResources() {
+bool JDirect2DRenderer::createDeviceIndependentResources() {
     if (factory_ || writeFactory_ || wicFactory_) {
         releaseDeviceIndependentResources();
     }
@@ -106,7 +106,7 @@ bool Direct2DRenderer::createDeviceIndependentResources() {
 
 // 创建设备资源
 // 返回值: 成功返回true
-bool Direct2DRenderer::createDeviceResources() {
+bool JDirect2DRenderer::createDeviceResources() {
     RECT clientRect;
     GetClientRect(hwnd_, &clientRect);
     
@@ -130,7 +130,7 @@ bool Direct2DRenderer::createDeviceResources() {
 }
 
 // 释放设备资源
-void Direct2DRenderer::releaseDeviceResources() {
+void JDirect2DRenderer::releaseDeviceResources() {
     // 释放画刷缓存
     for (auto& pair : brushCache_) {
         if (pair.second) pair.second->Release();
@@ -151,7 +151,7 @@ void Direct2DRenderer::releaseDeviceResources() {
 }
 
 // 释放与设备无关的资源
-void Direct2DRenderer::releaseDeviceIndependentResources() {
+void JDirect2DRenderer::releaseDeviceIndependentResources() {
     if (wicFactory_) {
         wicFactory_->Release();
         wicFactory_ = nullptr;
@@ -169,28 +169,28 @@ void Direct2DRenderer::releaseDeviceIndependentResources() {
 }
 
 // 开始绘制
-void Direct2DRenderer::beginDraw() {
-    Logger::getInstance().debug("[Direct2DRenderer] beginDraw 调用");
+void JDirect2DRenderer::beginDraw() {
+    JLogger::getInstance().debug("[JDirect2DRenderer] beginDraw 调用");
     if (renderTarget_) {
         renderTarget_->BeginDraw();
     } else {
-        Logger::getInstance().warning("[Direct2DRenderer] beginDraw 失败：renderTarget_ 为空");
+        JLogger::getInstance().warning("[JDirect2DRenderer] beginDraw 失败：renderTarget_ 为空");
     }
 }
 
 // 结束绘制
-void Direct2DRenderer::endDraw() {
-    Logger::getInstance().debug("[Direct2DRenderer] endDraw 调用");
+void JDirect2DRenderer::endDraw() {
+    JLogger::getInstance().debug("[JDirect2DRenderer] endDraw 调用");
     if (renderTarget_) {
         renderTarget_->EndDraw();
     } else {
-        Logger::getInstance().warning("[Direct2DRenderer] endDraw 失败：renderTarget_ 为空");
+        JLogger::getInstance().warning("[JDirect2DRenderer] endDraw 失败：renderTarget_ 为空");
     }
 }
 
 // 调整大小
 // 参数: width, height - 新尺寸
-void Direct2DRenderer::resize(int width, int height) {
+void JDirect2DRenderer::resize(int width, int height) {
     if (renderTarget_) {
         releaseDeviceResources();
         createDeviceResources();
@@ -199,7 +199,7 @@ void Direct2DRenderer::resize(int width, int height) {
 
 // 清空画布
 // 参数: color - 背景颜色
-void Direct2DRenderer::clear(const Color& color) {
+void JDirect2DRenderer::clear(const JColor& color) {
     if (renderTarget_) {
         renderTarget_->Clear(toD2D(color));
     }
@@ -208,7 +208,7 @@ void Direct2DRenderer::clear(const Color& color) {
 // 获取或创建画刷
 // 参数: color - 颜色
 // 返回值: 画刷指针
-ID2D1SolidColorBrush* Direct2DRenderer::getBrush(const Color& color) {
+ID2D1SolidColorBrush* JDirect2DRenderer::getBrush(const JColor& color) {
     uint32_t key = color.toARGB();
     auto it = brushCache_.find(key);
     if (it != brushCache_.end()) {
@@ -230,7 +230,7 @@ ID2D1SolidColorBrush* Direct2DRenderer::getBrush(const Color& color) {
 //   rect - 矩形
 //   color - 颜色
 //   strokeWidth - 线宽
-void Direct2DRenderer::drawRect(const Rect& rect, const Color& color, float strokeWidth) {
+void JDirect2DRenderer::drawRect(const JRect& rect, const JColor& color, float strokeWidth) {
     if (!renderTarget_) return;
     
     ID2D1SolidColorBrush* brush = getBrush(color);
@@ -243,7 +243,7 @@ void Direct2DRenderer::drawRect(const Rect& rect, const Color& color, float stro
 // 参数:
 //   rect - 矩形
 //   color - 颜色
-void Direct2DRenderer::fillRect(const Rect& rect, const Color& color) {
+void JDirect2DRenderer::fillRect(const JRect& rect, const JColor& color) {
     if (!renderTarget_) return;
     
     ID2D1SolidColorBrush* brush = getBrush(color);
@@ -258,7 +258,7 @@ void Direct2DRenderer::fillRect(const Rect& rect, const Color& color) {
 //   radiusX, radiusY - 圆角半径
 //   color - 颜色
 //   strokeWidth - 线宽
-void Direct2DRenderer::drawRoundedRect(const Rect& rect, float radiusX, float radiusY, const Color& color, float strokeWidth) {
+void JDirect2DRenderer::drawRoundedRect(const JRect& rect, float radiusX, float radiusY, const JColor& color, float strokeWidth) {
     if (!renderTarget_) return;
     
     ID2D1SolidColorBrush* brush = getBrush(color);
@@ -273,14 +273,14 @@ void Direct2DRenderer::drawRoundedRect(const Rect& rect, float radiusX, float ra
 //   rect - 矩形
 //   radiusX, radiusY - 圆角半径
 //   color - 颜色
-void Direct2DRenderer::fillRoundedRect(const Rect& rect, float radiusX, float radiusY, const Color& color) {
-    Logger::getInstance().debug("[Direct2DRenderer] fillRoundedRect 调用: "
+void JDirect2DRenderer::fillRoundedRect(const JRect& rect, float radiusX, float radiusY, const JColor& color) {
+    JLogger::getInstance().debug("[JDirect2DRenderer] fillRoundedRect 调用: "
         "rect=(" + std::to_string(static_cast<int>(rect.x)) + "," + std::to_string(static_cast<int>(rect.y)) + "," 
         + std::to_string(static_cast<int>(rect.width)) + "x" + std::to_string(static_cast<int>(rect.height)) + ") "
         "radiusX=" + std::to_string(radiusX) + " radiusY=" + std::to_string(radiusY));
     
     if (!renderTarget_) {
-        Logger::getInstance().warning("[Direct2DRenderer] fillRoundedRect 失败：renderTarget_ 为空");
+        JLogger::getInstance().warning("[JDirect2DRenderer] fillRoundedRect 失败：renderTarget_ 为空");
         return;
     }
     
@@ -288,9 +288,9 @@ void Direct2DRenderer::fillRoundedRect(const Rect& rect, float radiusX, float ra
     if (brush) {
         D2D1_ROUNDED_RECT roundedRect = D2D1::RoundedRect(toD2D(rect), radiusX, radiusY);
         renderTarget_->FillRoundedRectangle(roundedRect, brush);
-        Logger::getInstance().debug("[Direct2DRenderer] fillRoundedRect 绘制完成");
+        JLogger::getInstance().debug("[JDirect2DRenderer] fillRoundedRect 绘制完成");
     } else {
-        Logger::getInstance().warning("[Direct2DRenderer] fillRoundedRect 失败：获取画刷失败");
+        JLogger::getInstance().warning("[JDirect2DRenderer] fillRoundedRect 失败：获取画刷失败");
     }
 }
 
@@ -299,7 +299,7 @@ void Direct2DRenderer::fillRoundedRect(const Rect& rect, float radiusX, float ra
 //   p1, p2 - 起点和终点
 //   color - 颜色
 //   strokeWidth - 线宽
-void Direct2DRenderer::drawLine(const Point& p1, const Point& p2, const Color& color, float strokeWidth) {
+void JDirect2DRenderer::drawLine(const JPoint& p1, const JPoint& p2, const JColor& color, float strokeWidth) {
     if (!renderTarget_) return;
     
     ID2D1SolidColorBrush* brush = getBrush(color);
@@ -315,7 +315,7 @@ void Direct2DRenderer::drawLine(const Point& p1, const Point& p2, const Color& c
 //   color - 文本颜色
 //   fontSize - 字体大小
 //   fontName - 字体名称
-void Direct2DRenderer::drawText(const std::string& text, const Rect& rect, const Color& color, float fontSize, const std::string& fontName) {
+void JDirect2DRenderer::drawText(const std::string& text, const JRect& rect, const JColor& color, float fontSize, const std::string& fontName) {
     if (!renderTarget_ || !writeFactory_) return;
     
     // 查找或创建文本格式
@@ -371,4 +371,4 @@ void Direct2DRenderer::drawText(const std::string& text, const Rect& rect, const
     }
 }
 
-} // namespace aether
+} // namespace jaether

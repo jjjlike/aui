@@ -2,14 +2,14 @@
 #include <benchmark/benchmark.h>
 #include <random>
 
-namespace aether {
+namespace jaether {
 
 static void BM_ComponentStorageCreate(benchmark::State& state) {
     for (auto _ : state) {
-        ComponentStorage storage;
+        JComponentStorage storage;
         
         for (int i = 0; i < state.range(0); ++i) {
-            storage.createComponent(ComponentType::Button);
+            storage.createComponent(JComponentType::Button);
         }
     }
 }
@@ -19,12 +19,12 @@ BENCHMARK(BM_ComponentStorageCreate)
 
 static void BM_ComponentStorageCreateWithParent(benchmark::State& state) {
     for (auto _ : state) {
-        ComponentStorage storage;
+        JComponentStorage storage;
         
-        auto root = storage.createComponent(ComponentType::Container);
+        auto root = storage.createComponent(JComponentType::Container);
         
         for (int i = 0; i < state.range(0); ++i) {
-            storage.createComponent(ComponentType::Button, root);
+            storage.createComponent(JComponentType::Button, root);
         }
     }
 }
@@ -34,11 +34,11 @@ BENCHMARK(BM_ComponentStorageCreateWithParent)
 
 static void BM_ComponentStorageDestroy(benchmark::State& state) {
     for (auto _ : state) {
-        ComponentStorage storage;
-        std::vector<ComponentHandle> handles;
+        JComponentStorage storage;
+        std::vector<JComponentHandle> handles;
         
         for (int i = 0; i < state.range(0); ++i) {
-            handles.push_back(storage.createComponent(ComponentType::Button));
+            handles.push_back(storage.createComponent(JComponentType::Button));
         }
         
         for (auto& h : handles) {
@@ -51,15 +51,15 @@ BENCHMARK(BM_ComponentStorageDestroy)
     ->Range(100, 10000);
 
 static void BM_ComponentStorageIteration(benchmark::State& state) {
-    ComponentStorage storage;
+    JComponentStorage storage;
     
     for (int i = 0; i < state.range(0); ++i) {
-        storage.createComponent(ComponentType::Button);
+        storage.createComponent(JComponentType::Button);
     }
     
     for (auto _ : state) {
         int count = 0;
-        storage.forEach([&count](ComponentHandle) {
+        storage.forEach([&count](JComponentHandle) {
             count++;
         });
         benchmark::DoNotOptimize(count);
@@ -70,18 +70,18 @@ BENCHMARK(BM_ComponentStorageIteration)
     ->Range(100, 100000);
 
 static void BM_ComponentStoragePropertyAccess(benchmark::State& state) {
-    ComponentStorage storage;
-    auto handle = storage.createComponent(ComponentType::Button);
+    JComponentStorage storage;
+    auto handle = storage.createComponent(JComponentType::Button);
     auto* entry = storage.getComponent(handle);
     
     for (int i = 0; i < 100; ++i) {
         entry->properties.setProperty(
-            static_cast<PropertyId>(i + 1), PropertyValue(i));
+            static_cast<JPropertyId>(i + 1), JPropertyValue(i));
     }
     
     for (auto _ : state) {
         for (int i = 0; i < 100; ++i) {
-            auto* value = entry->properties.getProperty(static_cast<PropertyId>(i + 1));
+            auto* value = entry->properties.getProperty(static_cast<JPropertyId>(i + 1));
             benchmark::DoNotOptimize(value);
         }
     }
@@ -90,11 +90,11 @@ static void BM_ComponentStoragePropertyAccess(benchmark::State& state) {
 BENCHMARK(BM_ComponentStoragePropertyAccess);
 
 static void BM_ComponentStorageHandleValidation(benchmark::State& state) {
-    ComponentStorage storage;
-    std::vector<ComponentHandle> handles;
+    JComponentStorage storage;
+    std::vector<JComponentHandle> handles;
     
     for (int i = 0; i < state.range(0); ++i) {
-        handles.push_back(storage.createComponent(ComponentType::Button));
+        handles.push_back(storage.createComponent(JComponentType::Button));
     }
     
     for (auto _ : state) {
@@ -110,11 +110,11 @@ BENCHMARK(BM_ComponentStorageHandleValidation)
     ->Range(100, 10000);
 
 static void BM_ComponentStorageFindById(benchmark::State& state) {
-    ComponentStorage storage;
-    std::vector<ComponentId> ids;
+    JComponentStorage storage;
+    std::vector<JComponentId> ids;
     
     for (int i = 0; i < state.range(0); ++i) {
-        auto h = storage.createComponent(ComponentType::Button);
+        auto h = storage.createComponent(JComponentType::Button);
         auto* entry = storage.getComponent(h);
         ids.push_back(entry->id);
     }

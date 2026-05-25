@@ -8,7 +8,7 @@
 #include <memory>
 #include <variant>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 语义查询结果结构
@@ -17,8 +17,8 @@ namespace aether {
  */
 struct SemanticQueryResult {
     bool found = false;                    // 是否找到匹配组件
-    ComponentHandle handle;                // 找到的组件句柄
-    PropertyId propertyId = PropertyId::Unknown;  // 相关的属性ID
+    JComponentHandle handle;                // 找到的组件句柄
+    JPropertyId propertyId = JPropertyId::Unknown;  // 相关的属性ID
     std::string expectedValue;             // 期望值
     std::string actualValue;               // 实际值
     bool conditionMet = false;             // 条件是否满足
@@ -90,7 +90,7 @@ public:
      */
     SemanticQueryResult executeQuery(
         const std::string& naturalLanguageQuery,
-        class ComponentStorage& storage);
+        class JComponentStorage& storage);
     
     /**
      * 断言组件启用
@@ -98,7 +98,7 @@ public:
      * @param storage 组件存储
      * @return 断言是否通过
      */
-    bool assertComponentEnabled(const std::string& componentSelector, class ComponentStorage& storage);
+    bool assertComponentEnabled(const std::string& componentSelector, class JComponentStorage& storage);
     
     /**
      * 断言组件禁用
@@ -106,7 +106,7 @@ public:
      * @param storage 组件存储
      * @return 断言是否通过
      */
-    bool assertComponentDisabled(const std::string& componentSelector, class ComponentStorage& storage);
+    bool assertComponentDisabled(const std::string& componentSelector, class JComponentStorage& storage);
     
     /**
      * 断言组件可见
@@ -114,7 +114,7 @@ public:
      * @param storage 组件存储
      * @return 断言是否通过
      */
-    bool assertComponentVisible(const std::string& componentSelector, class ComponentStorage& storage);
+    bool assertComponentVisible(const std::string& componentSelector, class JComponentStorage& storage);
     
     /**
      * 断言组件具有特定文本
@@ -123,7 +123,7 @@ public:
      * @param storage 组件存储
      * @return 断言是否通过
      */
-    bool assertComponentHasText(const std::string& componentSelector, const std::string& expectedText, class ComponentStorage& storage);
+    bool assertComponentHasText(const std::string& componentSelector, const std::string& expectedText, class JComponentStorage& storage);
     
     /**
      * 注册自定义谓词
@@ -139,7 +139,7 @@ private:
      * @param storage 组件存储
      * @return 匹配的组件列表
      */
-    std::vector<ComponentHandle> findComponentsBySelector(const std::string& selector, class ComponentStorage& storage);
+    std::vector<JComponentHandle> findComponentsBySelector(const std::string& selector, class JComponentStorage& storage);
     
     /**
      * 通过文本查找组件
@@ -147,7 +147,7 @@ private:
      * @param storage 组件存储
      * @return 找到的组件句柄
      */
-    ComponentHandle findComponentByText(const std::string& text, class ComponentStorage& storage);
+    JComponentHandle findComponentByText(const std::string& text, class JComponentStorage& storage);
     
     /**
      * 通过类型查找组件
@@ -155,12 +155,12 @@ private:
      * @param storage 组件存储
      * @return 找到的组件句柄
      */
-    ComponentHandle findComponentByType(const std::string& typeName, class ComponentStorage& storage);
+    JComponentHandle findComponentByType(const std::string& typeName, class JComponentStorage& storage);
     
     /**
      * 属性名称到PropertyId的映射
      */
-    std::unordered_map<std::string, PropertyId> propertyNameMap;
+    std::unordered_map<std::string, JPropertyId> propertyNameMap;
     
     /**
      * 自定义谓词映射
@@ -173,4 +173,4 @@ private:
     void initDefaultMappings();
 };
 
-} // namespace aether
+} // namespace jaether

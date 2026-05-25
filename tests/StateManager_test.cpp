@@ -2,7 +2,7 @@
  * 状态管理器模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 StateManager 类的状态管理功能
+ * - 测试 JStateManager 类的状态管理功能
  * - 包括组件创建销毁、属性设置、批量更新、观察者模式等
  * - 测试用例覆盖：正常逻辑、边界情况、通知机制
  */
@@ -10,7 +10,7 @@
 #include "aether/StateManager.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -21,13 +21,13 @@ class StateManagerTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建组件存储实例
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
         // 创建状态管理器实例，关联到组件存储
-        stateManager = std::make_unique<StateManager>(*storage);
+        stateManager = std::make_unique<JStateManager>(*storage);
     }
     
-    std::unique_ptr<ComponentStorage> storage;      // 组件存储指针
-    std::unique_ptr<StateManager> stateManager;   // 状态管理器指针
+    std::unique_ptr<JComponentStorage> storage;      // 组件存储指针
+    std::unique_ptr<JStateManager> stateManager;   // 状态管理器指针
 };
 
 /**
@@ -36,7 +36,7 @@ protected:
  */
 TEST_F(StateManagerTest, CreateComponent) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     // 验证返回的组件句柄有效
     EXPECT_TRUE(handle.isValid());
     // 验证活动组件数量为 1
@@ -49,9 +49,9 @@ TEST_F(StateManagerTest, CreateComponent) {
  */
 TEST_F(StateManagerTest, CreateComponentWithParent) {
     // 创建一个容器组件作为父组件
-    auto parent = stateManager->createComponent(ComponentType::Container);
+    auto parent = stateManager->createComponent(JComponentType::Container);
     // 创建一个按钮组件作为子组件
-    auto child = stateManager->createComponent(ComponentType::Button, parent);
+    auto child = stateManager->createComponent(JComponentType::Button, parent);
     
     // 验证子组件句柄有效
     EXPECT_TRUE(child.isValid());
@@ -65,7 +65,7 @@ TEST_F(StateManagerTest, CreateComponentWithParent) {
  */
 TEST_F(StateManagerTest, DestroyComponent) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     // 验证返回的组件句柄有效
     EXPECT_TRUE(storage->isValid(handle));
     
@@ -84,13 +84,13 @@ TEST_F(StateManagerTest, DestroyComponent) {
  */
 TEST_F(StateManagerTest, SetProperty) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     
     // 设置宽度属性为 100
-    stateManager->setProperty(handle, PropertyId::Width, PropertyValue(100));
+    stateManager->setProperty(handle, JPropertyId::Width, JPropertyValue(100));
     
     // 获取宽度属性
-    auto* value = stateManager->getProperty(handle, PropertyId::Width);
+    auto* value = stateManager->getProperty(handle, JPropertyId::Width);
     // 验证属性存在
     ASSERT_NE(value, nullptr);
     // 验证属性值为 100
@@ -103,7 +103,7 @@ TEST_F(StateManagerTest, SetProperty) {
  */
 TEST_F(StateManagerTest, SetVisibleProperty) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     // 获取组件条目
     auto* entry = storage->getComponent(handle);
     
@@ -111,7 +111,7 @@ TEST_F(StateManagerTest, SetVisibleProperty) {
     EXPECT_TRUE(entry->visible);
     
     // 设置可见属性为 false
-    stateManager->setProperty(handle, PropertyId::Visible, PropertyValue(false));
+    stateManager->setProperty(handle, JPropertyId::Visible, JPropertyValue(false));
     
     // 验证可见性已改变
     EXPECT_FALSE(entry->visible);
@@ -123,7 +123,7 @@ TEST_F(StateManagerTest, SetVisibleProperty) {
  */
 TEST_F(StateManagerTest, SetEnabledProperty) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     // 获取组件条目
     auto* entry = storage->getComponent(handle);
     
@@ -131,7 +131,7 @@ TEST_F(StateManagerTest, SetEnabledProperty) {
     EXPECT_TRUE(entry->enabled);
     
     // 设置启用属性为 false
-    stateManager->setProperty(handle, PropertyId::Enabled, PropertyValue(false));
+    stateManager->setProperty(handle, JPropertyId::Enabled, JPropertyValue(false));
     
     // 验证启用状态已改变
     EXPECT_FALSE(entry->enabled);
@@ -143,8 +143,8 @@ TEST_F(StateManagerTest, SetEnabledProperty) {
  */
 TEST_F(StateManagerTest, BatchUpdates) {
     // 创建两个组件
-    auto handle1 = stateManager->createComponent(ComponentType::Button);
-    auto handle2 = stateManager->createComponent(ComponentType::Text);
+    auto handle1 = stateManager->createComponent(JComponentType::Button);
+    auto handle2 = stateManager->createComponent(JComponentType::Text);
     
     // 开始批量更新
     stateManager->beginBatch();
@@ -152,8 +152,8 @@ TEST_F(StateManagerTest, BatchUpdates) {
     EXPECT_TRUE(stateManager->isInBatch());
     
     // 设置多个属性
-    stateManager->setProperty(handle1, PropertyId::Width, PropertyValue(100));
-    stateManager->setProperty(handle2, PropertyId::Height, PropertyValue(50));
+    stateManager->setProperty(handle1, JPropertyId::Width, JPropertyValue(100));
+    stateManager->setProperty(handle2, JPropertyId::Height, JPropertyValue(50));
     
     // 结束批量更新
     stateManager->endBatch();
@@ -167,10 +167,10 @@ TEST_F(StateManagerTest, BatchUpdates) {
  */
 TEST_F(StateManagerTest, GetPropertyNonExistent) {
     // 创建一个按钮组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     
     // 尝试获取不存在的文本属性
-    auto* value = stateManager->getProperty(handle, PropertyId::Text);
+    auto* value = stateManager->getProperty(handle, JPropertyId::Text);
     // 验证返回空指针
     EXPECT_EQ(value, nullptr);
 }
@@ -180,11 +180,11 @@ TEST_F(StateManagerTest, GetPropertyNonExistent) {
  * 测试目标：验证能正确管理多个组件
  */
 TEST_F(StateManagerTest, MultipleComponents) {
-    std::vector<ComponentHandle> handles;
+    std::vector<JComponentHandle> handles;
     
     // 创建 10 个按钮组件
     for (int i = 0; i < 10; ++i) {
-        handles.push_back(stateManager->createComponent(ComponentType::Button));
+        handles.push_back(stateManager->createComponent(JComponentType::Button));
     }
     
     // 验证活动组件数量为 10
@@ -192,7 +192,7 @@ TEST_F(StateManagerTest, MultipleComponents) {
     
     // 为每个组件设置不同的宽度
     for (size_t i = 0; i < handles.size(); ++i) {
-        stateManager->setProperty(handles[i], PropertyId::Width, PropertyValue(static_cast<int>(i)));
+        stateManager->setProperty(handles[i], JPropertyId::Width, JPropertyValue(static_cast<int>(i)));
     }
 }
 
@@ -200,7 +200,7 @@ TEST_F(StateManagerTest, MultipleComponents) {
  * 测试观察者类
  * 用于测试观察者模式的通知机制
  */
-class TestObserver : public StateObserver {
+class TestObserver : public JStateObserver {
 public:
     int propertyChangedCount = 0;      // 属性变更计数
     int componentCreatedCount = 0;     // 组件创建计数
@@ -208,17 +208,17 @@ public:
     int layoutCompleteCount = 0;       // 布局完成计数
     
     // 属性变更回调
-    void onPropertyChanged(ComponentHandle, PropertyId, const PropertyValue&) override {
+    void onPropertyChanged(JComponentHandle, JPropertyId, const JPropertyValue&) override {
         propertyChangedCount++;
     }
     
     // 组件创建回调
-    void onComponentCreated(ComponentHandle) override {
+    void onComponentCreated(JComponentHandle) override {
         componentCreatedCount++;
     }
     
     // 组件销毁回调
-    void onComponentDestroyed(ComponentHandle) override {
+    void onComponentDestroyed(JComponentHandle) override {
         componentDestroyedCount++;
     }
     
@@ -239,12 +239,12 @@ TEST_F(StateManagerTest, ObserverNotifications) {
     stateManager->addObserver(&observer);
     
     // 创建组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     // 验证观察者收到了创建通知
     EXPECT_EQ(observer.componentCreatedCount, 1);
     
     // 设置属性
-    stateManager->setProperty(handle, PropertyId::Width, PropertyValue(100));
+    stateManager->setProperty(handle, JPropertyId::Width, JPropertyValue(100));
     // 验证观察者收到了属性变更通知
     EXPECT_GE(observer.propertyChangedCount, 1);
     
@@ -271,7 +271,7 @@ TEST_F(StateManagerTest, MultipleObservers) {
     stateManager->addObserver(&observer2);
     
     // 创建组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     
     // 验证两个观察者都收到了创建通知
     EXPECT_EQ(observer1.componentCreatedCount, 1);
@@ -292,11 +292,11 @@ TEST_F(StateManagerTest, RemoveObserver) {
     stateManager->removeObserver(&observer);
     
     // 创建组件
-    auto handle = stateManager->createComponent(ComponentType::Button);
+    auto handle = stateManager->createComponent(JComponentType::Button);
     
     // 验证观察者的计数器仍为 0（没有收到通知）
     EXPECT_EQ(observer.componentCreatedCount, 0);
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

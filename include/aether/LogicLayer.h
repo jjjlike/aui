@@ -8,7 +8,7 @@
 #include "Snapshot.h"
 #include "TestController.h"
 
-namespace aether {
+namespace jaether {
 
 /**
  * 逻辑层类
@@ -17,77 +17,77 @@ namespace aether {
  * 提供统一的访问点，简化使用
  * 是框架的核心协调者
  */
-class LogicLayer {
+class JLogicLayer {
 public:
     /**
      * 构造函数
      */
-    LogicLayer();
+    JLogicLayer();
     
     /**
      * 析构函数
      */
-    ~LogicLayer();
+    ~JLogicLayer();
     
     /**
      * 获取组件存储（可变版本）
      * @return 组件存储引用
      */
-    ComponentStorage& getStorage() { return storage_; }
+    JComponentStorage& getStorage() { return storage_; }
     
     /**
      * 获取组件存储（const版本）
      * @return 组件存储const引用
      */
-    const ComponentStorage& getStorage() const { return storage_; }
+    const JComponentStorage& getStorage() const { return storage_; }
     
     /**
      * 获取布局引擎（可变版本）
      * @return 布局引擎引用
      */
-    LayoutEngine& getLayoutEngine() { return layoutEngine_; }
+    JLayoutEngine& getLayoutEngine() { return layoutEngine_; }
     
     /**
      * 获取布局引擎（const版本）
      * @return 布局引擎const引用
      */
-    const LayoutEngine& getLayoutEngine() const { return layoutEngine_; }
+    const JLayoutEngine& getLayoutEngine() const { return layoutEngine_; }
     
     /**
      * 获取事件分发器（可变版本）
      * @return 事件分发器引用
      */
-    EventDispatcher& getEventDispatcher() { return eventDispatcher_; }
+    JEventDispatcher& getEventDispatcher() { return eventDispatcher_; }
     
     /**
      * 获取事件分发器（const版本）
      * @return 事件分发器const引用
      */
-    const EventDispatcher& getEventDispatcher() const { return eventDispatcher_; }
+    const JEventDispatcher& getEventDispatcher() const { return eventDispatcher_; }
     
     /**
      * 获取状态管理器（可变版本）
      * @return 状态管理器引用
      */
-    StateManager& getStateManager() { return stateManager_; }
+    JStateManager& getStateManager() { return stateManager_; }
     
     /**
      * 获取状态管理器（const版本）
      * @return 状态管理器const引用
      */
-    const StateManager& getStateManager() const { return stateManager_; }
+    const JStateManager& getStateManager() const { return stateManager_; }
     
     /**
      * 获取测试控制器（可变版本）
      * @return 测试控制器引用
      */
-    TestController& getTestController() { return testController_; }
+    JTestController& getTestController() { return testController_; }
     
     /**
      * 获取测试控制器（const版本）
      * @return 测试控制器const引用
      */
-    const TestController& getTestController() const { return testController_; }
+    const JTestController& getTestController() const { return testController_; }
     
     /**
      * 创建组件
@@ -95,7 +95,7 @@ public:
      * @param parent 父组件句柄（可选）
      * @return 新组件句柄
      */
-    ComponentHandle createComponent(ComponentType type, ComponentHandle parent = {}) {
+    JComponentHandle createComponent(JComponentType type, JComponentHandle parent = {}) {
         return stateManager_.createComponent(type, parent);
     }
     
@@ -103,7 +103,7 @@ public:
      * 销毁组件
      * @param handle 要销毁的组件句柄
      */
-    void destroyComponent(ComponentHandle handle) {
+    void destroyComponent(JComponentHandle handle) {
         stateManager_.destroyComponent(handle);
     }
     
@@ -113,7 +113,7 @@ public:
      * @param id 属性ID
      * @param value 属性值
      */
-    void setProperty(ComponentHandle h, PropertyId id, PropertyValue value) {
+    void setProperty(JComponentHandle h, JPropertyId id, JPropertyValue value) {
         stateManager_.setProperty(h, id, std::move(value));
     }
     
@@ -123,7 +123,7 @@ public:
      * @param id 属性ID
      * @return 属性值指针，如果不存在返回nullptr
      */
-    const PropertyValue* getProperty(ComponentHandle h, PropertyId id) const {
+    const JPropertyValue* getProperty(JComponentHandle h, JPropertyId id) const {
         return stateManager_.getProperty(h, id);
     }
     
@@ -149,7 +149,7 @@ public:
      * 设置布局引擎模式
      * @param mode 模式
      */
-    void setMode(LayoutEngineMode mode) {
+    void setMode(JLayoutEngineMode mode) {
         layoutEngine_.setMode(mode);
     }
     
@@ -209,11 +209,11 @@ public:
     void dispatchTextInput(const std::string& text);
     
 private:
-    ComponentStorage storage_;          // 组件存储
-    LayoutEngine layoutEngine_;         // 布局引擎
-    EventDispatcher eventDispatcher_;   // 事件分发器
-    StateManager stateManager_;         // 状态管理器
-    TestController testController_;     // 测试控制器
+    JComponentStorage storage_;          // 组件存储
+    JLayoutEngine layoutEngine_;         // 布局引擎
+    JEventDispatcher eventDispatcher_;   // 事件分发器
+    JStateManager stateManager_;         // 状态管理器
+    JTestController testController_;     // 测试控制器
 };
 
 }

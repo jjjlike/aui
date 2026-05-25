@@ -10,7 +10,7 @@
 #include "aether/LogicLayer.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -21,10 +21,10 @@ class IntegrationTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建逻辑层实例
-        layer = std::make_unique<LogicLayer>();
+        layer = std::make_unique<JLogicLayer>();
     }
     
-    std::unique_ptr<LogicLayer> layer;  // 逻辑层指针
+    std::unique_ptr<JLogicLayer> layer;  // 逻辑层指针
 };
 
 /**
@@ -33,60 +33,60 @@ protected:
  */
 TEST_F(IntegrationTest, FullComponentTreeCreation) {
     // 创建根容器组件，设置布局大小为 800x600
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建头部容器组件
-    auto header = layer->createComponent(ComponentType::Container, root);
+    auto header = layer->createComponent(JComponentType::Container, root);
     // 设置头部位置和大小（位于顶部，高度 50px）
-    layer->setProperty(header, PropertyId::X, PropertyValue(0.0f));
-    layer->setProperty(header, PropertyId::Y, PropertyValue(0.0f));
-    layer->setProperty(header, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(header, PropertyId::Height, PropertyValue(50.0f));
+    layer->setProperty(header, JPropertyId::X, JPropertyValue(0.0f));
+    layer->setProperty(header, JPropertyId::Y, JPropertyValue(0.0f));
+    layer->setProperty(header, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(header, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 创建内容容器组件
-    auto content = layer->createComponent(ComponentType::Container, root);
+    auto content = layer->createComponent(JComponentType::Container, root);
     // 设置内容区域位置和大小（位于头部下方，高度 500px）
-    layer->setProperty(content, PropertyId::X, PropertyValue(0.0f));
-    layer->setProperty(content, PropertyId::Y, PropertyValue(50.0f));
-    layer->setProperty(content, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(content, PropertyId::Height, PropertyValue(500.0f));
+    layer->setProperty(content, JPropertyId::X, JPropertyValue(0.0f));
+    layer->setProperty(content, JPropertyId::Y, JPropertyValue(50.0f));
+    layer->setProperty(content, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(content, JPropertyId::Height, JPropertyValue(500.0f));
     
     // 创建第一个按钮组件
-    auto btn1 = layer->createComponent(ComponentType::Button, content);
+    auto btn1 = layer->createComponent(JComponentType::Button, content);
     // 设置按钮1的位置和大小
-    layer->setProperty(btn1, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn1, PropertyId::Y, PropertyValue(50.0f));
-    layer->setProperty(btn1, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn1, PropertyId::Height, PropertyValue(50.0f));
-    layer->setProperty(btn1, PropertyId::Text, PropertyValue(std::string("Button 1")));
+    layer->setProperty(btn1, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn1, JPropertyId::Y, JPropertyValue(50.0f));
+    layer->setProperty(btn1, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn1, JPropertyId::Height, JPropertyValue(50.0f));
+    layer->setProperty(btn1, JPropertyId::Text, JPropertyValue(std::string("Button 1")));
     
     // 创建第二个按钮组件
-    auto btn2 = layer->createComponent(ComponentType::Button, content);
+    auto btn2 = layer->createComponent(JComponentType::Button, content);
     // 设置按钮2的位置和大小
-    layer->setProperty(btn2, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn2, PropertyId::Y, PropertyValue(120.0f));
-    layer->setProperty(btn2, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn2, PropertyId::Height, PropertyValue(50.0f));
-    layer->setProperty(btn2, PropertyId::Text, PropertyValue(std::string("Button 2")));
+    layer->setProperty(btn2, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn2, JPropertyId::Y, JPropertyValue(120.0f));
+    layer->setProperty(btn2, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn2, JPropertyId::Height, JPropertyValue(50.0f));
+    layer->setProperty(btn2, JPropertyId::Text, JPropertyValue(std::string("Button 2")));
     
     // 创建文本组件
-    auto text = layer->createComponent(ComponentType::Text, content);
+    auto text = layer->createComponent(JComponentType::Text, content);
     // 设置文本的位置和大小
-    layer->setProperty(text, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(text, PropertyId::Y, PropertyValue(200.0f));
-    layer->setProperty(text, PropertyId::Width, PropertyValue(600.0f));
-    layer->setProperty(text, PropertyId::Height, PropertyValue(100.0f));
-    layer->setProperty(text, PropertyId::Text, PropertyValue(std::string("Welcome to Aether!")));
+    layer->setProperty(text, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(text, JPropertyId::Y, JPropertyValue(200.0f));
+    layer->setProperty(text, JPropertyId::Width, JPropertyValue(600.0f));
+    layer->setProperty(text, JPropertyId::Height, JPropertyValue(100.0f));
+    layer->setProperty(text, JPropertyId::Text, JPropertyValue(std::string("Welcome to Aether!")));
     
     // 创建底部容器组件
-    auto footer = layer->createComponent(ComponentType::Container, root);
+    auto footer = layer->createComponent(JComponentType::Container, root);
     // 设置底部位置和大小（位于底部，高度 50px）
-    layer->setProperty(footer, PropertyId::X, PropertyValue(0.0f));
-    layer->setProperty(footer, PropertyId::Y, PropertyValue(550.0f));
-    layer->setProperty(footer, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(footer, PropertyId::Height, PropertyValue(50.0f));
+    layer->setProperty(footer, JPropertyId::X, JPropertyValue(0.0f));
+    layer->setProperty(footer, JPropertyId::Y, JPropertyValue(550.0f));
+    layer->setProperty(footer, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(footer, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 验证活动组件数量为 7（根、头部、内容、2个按钮、文本、底部）
     EXPECT_EQ(layer->getStorage().activeCount(), 7);
@@ -98,16 +98,16 @@ TEST_F(IntegrationTest, FullComponentTreeCreation) {
  */
 TEST_F(IntegrationTest, ComponentTreeLayout) {
     // 创建根容器组件，设置布局大小
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建按钮组件，设置位置和大小
-    auto btn = layer->createComponent(ComponentType::Button, root);
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
+    auto btn = layer->createComponent(JComponentType::Button, root);
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 运行一帧，触发布局计算
     layer->runFrame();
@@ -132,16 +132,16 @@ TEST_F(IntegrationTest, ComponentTreeLayout) {
  */
 TEST_F(IntegrationTest, EventFlowThroughTree) {
     // 创建根容器组件，设置布局大小
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建按钮组件，设置位置和大小
-    auto btn = layer->createComponent(ComponentType::Button, root);
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
+    auto btn = layer->createComponent(JComponentType::Button, root);
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 运行一帧
     layer->runFrame();
@@ -159,24 +159,24 @@ TEST_F(IntegrationTest, EventFlowThroughTree) {
  */
 TEST_F(IntegrationTest, DynamicComponentUpdates) {
     // 创建根容器组件，设置布局大小
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建按钮组件，设置初始属性
-    auto btn = layer->createComponent(ComponentType::Button, root);
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
-    layer->setProperty(btn, PropertyId::Text, PropertyValue(std::string("Original")));
+    auto btn = layer->createComponent(JComponentType::Button, root);
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
+    layer->setProperty(btn, JPropertyId::Text, JPropertyValue(std::string("Original")));
     
     // 运行一帧
     layer->runFrame();
     
     // 动态更新按钮的属性
-    layer->setProperty(btn, PropertyId::Text, PropertyValue(std::string("Updated")));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(250.0f));
+    layer->setProperty(btn, JPropertyId::Text, JPropertyValue(std::string("Updated")));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(250.0f));
     
     // 运行一帧
     layer->runFrame();
@@ -187,7 +187,7 @@ TEST_F(IntegrationTest, DynamicComponentUpdates) {
     ASSERT_NE(btnEntry, nullptr);
     
     // 获取文本属性
-    auto* textProp = btnEntry->properties.getProperty(PropertyId::Text);
+    auto* textProp = btnEntry->properties.getProperty(JPropertyId::Text);
     ASSERT_NE(textProp, nullptr);
     // 验证文本属性已更新
     EXPECT_EQ(textProp->get<std::string>(), "Updated");
@@ -199,17 +199,17 @@ TEST_F(IntegrationTest, DynamicComponentUpdates) {
  */
 TEST_F(IntegrationTest, ComponentRemovalAndAddition) {
     // 创建根容器组件，设置布局大小
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 动态添加 10 个按钮组件
     for (int i = 0; i < 10; ++i) {
-        auto btn = layer->createComponent(ComponentType::Button, root);
-        layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f + (i % 5) * 150.0f));
-        layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f + (i / 5) * 60.0f));
-        layer->setProperty(btn, PropertyId::Width, PropertyValue(100.0f));
-        layer->setProperty(btn, PropertyId::Height, PropertyValue(40.0f));
+        auto btn = layer->createComponent(JComponentType::Button, root);
+        layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f + (i % 5) * 150.0f));
+        layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f + (i / 5) * 60.0f));
+        layer->setProperty(btn, JPropertyId::Width, JPropertyValue(100.0f));
+        layer->setProperty(btn, JPropertyId::Height, JPropertyValue(40.0f));
     }
     
     // 验证活动组件数量为 11（根组件 + 10 个按钮）
@@ -222,8 +222,8 @@ TEST_F(IntegrationTest, ComponentRemovalAndAddition) {
     auto& storage = layer->getStorage();
     
     // 收集所有非根组件的句柄
-    std::vector<ComponentHandle> toRemove;
-    storage.forEach([&](ComponentHandle h) {
+    std::vector<JComponentHandle> toRemove;
+    storage.forEach([&](JComponentHandle h) {
         if (h != storage.getRoot()) {
             toRemove.push_back(h);
         }
@@ -239,11 +239,11 @@ TEST_F(IntegrationTest, ComponentRemovalAndAddition) {
     
     // 动态添加 5 个文本组件
     for (int i = 0; i < 5; ++i) {
-        auto txt = layer->createComponent(ComponentType::Text, root);
-        layer->setProperty(txt, PropertyId::X, PropertyValue(100.0f + i * 100.0f));
-        layer->setProperty(txt, PropertyId::Y, PropertyValue(100.0f));
-        layer->setProperty(txt, PropertyId::Width, PropertyValue(80.0f));
-        layer->setProperty(txt, PropertyId::Height, PropertyValue(30.0f));
+        auto txt = layer->createComponent(JComponentType::Text, root);
+        layer->setProperty(txt, JPropertyId::X, JPropertyValue(100.0f + i * 100.0f));
+        layer->setProperty(txt, JPropertyId::Y, JPropertyValue(100.0f));
+        layer->setProperty(txt, JPropertyId::Width, JPropertyValue(80.0f));
+        layer->setProperty(txt, JPropertyId::Height, JPropertyValue(30.0f));
     }
     
     // 验证活动组件数量为 6（根组件 + 5 个文本组件）
@@ -256,20 +256,20 @@ TEST_F(IntegrationTest, ComponentRemovalAndAddition) {
  */
 TEST_F(IntegrationTest, StressTest) {
     // 创建根容器组件，设置较大的布局大小
-    auto root = layer->createComponent(ComponentType::Container);
-    layer->setProperty(root, PropertyId::Width, PropertyValue(1000.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(1000.0f));
+    auto root = layer->createComponent(JComponentType::Container);
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(1000.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(1000.0f));
     
     // 动态添加 100 个组件（按钮、文本、容器交替）
     for (int i = 0; i < 100; ++i) {
         // 根据索引循环选择组件类型
-        auto comp = layer->createComponent(i % 3 == 0 ? ComponentType::Button : 
-                                  (i % 3 == 1 ? ComponentType::Text : ComponentType::Container), root);
+        auto comp = layer->createComponent(i % 3 == 0 ? JComponentType::Button : 
+                                  (i % 3 == 1 ? JComponentType::Text : JComponentType::Container), root);
         // 设置组件的位置和大小，排列成 10x10 的网格
-        layer->setProperty(comp, PropertyId::X, PropertyValue(10.0f + (i % 10) * 90.0f));
-        layer->setProperty(comp, PropertyId::Y, PropertyValue(10.0f + (i / 10) * 90.0f));
-        layer->setProperty(comp, PropertyId::Width, PropertyValue(80.0f));
-        layer->setProperty(comp, PropertyId::Height, PropertyValue(80.0f));
+        layer->setProperty(comp, JPropertyId::X, JPropertyValue(10.0f + (i % 10) * 90.0f));
+        layer->setProperty(comp, JPropertyId::Y, JPropertyValue(10.0f + (i / 10) * 90.0f));
+        layer->setProperty(comp, JPropertyId::Width, JPropertyValue(80.0f));
+        layer->setProperty(comp, JPropertyId::Height, JPropertyValue(80.0f));
     }
     
     // 运行一帧初始化布局
@@ -285,4 +285,4 @@ TEST_F(IntegrationTest, StressTest) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

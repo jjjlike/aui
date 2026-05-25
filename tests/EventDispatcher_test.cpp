@@ -2,7 +2,7 @@
  * 事件分发器模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 EventDispatcher 类的事件分发功能
+ * - 测试 JEventDispatcher 类的事件分发功能
  * - 包括命中测试、鼠标事件、键盘事件、文本输入等
  * - 测试用例覆盖：正常逻辑、边界情况、事件处理流程
  */
@@ -10,7 +10,7 @@
 #include "aether/EventDispatcher.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -21,21 +21,21 @@ class EventDispatcherTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建组件存储实例
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
         // 创建事件分发器实例，关联到组件存储
-        dispatcher = std::make_unique<EventDispatcher>(*storage);
+        dispatcher = std::make_unique<JEventDispatcher>(*storage);
         
         // 创建根容器组件
-        root = storage->createComponent(ComponentType::Container);
+        root = storage->createComponent(JComponentType::Container);
         // 获取根组件的详细信息
         auto* rootEntry = storage->getComponent(root);
         // 设置根组件的布局大小（800x600）
         rootEntry->layoutResult = {0, 0, 800, 600};
     }
     
-    std::unique_ptr<ComponentStorage> storage;      // 组件存储指针
-    std::unique_ptr<EventDispatcher> dispatcher;   // 事件分发器指针
-    ComponentHandle root;                          // 根组件句柄
+    std::unique_ptr<JComponentStorage> storage;      // 组件存储指针
+    std::unique_ptr<JEventDispatcher> dispatcher;   // 事件分发器指针
+    JComponentHandle root;                          // 根组件句柄
 };
 
 /**
@@ -44,7 +44,7 @@ protected:
  */
 TEST_F(EventDispatcherTest, HitTestEmpty) {
     // 在点 (100, 100) 进行命中测试
-    auto result = dispatcher->hitTest(Point{100, 100});
+    auto result = dispatcher->hitTest(JPoint{100, 100});
     // 验证返回无效的组件句柄
     EXPECT_FALSE(result.isValid());
 }
@@ -55,7 +55,7 @@ TEST_F(EventDispatcherTest, HitTestEmpty) {
  */
 TEST_F(EventDispatcherTest, HitTestButton) {
     // 创建一个按钮组件，作为根组件的子组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域（位置和大小）
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -68,7 +68,7 @@ TEST_F(EventDispatcherTest, HitTestButton) {
     dispatcher->onLayoutComplete();
     
     // 在按钮中心点 (150, 125) 进行命中测试
-    auto result = dispatcher->hitTest(Point{150, 125});
+    auto result = dispatcher->hitTest(JPoint{150, 125});
     // 验证命中结果有效
     EXPECT_TRUE(result.isValid());
     // 验证命中的是我们创建的按钮组件
@@ -81,7 +81,7 @@ TEST_F(EventDispatcherTest, HitTestButton) {
  */
 TEST_F(EventDispatcherTest, HitTestMiss) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -90,7 +90,7 @@ TEST_F(EventDispatcherTest, HitTestMiss) {
     dispatcher->onLayoutComplete();
     
     // 在点 (500, 500) 进行命中测试（不在按钮范围内）
-    auto result = dispatcher->hitTest(Point{500, 500});
+    auto result = dispatcher->hitTest(JPoint{500, 500});
     // 验证返回无效的组件句柄
     EXPECT_FALSE(result.isValid());
 }
@@ -101,7 +101,7 @@ TEST_F(EventDispatcherTest, HitTestMiss) {
  */
 TEST_F(EventDispatcherTest, HitTestDisabledComponent) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -112,7 +112,7 @@ TEST_F(EventDispatcherTest, HitTestDisabledComponent) {
     dispatcher->onLayoutComplete();
     
     // 在按钮中心点进行命中测试
-    auto result = dispatcher->hitTest(Point{150, 125});
+    auto result = dispatcher->hitTest(JPoint{150, 125});
     // 验证返回无效的组件句柄（因为按钮被禁用）
     // 注意：当前实现可能不检查enabled状态，所以这个测试可能失败
     // 如果需要支持这个特性，需要修改hitTest逻辑
@@ -125,7 +125,7 @@ TEST_F(EventDispatcherTest, HitTestDisabledComponent) {
  */
 TEST_F(EventDispatcherTest, HitTestHiddenComponent) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -136,7 +136,7 @@ TEST_F(EventDispatcherTest, HitTestHiddenComponent) {
     dispatcher->onLayoutComplete();
     
     // 在按钮中心点进行命中测试
-    auto result = dispatcher->hitTest(Point{150, 125});
+    auto result = dispatcher->hitTest(JPoint{150, 125});
     // 验证返回无效的组件句柄（因为按钮被隐藏）
     EXPECT_FALSE(result.isValid());
 }
@@ -147,7 +147,7 @@ TEST_F(EventDispatcherTest, HitTestHiddenComponent) {
  */
 TEST_F(EventDispatcherTest, MouseClickEvent) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -156,8 +156,8 @@ TEST_F(EventDispatcherTest, MouseClickEvent) {
     dispatcher->onLayoutComplete();
     
     // 创建鼠标点击事件
-    MouseEvent click;
-    click.type = EventType::Click;  // 事件类型为点击
+    JMouseEvent click;
+    click.type = JEventType::Click;  // 事件类型为点击
     click.position = {150, 125};      // 点击位置在按钮中心
     click.button = 0;                // 左键点击
     
@@ -176,7 +176,7 @@ TEST_F(EventDispatcherTest, MouseClickEvent) {
  */
 TEST_F(EventDispatcherTest, MouseMoveEvent) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -185,8 +185,8 @@ TEST_F(EventDispatcherTest, MouseMoveEvent) {
     dispatcher->onLayoutComplete();
     
     // 创建鼠标移动事件
-    MouseEvent move;
-    move.type = EventType::MouseMove;   // 事件类型为移动
+    JMouseEvent move;
+    move.type = JEventType::MouseMove;   // 事件类型为移动
     move.position = {150, 125};          // 移动位置在按钮上方
     
     // 分发鼠标事件
@@ -202,9 +202,9 @@ TEST_F(EventDispatcherTest, MouseMoveEvent) {
  * 测试用例 8：键盘事件（正常逻辑测试）
  * 测试目标：验证能正确分发键盘事件
  */
-TEST_F(EventDispatcherTest, KeyEvent) {
+TEST_F(EventDispatcherTest, JKeyEvent) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -213,8 +213,8 @@ TEST_F(EventDispatcherTest, KeyEvent) {
     dispatcher->onLayoutComplete();
     
     // 创建键盘按键事件
-    KeyEvent keyDown;
-    keyDown.type = EventType::KeyDown;  // 事件类型为按键按下
+    JKeyEvent keyDown;
+    keyDown.type = JEventType::KeyDown;  // 事件类型为按键按下
     keyDown.keyCode = 13;                // 按键码 13 表示回车键
     
     // 分发键盘事件
@@ -236,8 +236,8 @@ TEST_F(EventDispatcherTest, TextInputEvent) {
  */
 TEST_F(EventDispatcherTest, MultipleButtonsHitTest) {
     // 创建两个按钮组件
-    auto button1 = storage->createComponent(ComponentType::Button, root);
-    auto button2 = storage->createComponent(ComponentType::Button, root);
+    auto button1 = storage->createComponent(JComponentType::Button, root);
+    auto button2 = storage->createComponent(JComponentType::Button, root);
     
     // 获取两个按钮的详细信息
     auto* entry1 = storage->getComponent(button1);
@@ -252,7 +252,7 @@ TEST_F(EventDispatcherTest, MultipleButtonsHitTest) {
     dispatcher->onLayoutComplete();
     
     // 在重叠区域的点 (200, 125) 进行命中测试
-    auto result = dispatcher->hitTest(Point{200, 125});
+    auto result = dispatcher->hitTest(JPoint{200, 125});
     // 验证命中结果有效
     EXPECT_TRUE(result.isValid());
 }
@@ -263,7 +263,7 @@ TEST_F(EventDispatcherTest, MultipleButtonsHitTest) {
  */
 TEST_F(EventDispatcherTest, ClearEventLog) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -272,8 +272,8 @@ TEST_F(EventDispatcherTest, ClearEventLog) {
     dispatcher->onLayoutComplete();
     
     // 创建鼠标点击事件
-    MouseEvent click;
-    click.type = EventType::Click;      // 事件类型为点击
+    JMouseEvent click;
+    click.type = JEventType::Click;      // 事件类型为点击
     click.position = {150, 125};        // 点击位置在按钮中心
     // 分发鼠标事件
     dispatcher->dispatchMouseEvent(click);
@@ -288,4 +288,4 @@ TEST_F(EventDispatcherTest, ClearEventLog) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

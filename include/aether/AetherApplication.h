@@ -7,7 +7,7 @@
 #include <memory>
 #include <functional>
 
-namespace aether {
+namespace jaether {
 
 /**
  * Aether应用程序类
@@ -15,17 +15,17 @@ namespace aether {
  * 整合所有模块的高层应用类
  * 提供完整的UI应用程序功能
  */
-class AetherApplication {
+class JAetherApplication {
 public:
     /**
      * 构造函数
      */
-    AetherApplication();
+    JAetherApplication();
     
     /**
      * 析构函数
      */
-    ~AetherApplication();
+    ~JAetherApplication();
     
     /**
      * 初始化应用程序
@@ -139,9 +139,9 @@ private:
      */
     void update();
     
-    std::unique_ptr<LogicLayer> logicLayer_;          // 逻辑层
-    std::unique_ptr<Direct2DRenderer> renderer_;       // 渲染器
-    JSONValue stateNode_;                              // 状态节点
+    std::unique_ptr<JLogicLayer> logicLayer_;          // 逻辑层
+    std::unique_ptr<JDirect2DRenderer> renderer_;       // 渲染器
+    JJSONValue stateNode_;                              // 状态节点
     
     HWND hwnd_ = nullptr;       // 窗口句柄
     HINSTANCE hInstance_ = nullptr;  // 应用实例句柄

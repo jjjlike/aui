@@ -6,7 +6,7 @@
 #include <optional>
 #include <string>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 属性值容器类
@@ -14,28 +14,28 @@ namespace aether {
  * 使用std::variant存储多种类型的属性值
  * 支持的类型：整数、浮点数、布尔值、字符串、颜色、矩形、布局相关枚举
  */
-struct PropertyValue {
+struct JPropertyValue {
     using ValueType = std::variant<
         std::monostate,
         int,
         float,
         bool,
         std::string,
-        Color,
-        Rect,
-        FlexDirection,
-        FlexWrap,
-        JustifyContent,
-        AlignItems,
-        AlignContent
+        JColor,
+        JRect,
+        JFlexDirection,
+        JFlexWrap,
+        JJustifyContent,
+        JAlignItems,
+        JAlignContent
     >;
     
     ValueType value;
     
-    PropertyValue() : value(std::monostate{}) {}
+    JPropertyValue() : value(std::monostate{}) {}
     
     template<typename T>
-    PropertyValue(T val) : value(val) {}
+    JPropertyValue(T val) : value(val) {}
     
     /**
      * 检查属性是否有值
@@ -77,7 +77,7 @@ struct PropertyValue {
      * @param str 属性值字符串
      * @return 解析后的PropertyValue
      */
-    static PropertyValue fromString(PropertyId id, const std::string& str);
+    static JPropertyValue fromString(JPropertyId id, const std::string& str);
 };
 
 /**
@@ -86,8 +86,8 @@ struct PropertyValue {
  * 使用bitset标记属性存在性，使用vector存储属性值
  * 提供属性的读写操作
  */
-struct PropertyBlock {
-    std::vector<PropertyValue> values;
+struct JPropertyBlock {
+    std::vector<JPropertyValue> values;
     std::bitset<MAX_PROPERTY_ID> presence;
     
     /**
@@ -105,7 +105,7 @@ struct PropertyBlock {
      * @param id 属性ID
      * @return true如果属性存在
      */
-    bool hasProperty(PropertyId id) const {
+    bool hasProperty(JPropertyId id) const {
         return presence.test(static_cast<size_t>(id));
     }
     
@@ -114,7 +114,7 @@ struct PropertyBlock {
      * @param id 属性ID
      * @return 属性值指针，不存在则返回nullptr
      */
-    const PropertyValue* getProperty(PropertyId id) const {
+    const JPropertyValue* getProperty(JPropertyId id) const {
         size_t idx = static_cast<size_t>(id);
         if (idx < values.size() && presence.test(idx)) {
             return &values[idx];
@@ -127,7 +127,7 @@ struct PropertyBlock {
      * @param id 属性ID
      * @param value 新的属性值
      */
-    void setProperty(PropertyId id, PropertyValue value) {
+    void setProperty(JPropertyId id, JPropertyValue value) {
         size_t idx = static_cast<size_t>(id);
         ensureSize(idx + 1);
         values[idx] = std::move(value);
@@ -138,10 +138,10 @@ struct PropertyBlock {
      * 清除属性
      * @param id 属性ID
      */
-    void clearProperty(PropertyId id) {
+    void clearProperty(JPropertyId id) {
         size_t idx = static_cast<size_t>(id);
         if (idx < values.size()) {
-            values[idx] = PropertyValue{};
+            values[idx] = JPropertyValue{};
             presence.reset(idx);
         }
     }
@@ -153,14 +153,14 @@ struct PropertyBlock {
  * 存储单个组件的所有数据
  * 包括：ID、类型、布局结果、父子关系、属性、可见性等
  */
-struct ComponentEntry {
-    ComponentId id = INVALID_COMPONENT_ID;
-    ComponentType type = ComponentType::Container;
-    Rect layoutResult;
+struct JComponentEntry {
+    JComponentId id = INVALID_COMPONENT_ID;
+    JComponentType type = JComponentType::Container;
+    JRect layoutResult;
     int32_t parentIndex = -1;
     std::vector<int32_t> childrenIndices;
-    PropertyBlock properties;
-    Generation generation = 0;
+    JPropertyBlock properties;
+    JGeneration generation = 0;
     bool visible = true;
     bool enabled = true;
     std::string debugName;
@@ -173,7 +173,7 @@ struct ComponentEntry {
  * 使用SoA布局提升缓存效率
  * 提供组件句柄和世代号机制防止悬空指针
  */
-class ComponentStorage {
+class JComponentStorage {
 public:
     /**
      * 创建组件
@@ -181,49 +181,49 @@ public:
      * @param parent 父组件句柄，可选
      * @return 新创建的组件句柄
      */
-    ComponentHandle createComponent(ComponentType type, ComponentHandle parent = {});
+    JComponentHandle createComponent(JComponentType type, JComponentHandle parent = {});
     
     /**
      * 销毁组件
      * @param handle 要销毁的组件句柄
      */
-    void destroyComponent(ComponentHandle handle);
+    void destroyComponent(JComponentHandle handle);
     
     /**
      * 检查句柄是否有效
      * @param handle 组件句柄
      * @return true如果句柄有效
      */
-    bool isValid(ComponentHandle handle) const;
+    bool isValid(JComponentHandle handle) const;
     
     /**
      * 获取组件指针
      * @param handle 组件句柄
      * @return 组件条目指针，无效则返回nullptr
      */
-    ComponentEntry* getComponent(ComponentHandle handle);
-    const ComponentEntry* getComponent(ComponentHandle handle) const;
+    JComponentEntry* getComponent(JComponentHandle handle);
+    const JComponentEntry* getComponent(JComponentHandle handle) const;
     
     /**
      * 通过索引获取组件指针（仅用于内部遍历，用于快速访问）
      * @param index 槽位索引
      * @return 组件条目指针，无效则返回nullptr
      */
-    ComponentEntry* getComponentByIndex(int32_t index);
-    const ComponentEntry* getComponentByIndex(int32_t index) const;
+    JComponentEntry* getComponentByIndex(int32_t index);
+    const JComponentEntry* getComponentByIndex(int32_t index) const;
     
     /**
      * 通过组件ID查找组件
      * @param id 组件ID
      * @return 组件句柄，未找到则返回无效句柄
      */
-    ComponentHandle findById(ComponentId id) const;
+    JComponentHandle findById(JComponentId id) const;
     
     /**
      * 获取根组件
      * @return 根组件句柄
      */
-    ComponentHandle getRoot() const { return root_; }
+    JComponentHandle getRoot() const { return root_; }
     
     /**
      * 获取组件总数（包括已销毁的）
@@ -246,7 +246,7 @@ public:
     void forEach(Func&& func) {
         for (size_t i = 0; i < entries_.size(); ++i) {
             if (entries_[i].id != INVALID_COMPONENT_ID) {
-                func(ComponentHandle{static_cast<int32_t>(i), entries_[i].generation});
+                func(JComponentHandle{static_cast<int32_t>(i), entries_[i].generation});
             }
         }
     }
@@ -260,7 +260,7 @@ public:
     void forEach(Func&& func) const {
         for (size_t i = 0; i < entries_.size(); ++i) {
             if (entries_[i].id != INVALID_COMPONENT_ID) {
-                func(ComponentHandle{static_cast<int32_t>(i), entries_[i].generation});
+                func(JComponentHandle{static_cast<int32_t>(i), entries_[i].generation});
             }
         }
     }
@@ -275,21 +275,21 @@ public:
      * @param index 组件索引
      * @return 组件的绝对矩形
      */
-    Rect getAbsoluteBounds(int32_t index) const;
+    JRect getAbsoluteBounds(int32_t index) const;
     
     /**
      * 计算组件的绝对位置
      * @param handle 组件句柄
      * @return 组件的绝对矩形
      */
-    Rect getAbsoluteBounds(ComponentHandle handle) const;
+    JRect getAbsoluteBounds(JComponentHandle handle) const;
     
     /**
      * 获取组件的相对位置（相对于父组件）
      * @param handle 组件句柄
      * @return 组件的相对矩形
      */
-    Rect getRelativeBounds(ComponentHandle handle) const;
+    JRect getRelativeBounds(JComponentHandle handle) const;
     
     /**
      * 检查点是否在组件的绝对位置范围内
@@ -298,7 +298,7 @@ public:
      * @param y 点的y坐标
      * @return 是否在范围内
      */
-    bool containsPoint(ComponentHandle handle, float x, float y) const;
+    bool containsPoint(JComponentHandle handle, float x, float y) const;
     
     /**
      * 检查点是否在组件的绝对位置范围内
@@ -306,7 +306,7 @@ public:
      * @param point 点
      * @return 是否在范围内
      */
-    bool containsPoint(ComponentHandle handle, Point point) const;
+    bool containsPoint(JComponentHandle handle, JPoint point) const;
     
 private:
     /**
@@ -321,12 +321,12 @@ private:
      */
     void freeSlot(int32_t index);
     
-    std::vector<ComponentEntry> entries_;
+    std::vector<JComponentEntry> entries_;
     std::vector<int32_t> freeList_;
-    ComponentId nextId_ = 1;
-    ComponentHandle root_;
+    JComponentId nextId_ = 1;
+    JComponentHandle root_;
     
-    friend class LayoutEngine;
+    friend class JLayoutEngine;
 };
 
 }

@@ -1,4 +1,4 @@
-// AetherApplication.cpp
+// JAetherApplication.cpp
 // Aether应用程序主模块 - Windows GUI应用程序
 //
 // 功能:
@@ -12,14 +12,14 @@
 #include <iostream>
 #include <windowsx.h>
 
-namespace aether {
+namespace jaether {
 
 // Aether应用程序构造函数
-AetherApplication::AetherApplication() {
+JAetherApplication::JAetherApplication() {
 }
 
 // Aether应用程序析构函数
-AetherApplication::~AetherApplication() {
+JAetherApplication::~JAetherApplication() {
     shutdown();
 }
 
@@ -28,7 +28,7 @@ AetherApplication::~AetherApplication() {
 //   hInstance - 应用程序实例句柄
 //   nCmdShow - 窗口显示方式
 // 返回值: 成功返回true
-bool AetherApplication::initialize(HINSTANCE hInstance, int nCmdShow) {
+bool JAetherApplication::initialize(HINSTANCE hInstance, int nCmdShow) {
     hInstance_ = hInstance;
     
     // 注册窗口类
@@ -63,8 +63,8 @@ bool AetherApplication::initialize(HINSTANCE hInstance, int nCmdShow) {
     SetWindowLongPtrW(hwnd_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
     
     // 创建逻辑层和渲染器
-    logicLayer_ = std::make_unique<LogicLayer>();
-    renderer_ = std::make_unique<Direct2DRenderer>();
+    logicLayer_ = std::make_unique<JLogicLayer>();
+    renderer_ = std::make_unique<JDirect2DRenderer>();
     
     if (!renderer_->initialize(hwnd_)) {
         std::cerr << "Failed to initialize renderer" << std::endl;
@@ -86,7 +86,7 @@ bool AetherApplication::initialize(HINSTANCE hInstance, int nCmdShow) {
 }
 
 // 关闭应用程序
-void AetherApplication::shutdown() {
+void JAetherApplication::shutdown() {
     if (!running_) {
         return;
     }
@@ -113,7 +113,7 @@ void AetherApplication::shutdown() {
 }
 
 // 运行消息循环
-void AetherApplication::run() {
+void JAetherApplication::run() {
     MSG msg = {0};
     while (running_ && GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
@@ -127,17 +127,17 @@ void AetherApplication::run() {
 //   uMsg - 消息类型
 //   wParam, lParam - 消息参数
 // 返回值: 消息处理结果
-LRESULT CALLBACK AetherApplication::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    AetherApplication* app = nullptr;
+LRESULT CALLBACK JAetherApplication::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    JAetherApplication* app = nullptr;
     
     if (uMsg == WM_CREATE) {
         // 从创建参数获取应用程序指针
         CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
-        app = reinterpret_cast<AetherApplication*>(cs->lpCreateParams);
+        app = reinterpret_cast<JAetherApplication*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app));
     } else {
         // 从用户数据获取应用程序指针
-        app = reinterpret_cast<AetherApplication*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        app = reinterpret_cast<JAetherApplication*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     }
     
     if (!app) {
@@ -211,44 +211,44 @@ LRESULT CALLBACK AetherApplication::WindowProc(HWND hwnd, UINT uMsg, WPARAM wPar
 }
 
 // 创建测试UI
-void AetherApplication::createTestUI() {
+void JAetherApplication::createTestUI() {
     if (!logicLayer_) return;
     
     // 创建根容器
-    auto root = logicLayer_->createComponent(ComponentType::Container);
-    logicLayer_->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    auto root = logicLayer_->createComponent(JComponentType::Container);
+    logicLayer_->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建按钮1
-    auto btn1 = logicLayer_->createComponent(ComponentType::Button, root);
-    logicLayer_->setProperty(btn1, PropertyId::X, PropertyValue(100.0f));
-    logicLayer_->setProperty(btn1, PropertyId::Y, PropertyValue(100.0f));
-    logicLayer_->setProperty(btn1, PropertyId::Width, PropertyValue(200.0f));
-    logicLayer_->setProperty(btn1, PropertyId::Height, PropertyValue(50.0f));
-    logicLayer_->setProperty(btn1, PropertyId::Text, PropertyValue(std::string("Click Me!")));
+    auto btn1 = logicLayer_->createComponent(JComponentType::Button, root);
+    logicLayer_->setProperty(btn1, JPropertyId::X, JPropertyValue(100.0f));
+    logicLayer_->setProperty(btn1, JPropertyId::Y, JPropertyValue(100.0f));
+    logicLayer_->setProperty(btn1, JPropertyId::Width, JPropertyValue(200.0f));
+    logicLayer_->setProperty(btn1, JPropertyId::Height, JPropertyValue(50.0f));
+    logicLayer_->setProperty(btn1, JPropertyId::Text, JPropertyValue(std::string("Click Me!")));
     
     // 创建按钮2
-    auto btn2 = logicLayer_->createComponent(ComponentType::Button, root);
-    logicLayer_->setProperty(btn2, PropertyId::X, PropertyValue(100.0f));
-    logicLayer_->setProperty(btn2, PropertyId::Y, PropertyValue(200.0f));
-    logicLayer_->setProperty(btn2, PropertyId::Width, PropertyValue(200.0f));
-    logicLayer_->setProperty(btn2, PropertyId::Height, PropertyValue(50.0f));
-    logicLayer_->setProperty(btn2, PropertyId::Text, PropertyValue(std::string("Submit")));
+    auto btn2 = logicLayer_->createComponent(JComponentType::Button, root);
+    logicLayer_->setProperty(btn2, JPropertyId::X, JPropertyValue(100.0f));
+    logicLayer_->setProperty(btn2, JPropertyId::Y, JPropertyValue(200.0f));
+    logicLayer_->setProperty(btn2, JPropertyId::Width, JPropertyValue(200.0f));
+    logicLayer_->setProperty(btn2, JPropertyId::Height, JPropertyValue(50.0f));
+    logicLayer_->setProperty(btn2, JPropertyId::Text, JPropertyValue(std::string("Submit")));
     
     // 创建文本组件
-    auto txt = logicLayer_->createComponent(ComponentType::Text, root);
-    logicLayer_->setProperty(txt, PropertyId::X, PropertyValue(100.0f));
-    logicLayer_->setProperty(txt, PropertyId::Y, PropertyValue(300.0f));
-    logicLayer_->setProperty(txt, PropertyId::Width, PropertyValue(600.0f));
-    logicLayer_->setProperty(txt, PropertyId::Height, PropertyValue(100.0f));
-    logicLayer_->setProperty(txt, PropertyId::Text, PropertyValue(std::string("Welcome to Aether UI Engine!")));
+    auto txt = logicLayer_->createComponent(JComponentType::Text, root);
+    logicLayer_->setProperty(txt, JPropertyId::X, JPropertyValue(100.0f));
+    logicLayer_->setProperty(txt, JPropertyId::Y, JPropertyValue(300.0f));
+    logicLayer_->setProperty(txt, JPropertyId::Width, JPropertyValue(600.0f));
+    logicLayer_->setProperty(txt, JPropertyId::Height, JPropertyValue(100.0f));
+    logicLayer_->setProperty(txt, JPropertyId::Text, JPropertyValue(std::string("Welcome to Aether UI Engine!")));
     
     // 运行一帧更新
     logicLayer_->runFrame();
 }
 
 // 绘制回调
-void AetherApplication::onPaint() {
+void JAetherApplication::onPaint() {
     PAINTSTRUCT ps;
     BeginPaint(hwnd_, &ps);
     
@@ -259,7 +259,7 @@ void AetherApplication::onPaint() {
 
 // 窗口大小改变回调
 // 参数: width, height - 新尺寸
-void AetherApplication::onResize(int width, int height) {
+void JAetherApplication::onResize(int width, int height) {
     if (renderer_) {
         renderer_->resize(width, height);
     }
@@ -268,7 +268,7 @@ void AetherApplication::onResize(int width, int height) {
 
 // 鼠标移动回调
 // 参数: x, y - 鼠标坐标
-void AetherApplication::onMouseMove(int x, int y) {
+void JAetherApplication::onMouseMove(int x, int y) {
     if (logicLayer_ && renderer_) {
         float dpiScaleX = 96.0f / renderer_->getDpiX();
         float dpiScaleY = 96.0f / renderer_->getDpiY();
@@ -280,7 +280,7 @@ void AetherApplication::onMouseMove(int x, int y) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void AetherApplication::onMouseDown(int x, int y, int button) {
+void JAetherApplication::onMouseDown(int x, int y, int button) {
     if (logicLayer_ && renderer_) {
         float dpiScaleX = 96.0f / renderer_->getDpiX();
         float dpiScaleY = 96.0f / renderer_->getDpiY();
@@ -292,7 +292,7 @@ void AetherApplication::onMouseDown(int x, int y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void AetherApplication::onMouseUp(int x, int y, int button) {
+void JAetherApplication::onMouseUp(int x, int y, int button) {
     if (logicLayer_ && renderer_) {
         float dpiScaleX = 96.0f / renderer_->getDpiX();
         float dpiScaleY = 96.0f / renderer_->getDpiY();
@@ -304,7 +304,7 @@ void AetherApplication::onMouseUp(int x, int y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void AetherApplication::dispatchClick(int x, int y, int button) {
+void JAetherApplication::dispatchClick(int x, int y, int button) {
     if (logicLayer_ && renderer_) {
         float dpiScaleX = 96.0f / renderer_->getDpiX();
         float dpiScaleY = 96.0f / renderer_->getDpiY();
@@ -314,7 +314,7 @@ void AetherApplication::dispatchClick(int x, int y, int button) {
 
 // 按键按下回调
 // 参数: keyCode - 按键码
-void AetherApplication::onKeyDown(int keyCode) {
+void JAetherApplication::onKeyDown(int keyCode) {
     if (logicLayer_) {
         logicLayer_->dispatchKeyDown(keyCode);
     }
@@ -322,7 +322,7 @@ void AetherApplication::onKeyDown(int keyCode) {
 
 // 按键释放回调
 // 参数: keyCode - 按键码
-void AetherApplication::onKeyUp(int keyCode) {
+void JAetherApplication::onKeyUp(int keyCode) {
     if (logicLayer_) {
         logicLayer_->dispatchKeyUp(keyCode);
     }
@@ -330,50 +330,50 @@ void AetherApplication::onKeyUp(int keyCode) {
 
 // 字符输入回调
 // 参数: ch - 输入的字符
-void AetherApplication::onChar(char ch) {
+void JAetherApplication::onChar(char ch) {
     if (logicLayer_) {
         logicLayer_->dispatchTextInput(std::string(1, ch));
     }
 }
 
 // 渲染UI
-void AetherApplication::render() {
+void JAetherApplication::render() {
     if (!renderer_ || !logicLayer_) return;
     
     renderer_->beginDraw();
-    renderer_->clear(Color(0.95f, 0.95f, 0.95f, 1.0f));
+    renderer_->clear(JColor(0.95f, 0.95f, 0.95f, 1.0f));
     
     auto& storage = logicLayer_->getStorage();
     
     // 遍历所有组件并渲染
-    storage.forEach([this, &storage](ComponentHandle handle) {
+    storage.forEach([this, &storage](JComponentHandle handle) {
         auto* entry = storage.getComponent(handle);
         if (!entry) return;
         
-        Rect rect = storage.getAbsoluteBounds(handle);
+        JRect rect = storage.getAbsoluteBounds(handle);
         
         switch (entry->type) {
-            case ComponentType::Container:
+            case JComponentType::Container:
                 // 绘制容器背景
-                renderer_->fillRect(rect, Color(0.9f, 0.9f, 0.9f, 1.0f));
+                renderer_->fillRect(rect, JColor(0.9f, 0.9f, 0.9f, 1.0f));
                 break;
                 
-            case ComponentType::Button: {
+            case JComponentType::Button: {
                 // 绘制按钮（圆角矩形）
-                renderer_->fillRoundedRect(rect, 5.0f, 5.0f, Color(0.2f, 0.5f, 0.9f, 1.0f));
+                renderer_->fillRoundedRect(rect, 5.0f, 5.0f, JColor(0.2f, 0.5f, 0.9f, 1.0f));
                 // 绘制按钮文本
-                auto* textProp = entry->properties.getProperty(PropertyId::Text);
+                auto* textProp = entry->properties.getProperty(JPropertyId::Text);
                 if (textProp) {
-                    renderer_->drawText(textProp->get<std::string>(), rect, Color(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
+                    renderer_->drawText(textProp->get<std::string>(), rect, JColor(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
                 }
                 break;
             }
                 
-            case ComponentType::Text: {
+            case JComponentType::Text: {
                 // 绘制文本
-                auto* textProp = entry->properties.getProperty(PropertyId::Text);
+                auto* textProp = entry->properties.getProperty(JPropertyId::Text);
                 if (textProp) {
-                    renderer_->drawText(textProp->get<std::string>(), rect, Color(0.0f, 0.0f, 0.0f, 1.0f), 20.0f);
+                    renderer_->drawText(textProp->get<std::string>(), rect, JColor(0.0f, 0.0f, 0.0f, 1.0f), 20.0f);
                 }
                 break;
             }
@@ -387,7 +387,7 @@ void AetherApplication::render() {
 }
 
 // 更新一帧
-void AetherApplication::update() {
+void JAetherApplication::update() {
     if (logicLayer_) {
         logicLayer_->runFrame();
     }
@@ -395,4 +395,4 @@ void AetherApplication::update() {
     InvalidateRect(hwnd_, NULL, FALSE);
 }
 
-} // namespace aether
+} // namespace jaether

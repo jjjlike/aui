@@ -19,9 +19,9 @@ class TodoAppWindow;
 class TodoAppWindow {
 private:
     HWND hwnd_ = nullptr;
-    std::unique_ptr<aether::LogicLayer> logicLayer_;
-    std::unique_ptr<aether::TodoApp> todoApp_;
-    std::unique_ptr<aether::Direct2DRenderer> renderer_;
+    std::unique_ptr<jaether::JLogicLayer> logicLayer_;
+    std::unique_ptr<jaether::JTodoApp> todoApp_;
+    std::unique_ptr<jaether::JDirect2DRenderer> renderer_;
     bool running_ = false;
     int renderFrameCount_ = 0;
 
@@ -142,12 +142,12 @@ public:
         }
 
         // 初始化逻辑层和待办应用
-        logicLayer_ = std::make_unique<aether::LogicLayer>();
-        todoApp_ = std::make_unique<aether::TodoApp>(*logicLayer_);
+        logicLayer_ = std::make_unique<jaether::JLogicLayer>();
+        todoApp_ = std::make_unique<jaether::JTodoApp>(*logicLayer_);
         todoApp_->initialize();
 
         // 初始化渲染器
-        renderer_ = std::make_unique<aether::Direct2DRenderer>();
+        renderer_ = std::make_unique<jaether::JDirect2DRenderer>();
         if (!renderer_->initialize(hwnd_)) {
             MessageBoxW(nullptr, L"Failed to initialize renderer", L"Error", MB_ICONERROR);
             return false;
@@ -168,15 +168,15 @@ public:
         float dipWidth = static_cast<float>(width) * dpiScaleX;
         float dipHeight = static_cast<float>(height) * dpiScaleY;
         
-        aether::Logger::getInstance().info("窗口客户区大小: " + std::to_string(width) + "x" + std::to_string(height) +
+        jaether::JLogger::getInstance().info("窗口客户区大小: " + std::to_string(width) + "x" + std::to_string(height) +
             " DPI: " + std::to_string(static_cast<int>(renderer_->getDpiX())));
-        aether::Logger::getInstance().info("DIP尺寸: " + std::to_string(static_cast<int>(dipWidth)) + "x" + std::to_string(static_cast<int>(dipHeight)));
-        aether::Logger::getInstance().info("更新根容器尺寸为: " + std::to_string(dipWidth) + "x" + std::to_string(dipHeight));
-        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(dipWidth));
-        logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(dipHeight));
-        aether::Logger::getInstance().info("调用runFrame()计算布局");
+        jaether::JLogger::getInstance().info("DIP尺寸: " + std::to_string(static_cast<int>(dipWidth)) + "x" + std::to_string(static_cast<int>(dipHeight)));
+        jaether::JLogger::getInstance().info("更新根容器尺寸为: " + std::to_string(dipWidth) + "x" + std::to_string(dipHeight));
+        logicLayer_->setProperty(todoApp_->getRootContainer(), jaether::JPropertyId::Width, jaether::JPropertyValue(dipWidth));
+        logicLayer_->setProperty(todoApp_->getRootContainer(), jaether::JPropertyId::Height, jaether::JPropertyValue(dipHeight));
+        jaether::JLogger::getInstance().info("调用runFrame()计算布局");
         logicLayer_->runFrame();
-        aether::Logger::getInstance().info("布局计算完成");
+        jaether::JLogger::getInstance().info("布局计算完成");
 
         // 设置定时器
         SetTimer(hwnd_, 1, 16, nullptr); // 约60fps
@@ -226,8 +226,8 @@ public:
         if (logicLayer_ && todoApp_ && renderer_) {
             float dpiScaleX = 96.0f / renderer_->getDpiX();
             float dpiScaleY = 96.0f / renderer_->getDpiY();
-            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Width, aether::PropertyValue(static_cast<float>(width) * dpiScaleX));
-            logicLayer_->setProperty(todoApp_->getRootContainer(), aether::PropertyId::Height, aether::PropertyValue(static_cast<float>(height) * dpiScaleY));
+            logicLayer_->setProperty(todoApp_->getRootContainer(), jaether::JPropertyId::Width, jaether::JPropertyValue(static_cast<float>(width) * dpiScaleX));
+            logicLayer_->setProperty(todoApp_->getRootContainer(), jaether::JPropertyId::Height, jaether::JPropertyValue(static_cast<float>(height) * dpiScaleY));
         }
     }
 
@@ -301,7 +301,7 @@ public:
 
         if (renderer_ && logicLayer_) {
             renderer_->beginDraw();
-            renderer_->clear(aether::Color(1.0f, 1.0f, 1.0f, 1.0f));
+            renderer_->clear(jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
 
             // 渲染所有组件
             auto& storage = logicLayer_->getStorage();
@@ -311,27 +311,27 @@ public:
             
             renderFrameCount_++;
             if (renderFrameCount_ <= 3) {
-                aether::Logger::getInstance().info("--- 开始渲染第" + std::to_string(renderFrameCount_) + "帧 ---");
+                jaether::JLogger::getInstance().info("--- 开始渲染第" + std::to_string(renderFrameCount_) + "帧 ---");
             }
             
-            storage.forEach([this, &storage, mouseX, mouseY](aether::ComponentHandle handle) {
+            storage.forEach([this, &storage, mouseX, mouseY](jaether::JComponentHandle handle) {
                 auto* entry = storage.getComponent(handle);
                 if (!entry || !entry->visible) return;
 
                 // 使用组件存储中的绝对位置计算函数
-                aether::Rect rect = storage.getAbsoluteBounds(handle);
+                jaether::JRect rect = storage.getAbsoluteBounds(handle);
 
                 // 输出组件布局信息
                 if (renderFrameCount_ <= 3) {
                     std::string typeName;
                     switch (entry->type) {
-                        case aether::ComponentType::Container: typeName = "Container"; break;
-                        case aether::ComponentType::Button: typeName = "Button"; break;
-                        case aether::ComponentType::Text: typeName = "Text"; break;
-                        case aether::ComponentType::Input: typeName = "Input"; break;
+                        case jaether::JComponentType::Container: typeName = "Container"; break;
+                        case jaether::JComponentType::Button: typeName = "Button"; break;
+                        case jaether::JComponentType::Text: typeName = "Text"; break;
+                        case jaether::JComponentType::Input: typeName = "Input"; break;
                         default: typeName = "Unknown"; break;
                     }
-                    aether::Logger::getInstance().info("渲染组件: handle=" + std::to_string(handle.index) + 
+                    jaether::JLogger::getInstance().info("渲染组件: handle=" + std::to_string(handle.index) + 
                         " type=" + typeName + 
                         " rect=(" + std::to_string(static_cast<int>(rect.x)) + "," + 
                         std::to_string(static_cast<int>(rect.y)) + "," +
@@ -340,19 +340,19 @@ public:
                 }
 
                 switch (entry->type) {
-                    case aether::ComponentType::Container: {
-                        renderer_->fillRect(rect, aether::Color(0.95f, 0.95f, 0.95f, 1.0f));
+                    case jaether::JComponentType::Container: {
+                        renderer_->fillRect(rect, jaether::JColor(0.95f, 0.95f, 0.95f, 1.0f));
                         break;
                     }
 
-                    case aether::ComponentType::Button: {
+                    case jaether::JComponentType::Button: {
                         if (renderFrameCount_ <= 3) {
-                            aether::Logger::getInstance().info("  [渲染按钮 handle=" + std::to_string(handle.index) + " 开始");
+                            jaether::JLogger::getInstance().info("  [渲染按钮 handle=" + std::to_string(handle.index) + " 开始");
                         }
                         
                         // 打印按钮位置对比信息
-                        aether::Rect relativeRect = entry->layoutResult;
-                        aether::Logger::getInstance().info("  [渲染按钮位置对比] 相对位置: (" + 
+                        jaether::JRect relativeRect = entry->layoutResult;
+                        jaether::JLogger::getInstance().info("  [渲染按钮位置对比] 相对位置: (" + 
                             std::to_string(static_cast<int>(relativeRect.x)) + "," + 
                             std::to_string(static_cast<int>(relativeRect.y)) + "," + 
                             std::to_string(static_cast<int>(relativeRect.width)) + "x" + 
@@ -367,17 +367,17 @@ public:
                         bool isHovered = storage.containsPoint(handle, mouseX, mouseY);
                         
                         // 红色按钮，不同状态透明度不同
-                        aether::Color btnColor;
+                        jaether::JColor btnColor;
                         if (isHovered) {
                             // 悬停状态：半透明红色
-                            btnColor = aether::Color(1.0f, 1.0f, 0.0f, 1.0f);
+                            btnColor = jaether::JColor(1.0f, 1.0f, 0.0f, 1.0f);
                         } else {
                             // 普通状态：完全不透明红色
-                            btnColor = aether::Color(1.0f, 0.0f, 0.0f, 1.0f);
+                            btnColor = jaether::JColor(1.0f, 0.0f, 0.0f, 1.0f);
                         }
                         
                         if (renderFrameCount_ <= 3) {
-                            aether::Logger::getInstance().info("  [渲染按钮] 填充背景 rect=(" + 
+                            jaether::JLogger::getInstance().info("  [渲染按钮] 填充背景 rect=(" + 
                                 std::to_string(static_cast<int>(rect.x)) + "," + 
                                 std::to_string(static_cast<int>(rect.y)) + "," + 
                                 std::to_string(static_cast<int>(rect.width)) + "x" + 
@@ -388,39 +388,39 @@ public:
                         renderer_->fillRoundedRect(rect, 5.0f, 5.0f, btnColor);
                         
                         // 渲染按钮文本
-                        auto* btnTextProp = entry->properties.getProperty(aether::PropertyId::Text);
+                        auto* btnTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
                         if (btnTextProp) {
                             if (renderFrameCount_ <= 3) {
-                                aether::Logger::getInstance().info("  [渲染按钮] 渲染文本: " + btnTextProp->get<std::string>());
+                                jaether::JLogger::getInstance().info("  [渲染按钮] 渲染文本: " + btnTextProp->get<std::string>());
                             }
-                            renderer_->drawText(btnTextProp->get<std::string>(), rect, aether::Color(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
+                            renderer_->drawText(btnTextProp->get<std::string>(), rect, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
                         } else {
                             if (renderFrameCount_ <= 3) {
-                                aether::Logger::getInstance().warning("  [渲染按钮] 无文本属性");
+                                jaether::JLogger::getInstance().warning("  [渲染按钮] 无文本属性");
                             }
                         }
                         
                         if (renderFrameCount_ <= 3) {
-                            aether::Logger::getInstance().info("  [渲染按钮] 完成");
+                            jaether::JLogger::getInstance().info("  [渲染按钮] 完成");
                         }
                         break;
                     }
 
-                    case aether::ComponentType::Text: {
-                        auto* txtTextProp = entry->properties.getProperty(aether::PropertyId::Text);
+                    case jaether::JComponentType::Text: {
+                        auto* txtTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
                         if (txtTextProp) {
-                            renderer_->drawText(txtTextProp->get<std::string>(), rect, aether::Color(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
+                            renderer_->drawText(txtTextProp->get<std::string>(), rect, jaether::JColor(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
                         }
                         break;
                     }
 
-                    case aether::ComponentType::Input: {
-                        renderer_->fillRect(rect, aether::Color(1.0f, 1.0f, 1.0f, 1.0f));
-                        renderer_->drawRect(rect, aether::Color(0.6f, 0.6f, 0.6f, 1.0f));
+                    case jaether::JComponentType::Input: {
+                        renderer_->fillRect(rect, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
+                        renderer_->drawRect(rect, jaether::JColor(0.6f, 0.6f, 0.6f, 1.0f));
                         
-                        auto* inpTextProp = entry->properties.getProperty(aether::PropertyId::Text);
+                        auto* inpTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
                         if (inpTextProp) {
-                            renderer_->drawText(inpTextProp->get<std::string>(), rect, aether::Color(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
+                            renderer_->drawText(inpTextProp->get<std::string>(), rect, jaether::JColor(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
                         }
                         break;
                     }
@@ -439,9 +439,9 @@ public:
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // 初始化日志
-    aether::Logger::getInstance().setLevel(aether::LogLevel::Debug);
-    aether::Logger::getInstance().enableFileOutput(true, "todoapp_debug.log");
-    aether::Logger::getInstance().info("=== TodoApp 启动 ===");
+    jaether::JLogger::getInstance().setLevel(jaether::JLogLevel::Debug);
+    jaether::JLogger::getInstance().enableFileOutput(true, "todoapp_debug.log");
+    jaether::JLogger::getInstance().info("=== JTodoApp 启动 ===");
     
     // 初始化COM库（Direct2D和WIC需要）
     HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
@@ -459,9 +459,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 1;
     }
 
-    aether::Logger::getInstance().info("开始消息循环...");
+    jaether::JLogger::getInstance().info("开始消息循环...");
     app.run();
-    aether::Logger::getInstance().info("=== TodoApp 退出 ===");
+    jaether::JLogger::getInstance().info("=== JTodoApp 退出 ===");
 
     return 0;
 }

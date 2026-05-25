@@ -3,27 +3,27 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace aether {
+namespace jaether {
 
-JSONValue JSONParser::parse(const std::string& json) {
+JJSONValue JJSONParser::parse(const std::string& json) {
     size_t pos = 0;
     return parseInternal(json, pos);
 }
 
-JSONValue JSONParser::parseInternal(const std::string& json, size_t& pos) {
+JJSONValue JJSONParser::parseInternal(const std::string& json, size_t& pos) {
     skipWhitespace(json, pos);
 
     if (pos >= json.size()) {
-        return JSONValue();
+        return JJSONValue();
     }
 
     char c = json[pos];
     if (c == '{') {
-        return JSONValue(parseObject(json, pos));
+        return JJSONValue(parseObject(json, pos));
     } else if (c == '[') {
-        return JSONValue(parseArray(json, pos));
+        return JJSONValue(parseArray(json, pos));
     } else if (c == '"') {
-        return JSONValue(parseString(json, pos));
+        return JJSONValue(parseString(json, pos));
     } else if (c == 't' || c == 'f' || c == 'n') {
         return parseBooleanOrNull(json, pos);
     } else {
@@ -31,7 +31,7 @@ JSONValue JSONParser::parseInternal(const std::string& json, size_t& pos) {
     }
 }
 
-std::string JSONParser::stringify(const JSONValue& value) {
+std::string JJSONParser::stringify(const JJSONValue& value) {
     std::ostringstream oss;
 
     if (std::holds_alternative<int>(value.value)) {
@@ -59,8 +59,8 @@ std::string JSONParser::stringify(const JSONValue& value) {
         oss << '"';
     } else if (std::holds_alternative<std::nullptr_t>(value.value)) {
         oss << "null";
-    } else if (std::holds_alternative<JSONArray>(value.value)) {
-        const auto& arr = std::get<JSONArray>(value.value);
+    } else if (std::holds_alternative<JJSONArray>(value.value)) {
+        const auto& arr = std::get<JJSONArray>(value.value);
         oss << '[';
         bool first = true;
         for (const auto& item : arr) {
@@ -71,8 +71,8 @@ std::string JSONParser::stringify(const JSONValue& value) {
             first = false;
         }
         oss << ']';
-    } else if (std::holds_alternative<JSONObject>(value.value)) {
-        const auto& obj = std::get<JSONObject>(value.value);
+    } else if (std::holds_alternative<JJSONObject>(value.value)) {
+        const auto& obj = std::get<JJSONObject>(value.value);
         oss << '{';
         bool first = true;
         for (const auto& kv : obj) {
@@ -88,13 +88,13 @@ std::string JSONParser::stringify(const JSONValue& value) {
     return oss.str();
 }
 
-void JSONParser::skipWhitespace(const std::string& json, size_t& pos) {
+void JJSONParser::skipWhitespace(const std::string& json, size_t& pos) {
     while (pos < json.size() && std::isspace(static_cast<unsigned char>(json[pos]))) {
         ++pos;
     }
 }
 
-std::string JSONParser::parseString(const std::string& json, size_t& pos) {
+std::string JJSONParser::parseString(const std::string& json, size_t& pos) {
     ++pos; // skip opening "
     std::string result;
 
@@ -123,7 +123,7 @@ std::string JSONParser::parseString(const std::string& json, size_t& pos) {
     return result;
 }
 
-JSONValue JSONParser::parseNumber(const std::string& json, size_t& pos) {
+JJSONValue JJSONParser::parseNumber(const std::string& json, size_t& pos) {
     size_t start = pos;
     bool isFloat = false;
 
@@ -157,29 +157,29 @@ JSONValue JSONParser::parseNumber(const std::string& json, size_t& pos) {
     std::string numStr = json.substr(start, pos - start);
 
     if (isFloat) {
-        return JSONValue(std::stof(numStr));
+        return JJSONValue(std::stof(numStr));
     } else {
-        return JSONValue(std::stoi(numStr));
+        return JJSONValue(std::stoi(numStr));
     }
 }
 
-JSONValue JSONParser::parseBooleanOrNull(const std::string& json, size_t& pos) {
+JJSONValue JJSONParser::parseBooleanOrNull(const std::string& json, size_t& pos) {
     if (json.substr(pos, 4) == "true") {
         pos += 4;
-        return JSONValue(true);
+        return JJSONValue(true);
     } else if (json.substr(pos, 5) == "false") {
         pos += 5;
-        return JSONValue(false);
+        return JJSONValue(false);
     } else if (json.substr(pos, 4) == "null") {
         pos += 4;
-        return JSONValue();
+        return JJSONValue();
     }
     throw std::runtime_error("Invalid JSON value");
 }
 
-JSONArray JSONParser::parseArray(const std::string& json, size_t& pos) {
+JJSONArray JJSONParser::parseArray(const std::string& json, size_t& pos) {
     ++pos; // skip [
-    JSONArray arr;
+    JJSONArray arr;
 
     skipWhitespace(json, pos);
     while (pos < json.size() && json[pos] != ']') {
@@ -195,9 +195,9 @@ JSONArray JSONParser::parseArray(const std::string& json, size_t& pos) {
     return arr;
 }
 
-JSONObject JSONParser::parseObject(const std::string& json, size_t& pos) {
+JJSONObject JJSONParser::parseObject(const std::string& json, size_t& pos) {
     ++pos; // skip {
-    JSONObject obj;
+    JJSONObject obj;
 
     skipWhitespace(json, pos);
     while (pos < json.size() && json[pos] != '}') {
@@ -219,17 +219,17 @@ JSONObject JSONParser::parseObject(const std::string& json, size_t& pos) {
     return obj;
 }
 
-JSONPatch::JSONPatch() {}
+JJSONPatch::JJSONPatch() {}
 
-JSONPatch::~JSONPatch() {}
+JJSONPatch::~JJSONPatch() {}
 
-bool JSONPatch::parse(const std::string& json) {
+bool JJSONPatch::parse(const std::string& json) {
     return false;
 }
 
-void JSONPatch::apply(JSONObject& root) const {}
+void JJSONPatch::apply(JJSONObject& root) const {}
 
-std::string JSONPatch::toString() const {
+std::string JJSONPatch::toString() const {
     return "[]";
 }
 

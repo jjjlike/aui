@@ -12,7 +12,7 @@
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "windowscodecs.lib")
 
-namespace aether {
+namespace jaether {
 
 /**
  * Direct2D渲染器类
@@ -20,17 +20,17 @@ namespace aether {
  * 使用Direct2D进行UI渲染
  * 提供基本绘图功能
  */
-class Direct2DRenderer {
+class JDirect2DRenderer {
 public:
     /**
      * 构造函数
      */
-    Direct2DRenderer();
+    JDirect2DRenderer();
     
     /**
      * 析构函数
      */
-    ~Direct2DRenderer();
+    ~JDirect2DRenderer();
     
     /**
      * 初始化渲染器
@@ -68,7 +68,7 @@ public:
      * 清除屏幕
      * @param color 清除颜色
      */
-    void clear(const Color& color);
+    void clear(const JColor& color);
     
     /**
      * 绘制矩形（边框）
@@ -76,14 +76,14 @@ public:
      * @param color 边框颜色
      * @param strokeWidth 线条宽度
      */
-    void drawRect(const Rect& rect, const Color& color, float strokeWidth = 1.0f);
+    void drawRect(const JRect& rect, const JColor& color, float strokeWidth = 1.0f);
     
     /**
      * 填充矩形
      * @param rect 矩形区域
      * @param color 填充颜色
      */
-    void fillRect(const Rect& rect, const Color& color);
+    void fillRect(const JRect& rect, const JColor& color);
     
     /**
      * 绘制圆角矩形（边框）
@@ -93,7 +93,7 @@ public:
      * @param color 边框颜色
      * @param strokeWidth 线条宽度
      */
-    void drawRoundedRect(const Rect& rect, float radiusX, float radiusY, const Color& color, float strokeWidth = 1.0f);
+    void drawRoundedRect(const JRect& rect, float radiusX, float radiusY, const JColor& color, float strokeWidth = 1.0f);
     
     /**
      * 填充圆角矩形
@@ -102,7 +102,7 @@ public:
      * @param radiusY Y方向圆角半径
      * @param color 填充颜色
      */
-    void fillRoundedRect(const Rect& rect, float radiusX, float radiusY, const Color& color);
+    void fillRoundedRect(const JRect& rect, float radiusX, float radiusY, const JColor& color);
     
     /**
      * 绘制直线
@@ -111,7 +111,7 @@ public:
      * @param color 线条颜色
      * @param strokeWidth 线条宽度
      */
-    void drawLine(const Point& p1, const Point& p2, const Color& color, float strokeWidth = 1.0f);
+    void drawLine(const JPoint& p1, const JPoint& p2, const JColor& color, float strokeWidth = 1.0f);
     
     /**
      * 绘制文本
@@ -121,7 +121,7 @@ public:
      * @param fontSize 字体大小
      * @param fontName 字体名称
      */
-    void drawText(const std::string& text, const Rect& rect, const Color& color, float fontSize = 16.0f, const std::string& fontName = "Segoe UI");
+    void drawText(const std::string& text, const JRect& rect, const JColor& color, float fontSize = 16.0f, const std::string& fontName = "Segoe UI");
     
     /**
      * 获取渲染目标
@@ -147,28 +147,28 @@ private:
      * @param color Color对象
      * @return Direct2D颜色
      */
-    static D2D1_COLOR_F toD2D(const Color& color);
+    static D2D1_COLOR_F toD2D(const JColor& color);
     
     /**
      * 将Rect转换为Direct2D矩形
      * @param rect Rect对象
      * @return Direct2D矩形
      */
-    static D2D1_RECT_F toD2D(const Rect& rect);
+    static D2D1_RECT_F toD2D(const JRect& rect);
     
     /**
      * 将Point转换为Direct2D点
      * @param point Point对象
      * @return Direct2D点
      */
-    static D2D1_POINT_2F toD2D(const Point& point);
+    static D2D1_POINT_2F toD2D(const JPoint& point);
     
     /**
      * 获取或创建画刷
      * @param color 颜色
      * @return 画刷指针
      */
-    ID2D1SolidColorBrush* getBrush(const Color& color);
+    ID2D1SolidColorBrush* getBrush(const JColor& color);
     
     /**
      * 创建设备无关资源

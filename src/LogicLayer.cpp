@@ -1,4 +1,4 @@
-﻿// LogicLayer.cpp
+﻿// JLogicLayer.cpp
 // 逻辑层模块 - UI引擎的核心逻辑协调层
 //
 // 功能:
@@ -9,10 +9,10 @@
 
 #include "aether/LogicLayer.h"
 
-namespace aether {
+namespace jaether {
 
 // 逻辑层构造函数
-LogicLayer::LogicLayer()
+JLogicLayer::JLogicLayer()
     : storage_()
     , layoutEngine_(storage_)
     , eventDispatcher_(storage_)
@@ -24,10 +24,10 @@ LogicLayer::LogicLayer()
 }
 
 // 逻辑层析构函数
-LogicLayer::~LogicLayer() = default;
+JLogicLayer::~JLogicLayer() = default;
 
 // 运行一帧更新
-void LogicLayer::runFrame() {
+void JLogicLayer::runFrame() {
     // 执行布局更新
     layoutEngine_.relayoutIfNeeded();
     // 更新事件分发器的空间索引
@@ -36,7 +36,7 @@ void LogicLayer::runFrame() {
 
 // 分发鼠标移动事件
 // 参数: x, y - 鼠标坐标
-void LogicLayer::dispatchMouseMove(float x, float y) {
+void JLogicLayer::dispatchMouseMove(float x, float y) {
     eventDispatcher_.onMouseMove(x, y);
 }
 
@@ -44,7 +44,7 @@ void LogicLayer::dispatchMouseMove(float x, float y) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void LogicLayer::dispatchMouseDown(float x, float y, int button) {
+void JLogicLayer::dispatchMouseDown(float x, float y, int button) {
     eventDispatcher_.onMouseDown(x, y, button);
 }
 
@@ -52,7 +52,7 @@ void LogicLayer::dispatchMouseDown(float x, float y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void LogicLayer::dispatchMouseUp(float x, float y, int button) {
+void JLogicLayer::dispatchMouseUp(float x, float y, int button) {
     eventDispatcher_.onMouseUp(x, y, button);
 }
 
@@ -60,26 +60,26 @@ void LogicLayer::dispatchMouseUp(float x, float y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void LogicLayer::dispatchClick(float x, float y, int button) {
+void JLogicLayer::dispatchClick(float x, float y, int button) {
     eventDispatcher_.onClick(x, y, button);
 }
 
 // 分发按键按下事件
 // 参数: keyCode - 按键码
-void LogicLayer::dispatchKeyDown(int keyCode) {
+void JLogicLayer::dispatchKeyDown(int keyCode) {
     eventDispatcher_.onKeyDown(keyCode);
 }
 
 // 分发按键释放事件
 // 参数: keyCode - 按键码
-void LogicLayer::dispatchKeyUp(int keyCode) {
+void JLogicLayer::dispatchKeyUp(int keyCode) {
     eventDispatcher_.onKeyUp(keyCode);
 }
 
 // 分发文本输入事件
 // 参数: text - 输入的文本
-void LogicLayer::dispatchTextInput(const std::string& text) {
+void JLogicLayer::dispatchTextInput(const std::string& text) {
     eventDispatcher_.onTextInput(text);
 }
 
-} // namespace aether
+} // namespace jaether

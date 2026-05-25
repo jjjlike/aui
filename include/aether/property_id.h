@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 属性ID枚举
@@ -11,7 +11,7 @@ namespace aether {
  * 定义了所有可访问的组件属性类型
  * 使用16位整数确保高效存储
  */
-enum class PropertyId : uint16_t {
+enum class JPropertyId : uint16_t {
     Unknown = 0,
     
     // 基础属性
@@ -45,13 +45,13 @@ enum class PropertyId : uint16_t {
     FlexGrow = 40,      // Flex放大因子
     FlexShrink = 41,    // Flex收缩因子
     FlexBasis = 42,     // Flex基准尺寸
-    FlexDirection = 43, // Flex主轴方向
-    FlexWrap = 44,       // Flex换行方式
+    JFlexDirection = 43, // Flex主轴方向
+    JFlexWrap = 44,       // Flex换行方式
     
     // Flex对齐方式
-    JustifyContent = 50, // 主轴对齐方式
-    AlignItems = 51,     // 交叉轴对齐方式（单行）
-    AlignContent = 52,     // 交叉轴对齐方式（多行）
+    JJustifyContent = 50, // 主轴对齐方式
+    JAlignItems = 51,     // 交叉轴对齐方式（单行）
+    JAlignContent = 52,     // 交叉轴对齐方式（多行）
     AlignSelf = 53,       // 自身对齐方式
     
     // 定位属性
@@ -98,7 +98,7 @@ struct PropertyIdHash {
      * @param id 属性ID
      * @return 哈希值
      */
-    size_t operator()(PropertyId id) const {
+    size_t operator()(JPropertyId id) const {
         return static_cast<size_t>(id);
     }
 };
@@ -109,61 +109,61 @@ struct PropertyIdHash {
  * @param name 属性名称字符串
  * @return 对应的PropertyId，如果未找到返回Unknown
  */
-constexpr PropertyId getPropertyIdFromName(std::string_view name) {
-    if (name == "text") return PropertyId::Text;
-    if (name == "enabled") return PropertyId::Enabled;
-    if (name == "visible") return PropertyId::Visible;
+constexpr JPropertyId getPropertyIdFromName(std::string_view name) {
+    if (name == "text") return JPropertyId::Text;
+    if (name == "enabled") return JPropertyId::Enabled;
+    if (name == "visible") return JPropertyId::Visible;
     
-    if (name == "x") return PropertyId::X;
-    if (name == "y") return PropertyId::Y;
-    if (name == "width") return PropertyId::Width;
-    if (name == "height") return PropertyId::Height;
-    if (name == "minWidth") return PropertyId::MinWidth;
-    if (name == "minHeight") return PropertyId::MinHeight;
-    if (name == "maxWidth") return PropertyId::MaxWidth;
-    if (name == "maxHeight") return PropertyId::MaxHeight;
+    if (name == "x") return JPropertyId::X;
+    if (name == "y") return JPropertyId::Y;
+    if (name == "width") return JPropertyId::Width;
+    if (name == "height") return JPropertyId::Height;
+    if (name == "minWidth") return JPropertyId::MinWidth;
+    if (name == "minHeight") return JPropertyId::MinHeight;
+    if (name == "maxWidth") return JPropertyId::MaxWidth;
+    if (name == "maxHeight") return JPropertyId::MaxHeight;
     
-    if (name == "marginLeft") return PropertyId::MarginLeft;
-    if (name == "marginTop") return PropertyId::MarginTop;
-    if (name == "marginRight") return PropertyId::MarginRight;
-    if (name == "marginBottom") return PropertyId::MarginBottom;
+    if (name == "marginLeft") return JPropertyId::MarginLeft;
+    if (name == "marginTop") return JPropertyId::MarginTop;
+    if (name == "marginRight") return JPropertyId::MarginRight;
+    if (name == "marginBottom") return JPropertyId::MarginBottom;
     
-    if (name == "paddingLeft") return PropertyId::PaddingLeft;
-    if (name == "paddingTop") return PropertyId::PaddingTop;
-    if (name == "paddingRight") return PropertyId::PaddingRight;
-    if (name == "paddingBottom") return PropertyId::PaddingBottom;
+    if (name == "paddingLeft") return JPropertyId::PaddingLeft;
+    if (name == "paddingTop") return JPropertyId::PaddingTop;
+    if (name == "paddingRight") return JPropertyId::PaddingRight;
+    if (name == "paddingBottom") return JPropertyId::PaddingBottom;
     
-    if (name == "flexGrow") return PropertyId::FlexGrow;
-    if (name == "flexShrink") return PropertyId::FlexShrink;
-    if (name == "flexBasis") return PropertyId::FlexBasis;
-    if (name == "flexDirection") return PropertyId::FlexDirection;
-    if (name == "flexWrap") return PropertyId::FlexWrap;
+    if (name == "flexGrow") return JPropertyId::FlexGrow;
+    if (name == "flexShrink") return JPropertyId::FlexShrink;
+    if (name == "flexBasis") return JPropertyId::FlexBasis;
+    if (name == "flexDirection") return JPropertyId::JFlexDirection;
+    if (name == "flexWrap") return JPropertyId::JFlexWrap;
     
-    if (name == "justifyContent") return PropertyId::JustifyContent;
-    if (name == "alignItems") return PropertyId::AlignItems;
-    if (name == "alignContent") return PropertyId::AlignContent;
-    if (name == "alignSelf") return PropertyId::AlignSelf;
+    if (name == "justifyContent") return JPropertyId::JJustifyContent;
+    if (name == "alignItems") return JPropertyId::JAlignItems;
+    if (name == "alignContent") return JPropertyId::JAlignContent;
+    if (name == "alignSelf") return JPropertyId::AlignSelf;
     
-    if (name == "positionType") return PropertyId::PositionType;
-    if (name == "positionLeft") return PropertyId::PositionLeft;
-    if (name == "positionTop") return PropertyId::PositionTop;
-    if (name == "positionRight") return PropertyId::PositionRight;
-    if (name == "positionBottom") return PropertyId::PositionBottom;
+    if (name == "positionType") return JPropertyId::PositionType;
+    if (name == "positionLeft") return JPropertyId::PositionLeft;
+    if (name == "positionTop") return JPropertyId::PositionTop;
+    if (name == "positionRight") return JPropertyId::PositionRight;
+    if (name == "positionBottom") return JPropertyId::PositionBottom;
     
-    if (name == "backgroundColor") return PropertyId::BackgroundColor;
-    if (name == "borderColor") return PropertyId::BorderColor;
-    if (name == "borderWidth") return PropertyId::BorderWidth;
-    if (name == "borderRadius") return PropertyId::BorderRadius;
+    if (name == "backgroundColor") return JPropertyId::BackgroundColor;
+    if (name == "borderColor") return JPropertyId::BorderColor;
+    if (name == "borderWidth") return JPropertyId::BorderWidth;
+    if (name == "borderRadius") return JPropertyId::BorderRadius;
     
-    if (name == "fontSize") return PropertyId::FontSize;
-    if (name == "fontFamily") return PropertyId::FontFamily;
-    if (name == "fontWeight") return PropertyId::FontWeight;
-    if (name == "textColor") return PropertyId::TextColor;
-    if (name == "textAlign") return PropertyId::TextAlign;
+    if (name == "fontSize") return JPropertyId::FontSize;
+    if (name == "fontFamily") return JPropertyId::FontFamily;
+    if (name == "fontWeight") return JPropertyId::FontWeight;
+    if (name == "textColor") return JPropertyId::TextColor;
+    if (name == "textAlign") return JPropertyId::TextAlign;
     
-    if (name == "zIndex") return PropertyId::ZIndex;
+    if (name == "zIndex") return JPropertyId::ZIndex;
     
-    return PropertyId::Unknown;
+    return JPropertyId::Unknown;
 }
 
 /**
@@ -172,51 +172,51 @@ constexpr PropertyId getPropertyIdFromName(std::string_view name) {
  * @param id 属性ID
  * @return 对应的属性名称字符串
  */
-constexpr const char* getPropertyName(PropertyId id) {
+constexpr const char* getPropertyName(JPropertyId id) {
     switch (id) {
-        case PropertyId::Text: return "text";
-        case PropertyId::Enabled: return "enabled";
-        case PropertyId::Visible: return "visible";
-        case PropertyId::X: return "x";
-        case PropertyId::Y: return "y";
-        case PropertyId::Width: return "width";
-        case PropertyId::Height: return "height";
-        case PropertyId::MinWidth: return "minWidth";
-        case PropertyId::MinHeight: return "minHeight";
-        case PropertyId::MaxWidth: return "maxWidth";
-        case PropertyId::MaxHeight: return "maxHeight";
-        case PropertyId::MarginLeft: return "marginLeft";
-        case PropertyId::MarginTop: return "marginTop";
-        case PropertyId::MarginRight: return "marginRight";
-        case PropertyId::MarginBottom: return "marginBottom";
-        case PropertyId::PaddingLeft: return "paddingLeft";
-        case PropertyId::PaddingTop: return "paddingTop";
-        case PropertyId::PaddingRight: return "paddingRight";
-        case PropertyId::PaddingBottom: return "paddingBottom";
-        case PropertyId::FlexGrow: return "flexGrow";
-        case PropertyId::FlexShrink: return "flexShrink";
-        case PropertyId::FlexBasis: return "flexBasis";
-        case PropertyId::FlexDirection: return "flexDirection";
-        case PropertyId::FlexWrap: return "flexWrap";
-        case PropertyId::JustifyContent: return "justifyContent";
-        case PropertyId::AlignItems: return "alignItems";
-        case PropertyId::AlignContent: return "alignContent";
-        case PropertyId::AlignSelf: return "alignSelf";
-        case PropertyId::PositionType: return "positionType";
-        case PropertyId::PositionLeft: return "positionLeft";
-        case PropertyId::PositionTop: return "positionTop";
-        case PropertyId::PositionRight: return "positionRight";
-        case PropertyId::PositionBottom: return "positionBottom";
-        case PropertyId::BackgroundColor: return "backgroundColor";
-        case PropertyId::BorderColor: return "borderColor";
-        case PropertyId::BorderWidth: return "borderWidth";
-        case PropertyId::BorderRadius: return "borderRadius";
-        case PropertyId::FontSize: return "fontSize";
-        case PropertyId::FontFamily: return "fontFamily";
-        case PropertyId::FontWeight: return "fontWeight";
-        case PropertyId::TextColor: return "textColor";
-        case PropertyId::TextAlign: return "textAlign";
-        case PropertyId::ZIndex: return "zIndex";
+        case JPropertyId::Text: return "text";
+        case JPropertyId::Enabled: return "enabled";
+        case JPropertyId::Visible: return "visible";
+        case JPropertyId::X: return "x";
+        case JPropertyId::Y: return "y";
+        case JPropertyId::Width: return "width";
+        case JPropertyId::Height: return "height";
+        case JPropertyId::MinWidth: return "minWidth";
+        case JPropertyId::MinHeight: return "minHeight";
+        case JPropertyId::MaxWidth: return "maxWidth";
+        case JPropertyId::MaxHeight: return "maxHeight";
+        case JPropertyId::MarginLeft: return "marginLeft";
+        case JPropertyId::MarginTop: return "marginTop";
+        case JPropertyId::MarginRight: return "marginRight";
+        case JPropertyId::MarginBottom: return "marginBottom";
+        case JPropertyId::PaddingLeft: return "paddingLeft";
+        case JPropertyId::PaddingTop: return "paddingTop";
+        case JPropertyId::PaddingRight: return "paddingRight";
+        case JPropertyId::PaddingBottom: return "paddingBottom";
+        case JPropertyId::FlexGrow: return "flexGrow";
+        case JPropertyId::FlexShrink: return "flexShrink";
+        case JPropertyId::FlexBasis: return "flexBasis";
+        case JPropertyId::JFlexDirection: return "flexDirection";
+        case JPropertyId::JFlexWrap: return "flexWrap";
+        case JPropertyId::JJustifyContent: return "justifyContent";
+        case JPropertyId::JAlignItems: return "alignItems";
+        case JPropertyId::JAlignContent: return "alignContent";
+        case JPropertyId::AlignSelf: return "alignSelf";
+        case JPropertyId::PositionType: return "positionType";
+        case JPropertyId::PositionLeft: return "positionLeft";
+        case JPropertyId::PositionTop: return "positionTop";
+        case JPropertyId::PositionRight: return "positionRight";
+        case JPropertyId::PositionBottom: return "positionBottom";
+        case JPropertyId::BackgroundColor: return "backgroundColor";
+        case JPropertyId::BorderColor: return "borderColor";
+        case JPropertyId::BorderWidth: return "borderWidth";
+        case JPropertyId::BorderRadius: return "borderRadius";
+        case JPropertyId::FontSize: return "fontSize";
+        case JPropertyId::FontFamily: return "fontFamily";
+        case JPropertyId::FontWeight: return "fontWeight";
+        case JPropertyId::TextColor: return "textColor";
+        case JPropertyId::TextAlign: return "textAlign";
+        case JPropertyId::ZIndex: return "zIndex";
         default: return "unknown";
     }
 }
@@ -227,38 +227,38 @@ constexpr const char* getPropertyName(PropertyId id) {
  * @param id 属性ID
  * @return 如果属性改变时是否需要重新布局则返回true
  */
-constexpr bool isLayoutAffectingProperty(PropertyId id) {
+constexpr bool isLayoutAffectingProperty(JPropertyId id) {
     switch (id) {
-        case PropertyId::X:
-        case PropertyId::Y:
-        case PropertyId::Width:
-        case PropertyId::Height:
-        case PropertyId::MinWidth:
-        case PropertyId::MinHeight:
-        case PropertyId::MaxWidth:
-        case PropertyId::MaxHeight:
-        case PropertyId::MarginLeft:
-        case PropertyId::MarginTop:
-        case PropertyId::MarginRight:
-        case PropertyId::MarginBottom:
-        case PropertyId::PaddingLeft:
-        case PropertyId::PaddingTop:
-        case PropertyId::PaddingRight:
-        case PropertyId::PaddingBottom:
-        case PropertyId::FlexGrow:
-        case PropertyId::FlexShrink:
-        case PropertyId::FlexBasis:
-        case PropertyId::FlexDirection:
-        case PropertyId::FlexWrap:
-        case PropertyId::JustifyContent:
-        case PropertyId::AlignItems:
-        case PropertyId::AlignContent:
-        case PropertyId::AlignSelf:
-        case PropertyId::PositionType:
-        case PropertyId::PositionLeft:
-        case PropertyId::PositionTop:
-        case PropertyId::PositionRight:
-        case PropertyId::PositionBottom:
+        case JPropertyId::X:
+        case JPropertyId::Y:
+        case JPropertyId::Width:
+        case JPropertyId::Height:
+        case JPropertyId::MinWidth:
+        case JPropertyId::MinHeight:
+        case JPropertyId::MaxWidth:
+        case JPropertyId::MaxHeight:
+        case JPropertyId::MarginLeft:
+        case JPropertyId::MarginTop:
+        case JPropertyId::MarginRight:
+        case JPropertyId::MarginBottom:
+        case JPropertyId::PaddingLeft:
+        case JPropertyId::PaddingTop:
+        case JPropertyId::PaddingRight:
+        case JPropertyId::PaddingBottom:
+        case JPropertyId::FlexGrow:
+        case JPropertyId::FlexShrink:
+        case JPropertyId::FlexBasis:
+        case JPropertyId::JFlexDirection:
+        case JPropertyId::JFlexWrap:
+        case JPropertyId::JJustifyContent:
+        case JPropertyId::JAlignItems:
+        case JPropertyId::JAlignContent:
+        case JPropertyId::AlignSelf:
+        case JPropertyId::PositionType:
+        case JPropertyId::PositionLeft:
+        case JPropertyId::PositionTop:
+        case JPropertyId::PositionRight:
+        case JPropertyId::PositionBottom:
             return true;
         default:
             return false;

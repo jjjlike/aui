@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <windows.h>
 
-namespace aether {
+namespace jaether {
 
 /**
  * RPC处理器函数类型
@@ -17,7 +17,7 @@ namespace aether {
  * @param params 参数JSON
  * @return 结果JSON
  */
-using RPCHandler = std::function<JSONValue(const JSONValue& params)>;
+using RPCHandler = std::function<JJSONValue(const JJSONValue& params)>;
 
 /**
  * RPC服务器类
@@ -25,17 +25,17 @@ using RPCHandler = std::function<JSONValue(const JSONValue& params)>;
  * 提供基于Windows命名管道的远程过程调用服务
  * 用于测试和自动化控制
  */
-class RPCServer {
+class JRPCServer {
 public:
     /**
      * 构造函数
      */
-    RPCServer();
+    JRPCServer();
     
     /**
      * 析构函数
      */
-    ~RPCServer();
+    ~JRPCServer();
     
     /**
      * 启动RPC服务器
@@ -78,7 +78,7 @@ private:
      * @param params 参数
      * @return 结果
      */
-    JSONValue invokeHandler(const std::string& method, const JSONValue& params);
+    JJSONValue invokeHandler(const std::string& method, const JJSONValue& params);
     
     std::string pipeName_;                    // 管道名称
     HANDLE hPipe_ = INVALID_HANDLE_VALUE;     // 管道句柄

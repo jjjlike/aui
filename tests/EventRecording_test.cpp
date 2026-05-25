@@ -20,7 +20,7 @@
 #include <vector>
 #include <string>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -32,19 +32,19 @@ class EventRecordingTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建组件存储
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
         // 创建事件分发器
-        dispatcher = std::make_unique<EventDispatcher>(*storage);
+        dispatcher = std::make_unique<JEventDispatcher>(*storage);
         
         // 创建根组件
-        root = storage->createComponent(ComponentType::Container);
+        root = storage->createComponent(JComponentType::Container);
         auto* rootEntry = storage->getComponent(root);
         rootEntry->layoutResult = {0, 0, 800, 600};
         rootEntry->visible = true;
         rootEntry->enabled = true;
         
         // 创建按钮组件
-        button = storage->createComponent(ComponentType::Button, root);
+        button = storage->createComponent(JComponentType::Button, root);
         auto* buttonEntry = storage->getComponent(button);
         buttonEntry->layoutResult = {100, 100, 200, 50};
         buttonEntry->visible = true;
@@ -52,7 +52,7 @@ protected:
         buttonEntry->debugName = "TestButton";
         
         // 创建文本输入组件
-        input = storage->createComponent(ComponentType::Input, root);
+        input = storage->createComponent(JComponentType::Input, root);
         auto* inputEntry = storage->getComponent(input);
         inputEntry->layoutResult = {100, 200, 300, 40};
         inputEntry->visible = true;
@@ -74,11 +74,11 @@ protected:
         storage.reset();
     }
     
-    std::unique_ptr<ComponentStorage> storage;
-    std::unique_ptr<EventDispatcher> dispatcher;
-    ComponentHandle root;
-    ComponentHandle button;
-    ComponentHandle input;
+    std::unique_ptr<JComponentStorage> storage;
+    std::unique_ptr<JEventDispatcher> dispatcher;
+    JComponentHandle root;
+    JComponentHandle button;
+    JComponentHandle input;
 };
 
 /**
@@ -168,7 +168,7 @@ TEST_F(EventRecordingTest, RecordMouseClick) {
     // 验证至少有一个Click类型的事件
     bool foundClick = false;
     for (const auto& event : events) {
-        if (event.eventType == EventType::Click) {
+        if (event.eventType == JEventType::Click) {
             foundClick = true;
             // 验证事件数据
             EXPECT_EQ(event.mouseEvent.position.x, 150);
@@ -217,7 +217,7 @@ TEST_F(EventRecordingTest, RecordMouseMove) {
     // 验证有MouseMove事件
     int moveCount = 0;
     for (const auto& event : events) {
-        if (event.eventType == EventType::MouseMove) {
+        if (event.eventType == JEventType::MouseMove) {
             moveCount++;
         }
     }
@@ -261,9 +261,9 @@ TEST_F(EventRecordingTest, RecordKeyEvent) {
     bool hasKeyDown = false;
     bool hasKeyUp = false;
     for (const auto& event : events) {
-        if (event.eventType == EventType::KeyDown) {
+        if (event.eventType == JEventType::KeyDown) {
             hasKeyDown = true;
-        } else if (event.eventType == EventType::KeyUp) {
+        } else if (event.eventType == JEventType::KeyUp) {
             hasKeyUp = true;
         }
     }
@@ -307,7 +307,7 @@ TEST_F(EventRecordingTest, RecordTextInput) {
     // 验证录制了文本输入事件
     int textInputCount = 0;
     for (const auto& event : events) {
-        if (event.eventType == EventType::TextInput) {
+        if (event.eventType == JEventType::TextInput) {
             textInputCount++;
         }
     }
@@ -558,7 +558,7 @@ TEST_F(EventRecordingTest, PlaybackTextSequence) {
  */
 TEST_F(EventRecordingTest, PlaybackEmptyEvents) {
     // 创建空事件列表
-    std::vector<RecordedEvent> emptyEvents;
+    std::vector<JRecordedEvent> emptyEvents;
     
     // 清空事件日志
     dispatcher->clearEventLog();
@@ -676,8 +676,8 @@ TEST_F(EventRecordingTest, RecordMouseDownUp) {
     bool hasMouseDown = false;
     bool hasMouseUp = false;
     for (const auto& event : events) {
-        if (event.eventType == EventType::MouseDown) hasMouseDown = true;
-        if (event.eventType == EventType::MouseUp) hasMouseUp = true;
+        if (event.eventType == JEventType::MouseDown) hasMouseDown = true;
+        if (event.eventType == JEventType::MouseUp) hasMouseUp = true;
     }
     EXPECT_TRUE(hasMouseDown || hasMouseUp);
 }
@@ -731,11 +731,11 @@ TEST_F(EventRecordingTest, RecordCompleteUserScenario) {
     bool hasTextInput = false;
     
     for (const auto& event : events) {
-        if (event.eventType == EventType::MouseMove) hasMouseMove = true;
-        if (event.eventType == EventType::Click) hasClick = true;
-        if (event.eventType == EventType::KeyDown) hasKeyDown = true;
-        if (event.eventType == EventType::KeyUp) hasKeyUp = true;
-        if (event.eventType == EventType::TextInput) hasTextInput = true;
+        if (event.eventType == JEventType::MouseMove) hasMouseMove = true;
+        if (event.eventType == JEventType::Click) hasClick = true;
+        if (event.eventType == JEventType::KeyDown) hasKeyDown = true;
+        if (event.eventType == JEventType::KeyUp) hasKeyUp = true;
+        if (event.eventType == JEventType::TextInput) hasTextInput = true;
     }
     
     EXPECT_TRUE(hasMouseMove || hasClick || hasKeyDown || hasKeyUp || hasTextInput);
@@ -767,7 +767,7 @@ TEST_F(EventRecordingTest, CurrentTimeManagement) {
     auto sessions = dispatcher->getRecordedSessions();
     // 查找包含Click的事件
     for (const auto& event : sessions["time_test"]) {
-        if (event.eventType == EventType::Click) {
+        if (event.eventType == JEventType::Click) {
             EXPECT_EQ(event.timestamp, 5000000);
             return;
         }
@@ -808,4 +808,4 @@ TEST_F(EventRecordingTest, PlaybackEventsBasicFunctionality) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

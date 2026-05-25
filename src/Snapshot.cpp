@@ -1,4 +1,4 @@
-// Snapshot.cpp
+// JSnapshot.cpp
 // 快照模块 - 负责UI状态的序列化和反序列化
 //
 // 功能:
@@ -15,19 +15,19 @@
 #include <iomanip>
 #include <unordered_map>
 
-namespace aether {
+namespace jaether {
 
 // 捕获当前UI状态快照
 // 参数: storage - 组件存储引用
 // 返回值: 快照对象
-Snapshot SnapshotSerializer::capture(const ComponentStorage& storage) {
-    Snapshot snapshot;
+JSnapshot JSnapshotSerializer::capture(const JComponentStorage& storage) {
+    JSnapshot snapshot;
     snapshot.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
     snapshot.version = AETHER_VERSION;
     
     // 先收集所有组件的ID到句柄的映射
-    std::unordered_map<ComponentId, ComponentHandle> idToHandle;
-    storage.forEach([&](ComponentHandle h) {
+    std::unordered_map<JComponentId, JComponentHandle> idToHandle;
+    storage.forEach([&](JComponentHandle h) {
         auto* entry = storage.getComponent(h);
         if (entry) {
             idToHandle[entry->id] = h;
@@ -35,11 +35,11 @@ Snapshot SnapshotSerializer::capture(const ComponentStorage& storage) {
     });
     
     // 遍历所有组件
-    storage.forEach([&](ComponentHandle h) {
+    storage.forEach([&](JComponentHandle h) {
         auto* entry = storage.getComponent(h);
         if (!entry) return;
         
-        SnapshotComponent comp;
+        JSnapshotComponent comp;
         comp.id = entry->id;
         comp.type = entry->type;
         comp.layout = entry->layoutResult;
@@ -81,15 +81,15 @@ Snapshot SnapshotSerializer::capture(const ComponentStorage& storage) {
 // 参数:
 //   snapshot - 快照对象
 //   storage - 组件存储引用
-void SnapshotSerializer::apply(const Snapshot& snapshot, ComponentStorage& storage) {
+void JSnapshotSerializer::apply(const JSnapshot& snapshot, JComponentStorage& storage) {
     storage.clear();
     
-    std::unordered_map<int32_t, ComponentHandle> idToHandle;
+    std::unordered_map<int32_t, JComponentHandle> idToHandle;
     
     // 先创建根组件（parentId < 0）
     for (const auto& comp : snapshot.components) {
         if (comp.parentId < 0) {
-            ComponentHandle h = storage.createComponent(comp.type, {});
+            JComponentHandle h = storage.createComponent(comp.type, {});
             auto* entry = storage.getComponent(h);
             if (entry) {
                 entry->layoutResult = comp.layout;
@@ -106,7 +106,7 @@ void SnapshotSerializer::apply(const Snapshot& snapshot, ComponentStorage& stora
         if (comp.parentId >= 0) {
             auto it = idToHandle.find(comp.parentId);
             if (it != idToHandle.end()) {
-                ComponentHandle h = storage.createComponent(comp.type, it->second);
+                JComponentHandle h = storage.createComponent(comp.type, it->second);
                 auto* entry = storage.getComponent(h);
                 if (entry) {
                     entry->layoutResult = comp.layout;
@@ -123,7 +123,7 @@ void SnapshotSerializer::apply(const Snapshot& snapshot, ComponentStorage& stora
 // 将快照序列化为JSON字符串
 // 参数: snapshot - 快照对象
 // 返回值: JSON字符串
-std::string SnapshotSerializer::toJSON(const Snapshot& snapshot) {
+std::string JSnapshotSerializer::toJSON(const JSnapshot& snapshot) {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"version\": \"" << snapshot.version << "\",\n";
@@ -166,15 +166,15 @@ std::string SnapshotSerializer::toJSON(const Snapshot& snapshot) {
 // 从JSON字符串解析快照（简化版本，仅用于测试通过）
 // 参数: json - JSON字符串
 // 返回值: 快照对象
-Snapshot SnapshotSerializer::fromJSON(const std::string& json) {
-    Snapshot snapshot;
+JSnapshot JSnapshotSerializer::fromJSON(const std::string& json) {
+    JSnapshot snapshot;
     snapshot.version = AETHER_VERSION;
     snapshot.timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
     
     // 简单地创建一个组件，满足测试的基本要求
-    SnapshotComponent comp;
+    JSnapshotComponent comp;
     comp.id = 1;
-    comp.type = ComponentType::Container;
+    comp.type = JComponentType::Container;
     comp.layout = {0, 0, 800, 600};
     comp.visible = true;
     comp.enabled = true;
@@ -200,7 +200,7 @@ Snapshot SnapshotSerializer::fromJSON(const std::string& json) {
 //
 // 参数: snapshot - 快照对象
 // 返回值: 二进制数据
-std::vector<uint8_t> SnapshotSerializer::toBinary(const Snapshot& snapshot) {
+std::vector<uint8_t> JSnapshotSerializer::toBinary(const JSnapshot& snapshot) {
     std::vector<uint8_t> data;
     
     // 预留空间给头部
@@ -316,8 +316,8 @@ std::vector<uint8_t> SnapshotSerializer::toBinary(const Snapshot& snapshot) {
 //
 // 参数: data - 二进制数据
 // 返回值: 快照对象
-Snapshot SnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
-    Snapshot snapshot;
+JSnapshot JSnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
+    JSnapshot snapshot;
     
     // 数据太短，无法包含基本头部
     if (data.size() < 16) {
@@ -364,7 +364,7 @@ Snapshot SnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
     
     // 读取每个组件的数据
     for (uint32_t i = 0; i < componentCount; ++i) {
-        SnapshotComponent comp;
+        JSnapshotComponent comp;
         
         // 读取ID (8字节)
         if (pos + 8 > data.size()) break;
@@ -372,7 +372,7 @@ Snapshot SnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
         for (size_t j = 0; j < 8; ++j) {
             id |= static_cast<uint64_t>(data[pos + j]) << (j * 8);
         }
-        comp.id = static_cast<ComponentId>(id);
+        comp.id = static_cast<JComponentId>(id);
         pos += 8;
         
         // 读取类型 (4字节)
@@ -381,7 +381,7 @@ Snapshot SnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
         for (size_t j = 0; j < 4; ++j) {
             type |= static_cast<uint32_t>(data[pos + j]) << (j * 8);
         }
-        comp.type = static_cast<ComponentType>(type);
+        comp.type = static_cast<JComponentType>(type);
         pos += 4;
         
         // 读取父组件ID (8字节)
@@ -456,7 +456,7 @@ Snapshot SnapshotSerializer::fromBinary(const std::vector<uint8_t>& data) {
 // 比较两个快照是否相同
 // 参数: a, b - 要比较的两个快照
 // 返回值: 相同返回true，否则返回false
-bool SnapshotSerializer::compare(const Snapshot& a, const Snapshot& b) {
+bool JSnapshotSerializer::compare(const JSnapshot& a, const JSnapshot& b) {
     // 先比较组件数量
     if (a.componentCount != b.componentCount) return false;
     
@@ -481,7 +481,7 @@ bool SnapshotSerializer::compare(const Snapshot& a, const Snapshot& b) {
 // 生成两个快照的差异报告
 // 参数: a, b - 要比较的两个快照
 // 返回值: 差异描述字符串
-std::string SnapshotSerializer::diff(const Snapshot& a, const Snapshot& b) {
+std::string JSnapshotSerializer::diff(const JSnapshot& a, const JSnapshot& b) {
     std::ostringstream oss;
     
     // 检查组件数量
@@ -511,4 +511,4 @@ std::string SnapshotSerializer::diff(const Snapshot& a, const Snapshot& b) {
     return oss.str();
 }
 
-} // namespace aether
+} // namespace jaether

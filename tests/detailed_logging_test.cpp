@@ -19,12 +19,12 @@
 #include <cassert>
 #include "aether/aether.h"
 
-using namespace aether;
+using namespace jaether;
 
 /**
  * 打印测试模块分隔符和标题
  * 
- * @param name 模块名称，例如 "ComponentStorage"
+ * @param name 模块名称，例如 "JComponentStorage"
  */
 void logTestModule(const std::string& name) {
     std::cout << "\n========================================" << std::endl;
@@ -82,29 +82,29 @@ void logSuccess() {
  * - 验证组件数量统计
  */
 void test_component_creation() {
-    logTestModule("ComponentStorage");
+    logTestModule("JComponentStorage");
     logTestFunction("test_component_creation", 
         "Testing component creation, hierarchy management, and iteration", 
         "Normal Logic");
     
     logStep("Initialize component storage");
-    ComponentStorage storage;
+    JComponentStorage storage;
     
     logStep("Create root component (Container type)");
-    auto root = storage.createComponent(ComponentType::Container);
+    auto root = storage.createComponent(JComponentType::Container);
     assert(root.isValid());
     
     logStep("Create first child component (Button type)");
-    auto child1 = storage.createComponent(ComponentType::Button, root);
+    auto child1 = storage.createComponent(JComponentType::Button, root);
     assert(child1.isValid());
     
     logStep("Create second child component (Text type)");
-    auto child2 = storage.createComponent(ComponentType::Text, root);
+    auto child2 = storage.createComponent(JComponentType::Text, root);
     assert(child2.isValid());
     
     logStep("Verify total number of active components");
     auto count = 0;
-    storage.forEach([&count](ComponentHandle) { count++; });
+    storage.forEach([&count](JComponentHandle) { count++; });
     logValue("Total Components", "Expected: 3, Actual: " + std::to_string(count));
     assert(count == 3);
     
@@ -127,25 +127,25 @@ void test_property_set_get() {
         "Normal Logic");
     
     logStep("Create test Button component");
-    ComponentStorage storage;
-    auto handle = storage.createComponent(ComponentType::Button);
+    JComponentStorage storage;
+    auto handle = storage.createComponent(JComponentType::Button);
     auto* entry = storage.getComponent(handle);
     
     logStep("Set integer Width property to 100");
-    entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
+    entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
     
     logStep("Set float Height property to 50.0");
-    entry->properties.setProperty(PropertyId::Height, PropertyValue(50.0f));
+    entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50.0f));
     
     logStep("Verify Width property retrieval and type");
-    auto* width_val = entry->properties.getProperty(PropertyId::Width);
+    auto* width_val = entry->properties.getProperty(JPropertyId::Width);
     assert(width_val != nullptr);
     assert(width_val->is<int>());
     assert(width_val->get<int>() == 100);
     logValue("Width Value", std::to_string(width_val->get<int>()));
     
     logStep("Verify Height property retrieval and type");
-    auto* height_val = entry->properties.getProperty(PropertyId::Height);
+    auto* height_val = entry->properties.getProperty(JPropertyId::Height);
     assert(height_val != nullptr);
     assert(height_val->is<float>());
     assert(height_val->get<float>() == 50.0f);
@@ -163,19 +163,19 @@ void test_property_set_get() {
  * - 验证重布局清除脏标记
  */
 void test_layout_engine() {
-    logTestModule("LayoutEngine");
+    logTestModule("JLayoutEngine");
     logTestFunction("test_layout_engine", 
         "Testing layout engine dirty flag system and relayout trigger", 
         "Normal Logic");
     
     logStep("Initialize component storage and layout engine");
-    ComponentStorage storage;
-    LayoutEngine engine(storage);
+    JComponentStorage storage;
+    JLayoutEngine engine(storage);
     
     logStep("Create root Container component with bounds");
-    auto root = storage.createComponent(ComponentType::Container);
+    auto root = storage.createComponent(JComponentType::Container);
     auto* root_entry = storage.getComponent(root);
-    root_entry->layoutResult = Rect{ 0, 0, 800, 600 };
+    root_entry->layoutResult = JRect{ 0, 0, 800, 600 };
     logValue("Root Component Bounds", "(0, 0, 800, 600)");
     
     logStep("Mark root component as needing layout (dirty)");
@@ -201,22 +201,22 @@ void test_layout_engine() {
  * - 验证点查询未命中功能
  */
 void test_quadtree() {
-    logTestModule("QuadTree");
+    logTestModule("JQuadTree");
     logTestFunction("test_quadtree", 
         "Testing spatial indexing and point query functionality", 
         "Normal Logic");
     
-    logStep("Initialize QuadTree with world bounds (0,0,1000,1000)");
-    QuadTree tree(Rect{ 0, 0, 1000, 1000 });
+    logStep("Initialize JQuadTree with world bounds (0,0,1000,1000)");
+    JQuadTree tree(JRect{ 0, 0, 1000, 1000 });
     
     logStep("Create test component handles");
-    std::vector<ComponentHandle> components = {
+    std::vector<JComponentHandle> components = {
         { 0, 1 },
         { 1, 1 }
     };
     
     logStep("Define component spatial bounds");
-    std::vector<Rect> bounds = {
+    std::vector<JRect> bounds = {
         { 10, 10, 50, 50 },
         { 100, 100, 50, 50 }
     };
@@ -224,17 +224,17 @@ void test_quadtree() {
     logValue("Component 2 Bounds", "(100, 100, 50, 50)");
     
     logStep("Build spatial index with component bounds");
-    tree.rebuild(components, [&bounds](ComponentHandle h) {
+    tree.rebuild(components, [&bounds](JComponentHandle h) {
         return bounds[h.index];
     });
     
     logStep("Query point inside Component 1 bounds (30,30)");
-    auto hits1 = tree.query(Point{ 30, 30 });
+    auto hits1 = tree.query(JPoint{ 30, 30 });
     logValue("Hits at (30, 30)", std::to_string(hits1.size()));
     assert(hits1.size() > 0);
     
     logStep("Query point outside all component bounds (500,500)");
-    auto hits2 = tree.query(Point{ 500, 500 });
+    auto hits2 = tree.query(JPoint{ 500, 500 });
     logValue("Hits at (500, 500)", std::to_string(hits2.size()));
     assert(hits2.size() == 0);
     
@@ -250,25 +250,25 @@ void test_quadtree() {
  * - 验证 JSON 序列化
  */
 void test_snapshot() {
-    logTestModule("Snapshot");
+    logTestModule("JSnapshot");
     logTestFunction("test_snapshot", 
         "Testing state capture and JSON serialization", 
         "Normal Logic");
     
     logStep("Create test scene with root Container");
-    ComponentStorage storage;
-    auto root = storage.createComponent(ComponentType::Container);
+    JComponentStorage storage;
+    auto root = storage.createComponent(JComponentType::Container);
     auto* root_entry = storage.getComponent(root);
-    root_entry->layoutResult = Rect{ 0, 0, 800, 600 };
+    root_entry->layoutResult = JRect{ 0, 0, 800, 600 };
     
     logStep("Capture current scene state as snapshot");
-    auto snapshot = SnapshotSerializer::capture(storage);
-    logValue("Snapshot Component Count", std::to_string(snapshot.componentCount));
+    auto snapshot = JSnapshotSerializer::capture(storage);
+    logValue("JSnapshot Component Count", std::to_string(snapshot.componentCount));
     assert(snapshot.componentCount > 0);
     
     logStep("Convert snapshot to JSON string format");
-    auto json = SnapshotSerializer::toJSON(snapshot);
-    logValue("JSON Size", std::to_string(json.size()) + " characters");
+    auto json = JSnapshotSerializer::toJSON(snapshot);
+    logValue("JSON JSize", std::to_string(json.size()) + " characters");
     assert(!json.empty());
     
     logSuccess();
@@ -286,28 +286,28 @@ void test_snapshot() {
  * 测试类型：Integration Test（集成测试）
  */
 void test_logic_layer() {
-    logTestModule("LogicLayer");
+    logTestModule("JLogicLayer");
     logTestFunction("test_logic_layer", 
         "Testing integrated functionality of component tree, property system, and frame update", 
         "Integration");
     
-    logStep("Initialize high-level LogicLayer");
-    LogicLayer layer;
+    logStep("Initialize high-level JLogicLayer");
+    JLogicLayer layer;
     
     logStep("Create root UI Container");
-    auto root = layer.createComponent(ComponentType::Container);
+    auto root = layer.createComponent(JComponentType::Container);
     
     logStep("Create Button and Text children inside Container");
-    auto child1 = layer.createComponent(ComponentType::Button, root);
-    auto child2 = layer.createComponent(ComponentType::Text, root);
+    auto child1 = layer.createComponent(JComponentType::Button, root);
+    auto child2 = layer.createComponent(JComponentType::Text, root);
     
     logStep("Configure root container dimensions");
-    layer.setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer.setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    layer.setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer.setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     logStep("Configure Button component dimensions");
-    layer.setProperty(child1, PropertyId::Width, PropertyValue(200.0f));
-    layer.setProperty(child1, PropertyId::Height, PropertyValue(50.0f));
+    layer.setProperty(child1, JPropertyId::Width, JPropertyValue(200.0f));
+    layer.setProperty(child1, JPropertyId::Height, JPropertyValue(50.0f));
     
     logStep("Execute single frame update cycle");
     layer.runFrame();

@@ -1,4 +1,4 @@
-// EventDispatcher.cpp
+// JEventDispatcher.cpp
 // 事件分发器模块 - 负责处理用户输入事件的分发
 //
 // 功能:
@@ -13,30 +13,30 @@
 #include <algorithm>
 #include <chrono>
 
-namespace aether {
+namespace jaether {
 
 // 事件分发器构造函数
 // 参数: storage - 组件存储引用
-EventDispatcher::EventDispatcher(ComponentStorage& storage)
-    : storage_(storage), quadTree_(Rect{0, 0, 1920, 1080}) {
+JEventDispatcher::JEventDispatcher(JComponentStorage& storage)
+    : storage_(storage), quadTree_(JRect{0, 0, 1920, 1080}) {
 }
 
 // 布局完成后的回调 - 重建四叉树索引
-void EventDispatcher::onLayoutComplete() {
-    std::vector<ComponentHandle> interactive;
+void JEventDispatcher::onLayoutComplete() {
+    std::vector<JComponentHandle> interactive;
     
     // 使用forEach收集所有非容器、可见且启用的组件
-    storage_.forEach([this, &interactive](ComponentHandle h) {
+    storage_.forEach([this, &interactive](JComponentHandle h) {
         auto* entry = storage_.getComponent(h);
         if (entry && entry->visible && entry->enabled) {
-            if (entry->type != ComponentType::Container) {
+            if (entry->type != JComponentType::Container) {
                 interactive.push_back(h);
             }
         }
     });
     
     // 重建四叉树 - 使用绝对位置
-    quadTree_.rebuild(interactive, [this](ComponentHandle h) {
+    quadTree_.rebuild(interactive, [this](JComponentHandle h) {
         return storage_.getAbsoluteBounds(h);
     });
 }
@@ -44,13 +44,13 @@ void EventDispatcher::onLayoutComplete() {
 // 命中检测 - 找到鼠标位置下最上层的组件
 // 参数: p - 鼠标位置
 // 返回值: 最上层的组件句柄
-ComponentHandle EventDispatcher::hitTest(const Point& p) {
-    Logger::getInstance().info("[hitTest] 开始命中测试，鼠标位置: (" + 
+JComponentHandle JEventDispatcher::hitTest(const JPoint& p) {
+    JLogger::getInstance().info("[hitTest] 开始命中测试，鼠标位置: (" + 
         std::to_string(static_cast<int>(p.x)) + ", " + 
         std::to_string(static_cast<int>(p.y)) + ")");
     
     auto candidates = quadTree_.query(p);
-    Logger::getInstance().info("[hitTest] 四叉树查询到 " + 
+    JLogger::getInstance().info("[hitTest] 四叉树查询到 " + 
         std::to_string(candidates.size()) + " 个候选组件");
     
     // 反向遍历（最上层最后插入）
@@ -58,16 +58,16 @@ ComponentHandle EventDispatcher::hitTest(const Point& p) {
         auto* entry = storage_.getComponent(*it);
         if (entry && entry->visible && entry->enabled) {
             // 使用绝对位置进行检查
-            Rect absoluteBounds = storage_.getAbsoluteBounds(*it);
+            JRect absoluteBounds = storage_.getAbsoluteBounds(*it);
             std::string typeName;
             switch (entry->type) {
-                case ComponentType::Container: typeName = "Container"; break;
-                case ComponentType::Button: typeName = "Button"; break;
-                case ComponentType::Text: typeName = "Text"; break;
-                case ComponentType::Input: typeName = "Input"; break;
+                case JComponentType::Container: typeName = "Container"; break;
+                case JComponentType::Button: typeName = "Button"; break;
+                case JComponentType::Text: typeName = "Text"; break;
+                case JComponentType::Input: typeName = "Input"; break;
                 default: typeName = "Unknown"; break;
             }
-            Logger::getInstance().info("[hitTest] 检查组件: type=" + typeName + 
+            JLogger::getInstance().info("[hitTest] 检查组件: type=" + typeName + 
                 ", absoluteBounds=(" + std::to_string(static_cast<int>(absoluteBounds.x)) + 
                 ", " + std::to_string(static_cast<int>(absoluteBounds.y)) + ", " + 
                 std::to_string(static_cast<int>(absoluteBounds.width)) + "x" + 
@@ -75,29 +75,29 @@ ComponentHandle EventDispatcher::hitTest(const Point& p) {
                 "contains? " + (absoluteBounds.contains(p) ? "是" : "否"));
             
             if (absoluteBounds.contains(p)) {
-                Logger::getInstance().info("[hitTest] 找到命中组件: type=" + typeName);
+                JLogger::getInstance().info("[hitTest] 找到命中组件: type=" + typeName);
                 return *it;
             }
         }
     }
     
-    Logger::getInstance().info("[hitTest] 未找到命中组件");
-    return ComponentHandle{};
+    JLogger::getInstance().info("[hitTest] 未找到命中组件");
+    return JComponentHandle{};
 }
 
 // 命中检测 - 找到鼠标位置下的所有组件
 // 参数: p - 鼠标位置
 // 返回值: 所有命中的组件列表（从上到下）
-std::vector<ComponentHandle> EventDispatcher::hitTestAll(const Point& p) {
+std::vector<JComponentHandle> JEventDispatcher::hitTestAll(const JPoint& p) {
     auto candidates = quadTree_.query(p);
-    std::vector<ComponentHandle> result;
+    std::vector<JComponentHandle> result;
     
     // 反向遍历收集
     for (auto it = candidates.rbegin(); it != candidates.rend(); ++it) {
         auto* entry = storage_.getComponent(*it);
         if (entry && entry->visible && entry->enabled) {
             // 使用绝对位置进行检查
-            Rect absoluteBounds = storage_.getAbsoluteBounds(*it);
+            JRect absoluteBounds = storage_.getAbsoluteBounds(*it);
             if (absoluteBounds.contains(p)) {
                 result.push_back(*it);
             }
@@ -110,16 +110,16 @@ std::vector<ComponentHandle> EventDispatcher::hitTestAll(const Point& p) {
 // 找到事件目标
 // 参数: p - 鼠标位置
 // 返回值: 目标组件句柄
-ComponentHandle EventDispatcher::findTarget(const Point& p) {
+JComponentHandle JEventDispatcher::findTarget(const JPoint& p) {
     return hitTest(p);
 }
 
 // 记录事件（如果正在记录）
 // 参数: event - 要记录的事件
-void EventDispatcher::recordEvent(const Event& event) {
+void JEventDispatcher::recordEvent(const JEvent& event) {
     if (!isRecording_) return;
     
-    RecordedEvent rec;
+    JRecordedEvent rec;
     rec.timestamp = currentTime_;
     rec.eventType = event.type;
     rec.mouseEvent = event.mouse;
@@ -133,7 +133,7 @@ void EventDispatcher::recordEvent(const Event& event) {
 // 参数:
 //   target - 目标组件
 //   event - 事件对象
-void EventDispatcher::fireEvent(ComponentHandle target, Event& event) {
+void JEventDispatcher::fireEvent(JComponentHandle target, JEvent& event) {
     event.target = target;
     event.currentTarget = target;
     
@@ -152,10 +152,10 @@ void EventDispatcher::fireEvent(ComponentHandle target, Event& event) {
 
 // 分发事件，支持冒泡
 // 参数: event - 事件对象
-void EventDispatcher::dispatchEvent(Event& event) {
+void JEventDispatcher::dispatchEvent(JEvent& event) {
     if (!event.target.isValid()) return;
     
-    ComponentHandle current = event.target;
+    JComponentHandle current = event.target;
     
     // 冒泡遍历祖先组件
     while (current.isValid() && event.bubbles) {
@@ -166,37 +166,37 @@ void EventDispatcher::dispatchEvent(Event& event) {
         auto* entry = storage_.getComponent(current);
         if (!entry || entry->parentIndex < 0) break;
         
-        current = ComponentHandle{entry->parentIndex, storage_.getComponent(current) ? 
+        current = JComponentHandle{entry->parentIndex, storage_.getComponent(current) ? 
             storage_.getComponent(current)->generation : 0};
     }
 }
 
 // 分发鼠标事件
 // 参数: mouseEvent - 鼠标事件对象
-void EventDispatcher::dispatchMouseEvent(const MouseEvent& mouseEvent) {
-    Event event;
+void JEventDispatcher::dispatchMouseEvent(const JMouseEvent& mouseEvent) {
+    JEvent event;
     event.type = mouseEvent.type;
     event.mouse = mouseEvent;
     
-    Point p{mouseEvent.position.x, mouseEvent.position.y};
+    JPoint p{mouseEvent.position.x, mouseEvent.position.y};
     
     // 处理鼠标移动事件 - 检测进入和离开
-    if (mouseEvent.type == EventType::MouseMove) {
-        ComponentHandle newHovered = hitTest(p);
+    if (mouseEvent.type == JEventType::MouseMove) {
+        JComponentHandle newHovered = hitTest(p);
         
         if (newHovered != hoveredComponent_) {
             // 发送鼠标离开事件
             if (hoveredComponent_.isValid()) {
-                Event leaveEvent;
-                leaveEvent.type = EventType::MouseLeave;
+                JEvent leaveEvent;
+                leaveEvent.type = JEventType::MouseLeave;
                 leaveEvent.mouse.position = p;
                 fireEvent(hoveredComponent_, leaveEvent);
             }
             
             // 发送鼠标进入事件
             if (newHovered.isValid()) {
-                Event enterEvent;
-                enterEvent.type = EventType::MouseEnter;
+                JEvent enterEvent;
+                enterEvent.type = JEventType::MouseEnter;
                 enterEvent.mouse.position = p;
                 fireEvent(newHovered, enterEvent);
             }
@@ -206,7 +206,7 @@ void EventDispatcher::dispatchMouseEvent(const MouseEvent& mouseEvent) {
     }
     
     // 分发事件到目标
-    ComponentHandle target = findTarget(p);
+    JComponentHandle target = findTarget(p);
     if (target.isValid()) {
         event.target = target;
         dispatchEvent(event);
@@ -220,12 +220,12 @@ void EventDispatcher::dispatchMouseEvent(const MouseEvent& mouseEvent) {
     }
     
     // 处理点击和按下事件 - 设置焦点
-    if (mouseEvent.type == EventType::Click || mouseEvent.type == EventType::MouseDown) {
+    if (mouseEvent.type == JEventType::Click || mouseEvent.type == JEventType::MouseDown) {
         if (target.isValid()) {
             focusedComponent_ = target;
             
-            Event focusEvent;
-            focusEvent.type = EventType::Focus;
+            JEvent focusEvent;
+            focusEvent.type = JEventType::Focus;
             focusEvent.target = target;
             fireEvent(target, focusEvent);
         }
@@ -234,8 +234,8 @@ void EventDispatcher::dispatchMouseEvent(const MouseEvent& mouseEvent) {
 
 // 分发键盘事件
 // 参数: keyEvent - 键盘事件对象
-void EventDispatcher::dispatchKeyEvent(const KeyEvent& keyEvent) {
-    Event event;
+void JEventDispatcher::dispatchKeyEvent(const JKeyEvent& keyEvent) {
+    JEvent event;
     event.type = keyEvent.type;
     event.key = keyEvent;
     
@@ -252,9 +252,9 @@ void EventDispatcher::dispatchKeyEvent(const KeyEvent& keyEvent) {
 
 // 分发文本输入事件
 // 参数: text - 输入的文本
-void EventDispatcher::dispatchTextInput(const std::string& text) {
-    Event event;
-    event.type = EventType::TextInput;
+void JEventDispatcher::dispatchTextInput(const std::string& text) {
+    JEvent event;
+    event.type = JEventType::TextInput;
     event.text = text;
     
     if (focusedComponent_.isValid()) {
@@ -268,14 +268,14 @@ void EventDispatcher::dispatchTextInput(const std::string& text) {
 
 // 处理鼠标移动
 // 参数: x, y - 鼠标坐标
-void EventDispatcher::onMouseMove(float x, float y) {
+void JEventDispatcher::onMouseMove(float x, float y) {
     // 记录鼠标位置
     lastMouseX_ = x;
     lastMouseY_ = y;
     
-    MouseEvent event;
-    event.type = EventType::MouseMove;
-    event.position = Point{x, y};
+    JMouseEvent event;
+    event.type = JEventType::MouseMove;
+    event.position = JPoint{x, y};
     dispatchMouseEvent(event);
 }
 
@@ -283,14 +283,14 @@ void EventDispatcher::onMouseMove(float x, float y) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void EventDispatcher::onMouseDown(float x, float y, int button) {
+void JEventDispatcher::onMouseDown(float x, float y, int button) {
     // 记录鼠标位置
     lastMouseX_ = x;
     lastMouseY_ = y;
     
-    MouseEvent event;
-    event.type = EventType::MouseDown;
-    event.position = Point{x, y};
+    JMouseEvent event;
+    event.type = JEventType::MouseDown;
+    event.position = JPoint{x, y};
     event.button = button;
     dispatchMouseEvent(event);
 }
@@ -299,10 +299,10 @@ void EventDispatcher::onMouseDown(float x, float y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void EventDispatcher::onMouseUp(float x, float y, int button) {
-    MouseEvent event;
-    event.type = EventType::MouseUp;
-    event.position = Point{x, y};
+void JEventDispatcher::onMouseUp(float x, float y, int button) {
+    JMouseEvent event;
+    event.type = JEventType::MouseUp;
+    event.position = JPoint{x, y};
     event.button = button;
     dispatchMouseEvent(event);
 }
@@ -311,45 +311,45 @@ void EventDispatcher::onMouseUp(float x, float y, int button) {
 // 参数:
 //   x, y - 鼠标坐标
 //   button - 鼠标按钮
-void EventDispatcher::onClick(float x, float y, int button) {
+void JEventDispatcher::onClick(float x, float y, int button) {
     // 记录鼠标位置
     lastMouseX_ = x;
     lastMouseY_ = y;
     
-    MouseEvent event;
-    event.type = EventType::Click;
-    event.position = Point{x, y};
+    JMouseEvent event;
+    event.type = JEventType::Click;
+    event.position = JPoint{x, y};
     event.button = button;
     dispatchMouseEvent(event);
 }
 
 // 处理按键按下
 // 参数: keyCode - 按键码
-void EventDispatcher::onKeyDown(int keyCode) {
-    KeyEvent event;
-    event.type = EventType::KeyDown;
+void JEventDispatcher::onKeyDown(int keyCode) {
+    JKeyEvent event;
+    event.type = JEventType::KeyDown;
     event.keyCode = keyCode;
     dispatchKeyEvent(event);
 }
 
 // 处理按键释放
 // 参数: keyCode - 按键码
-void EventDispatcher::onKeyUp(int keyCode) {
-    KeyEvent event;
-    event.type = EventType::KeyUp;
+void JEventDispatcher::onKeyUp(int keyCode) {
+    JKeyEvent event;
+    event.type = JEventType::KeyUp;
     event.keyCode = keyCode;
     dispatchKeyEvent(event);
 }
 
 // 处理文本输入
 // 参数: text - 输入的文本
-void EventDispatcher::onTextInput(const std::string& text) {
+void JEventDispatcher::onTextInput(const std::string& text) {
     dispatchTextInput(text);
 }
 
 // 开始记录事件
 // 参数: sessionId - 会话ID
-void EventDispatcher::startRecording(const std::string& sessionId) {
+void JEventDispatcher::startRecording(const std::string& sessionId) {
     isRecording_ = true;
     currentSessionId_ = sessionId;
     currentRecording_.clear();
@@ -357,7 +357,7 @@ void EventDispatcher::startRecording(const std::string& sessionId) {
 
 // 停止记录事件
 // 返回值: 会话ID
-std::string EventDispatcher::stopRecording() {
+std::string JEventDispatcher::stopRecording() {
     if (!isRecording_) {
         return "";
     }
@@ -372,23 +372,23 @@ std::string EventDispatcher::stopRecording() {
 
 // 播放录制的事件
 // 参数: events - 要播放的事件列表
-void EventDispatcher::playEvents(const std::vector<RecordedEvent>& events) {
+void JEventDispatcher::playEvents(const std::vector<JRecordedEvent>& events) {
     for (const auto& recEvent : events) {
         currentTime_ = recEvent.timestamp;
         
         // 根据事件类型分发
-        if (recEvent.eventType == EventType::Click || 
-            recEvent.eventType == EventType::MouseDown ||
-            recEvent.eventType == EventType::MouseUp ||
-            recEvent.eventType == EventType::MouseMove) {
+        if (recEvent.eventType == JEventType::Click || 
+            recEvent.eventType == JEventType::MouseDown ||
+            recEvent.eventType == JEventType::MouseUp ||
+            recEvent.eventType == JEventType::MouseMove) {
             dispatchMouseEvent(recEvent.mouseEvent);
-        } else if (recEvent.eventType == EventType::KeyDown ||
-                   recEvent.eventType == EventType::KeyUp) {
+        } else if (recEvent.eventType == JEventType::KeyDown ||
+                   recEvent.eventType == JEventType::KeyUp) {
             dispatchKeyEvent(recEvent.keyEvent);
-        } else if (recEvent.eventType == EventType::TextInput) {
+        } else if (recEvent.eventType == JEventType::TextInput) {
             dispatchTextInput(recEvent.textData);
         }
     }
 }
 
-} // namespace aether
+} // namespace jaether

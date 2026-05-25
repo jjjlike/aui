@@ -2,7 +2,7 @@
  * 逻辑层模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 LogicLayer 类的逻辑层功能
+ * - 测试 JLogicLayer 类的逻辑层功能
  * - 包括组件管理、属性设置、帧循环、事件分发等
  * - 测试用例覆盖：正常逻辑、边界情况、集成测试
  */
@@ -10,7 +10,7 @@
 #include "aether/LogicLayer.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -21,10 +21,10 @@ class LogicLayerTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建逻辑层实例
-        layer = std::make_unique<LogicLayer>();
+        layer = std::make_unique<JLogicLayer>();
     }
     
-    std::unique_ptr<LogicLayer> layer;  // 逻辑层指针
+    std::unique_ptr<JLogicLayer> layer;  // 逻辑层指针
 };
 
 /**
@@ -42,7 +42,7 @@ TEST_F(LogicLayerTest, InitializeLayer) {
  */
 TEST_F(LogicLayerTest, CreateRootComponent) {
     // 创建一个容器组件作为根组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     
     // 验证返回的组件句柄有效
     EXPECT_TRUE(root.isValid());
@@ -56,11 +56,11 @@ TEST_F(LogicLayerTest, CreateRootComponent) {
  */
 TEST_F(LogicLayerTest, CreateMultipleComponents) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 创建按钮组件，作为根组件的子组件
-    auto btn = layer->createComponent(ComponentType::Button, root);
+    auto btn = layer->createComponent(JComponentType::Button, root);
     // 创建文本组件，作为根组件的子组件
-    auto txt = layer->createComponent(ComponentType::Text, root);
+    auto txt = layer->createComponent(JComponentType::Text, root);
     
     // 验证所有组件句柄有效
     EXPECT_TRUE(root.isValid());
@@ -77,14 +77,14 @@ TEST_F(LogicLayerTest, CreateMultipleComponents) {
  */
 TEST_F(LogicLayerTest, SetProperty) {
     // 创建一个容器组件
-    auto comp = layer->createComponent(ComponentType::Container);
+    auto comp = layer->createComponent(JComponentType::Container);
     
     // 设置宽度属性为 200.0f
-    layer->setProperty(comp, PropertyId::Width, PropertyValue(200.0f));
+    layer->setProperty(comp, JPropertyId::Width, JPropertyValue(200.0f));
     // 设置高度属性为 100.0f
-    layer->setProperty(comp, PropertyId::Height, PropertyValue(100.0f));
+    layer->setProperty(comp, JPropertyId::Height, JPropertyValue(100.0f));
     // 设置文本属性为 "Test"
-    layer->setProperty(comp, PropertyId::Text, PropertyValue(std::string("Test")));
+    layer->setProperty(comp, JPropertyId::Text, JPropertyValue(std::string("Test")));
     
     // 获取组件存储引用
     auto& storage = layer->getStorage();
@@ -93,9 +93,9 @@ TEST_F(LogicLayerTest, SetProperty) {
     ASSERT_NE(entry, nullptr);
     
     // 获取各个属性
-    auto* widthProp = entry->properties.getProperty(PropertyId::Width);
-    auto* heightProp = entry->properties.getProperty(PropertyId::Height);
-    auto* textProp = entry->properties.getProperty(PropertyId::Text);
+    auto* widthProp = entry->properties.getProperty(JPropertyId::Width);
+    auto* heightProp = entry->properties.getProperty(JPropertyId::Height);
+    auto* textProp = entry->properties.getProperty(JPropertyId::Text);
     
     // 验证所有属性都存在
     ASSERT_NE(widthProp, nullptr);
@@ -114,18 +114,18 @@ TEST_F(LogicLayerTest, SetProperty) {
  */
 TEST_F(LogicLayerTest, RunFrame) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 设置根组件的布局大小
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建一个按钮组件
-    auto btn = layer->createComponent(ComponentType::Button, root);
+    auto btn = layer->createComponent(JComponentType::Button, root);
     // 设置按钮的位置和大小属性
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 运行一帧
     layer->runFrame();
@@ -149,9 +149,9 @@ TEST_F(LogicLayerTest, RunFrame) {
  */
 TEST_F(LogicLayerTest, DestroyComponent) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 创建按钮组件
-    auto child = layer->createComponent(ComponentType::Button, root);
+    auto child = layer->createComponent(JComponentType::Button, root);
     
     // 验证按钮组件句柄有效
     EXPECT_TRUE(layer->getStorage().isValid(child));
@@ -169,10 +169,10 @@ TEST_F(LogicLayerTest, DestroyComponent) {
  */
 TEST_F(LogicLayerTest, MultipleFrames) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 设置根组件的布局大小
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 运行 10 帧
     for (int i = 0; i < 10; ++i) {
@@ -195,18 +195,18 @@ TEST_F(LogicLayerTest, MultipleFrames) {
  */
 TEST_F(LogicLayerTest, DispatchMouseMove) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 设置根组件的布局大小
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建一个按钮组件
-    auto btn = layer->createComponent(ComponentType::Button, root);
+    auto btn = layer->createComponent(JComponentType::Button, root);
     // 设置按钮的位置和大小属性
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 运行一帧
     layer->runFrame();
@@ -221,18 +221,18 @@ TEST_F(LogicLayerTest, DispatchMouseMove) {
  */
 TEST_F(LogicLayerTest, DispatchClick) {
     // 创建根容器组件
-    auto root = layer->createComponent(ComponentType::Container);
+    auto root = layer->createComponent(JComponentType::Container);
     // 设置根组件的布局大小
-    layer->setProperty(root, PropertyId::Width, PropertyValue(800.0f));
-    layer->setProperty(root, PropertyId::Height, PropertyValue(600.0f));
+    layer->setProperty(root, JPropertyId::Width, JPropertyValue(800.0f));
+    layer->setProperty(root, JPropertyId::Height, JPropertyValue(600.0f));
     
     // 创建一个按钮组件
-    auto btn = layer->createComponent(ComponentType::Button, root);
+    auto btn = layer->createComponent(JComponentType::Button, root);
     // 设置按钮的位置和大小属性
-    layer->setProperty(btn, PropertyId::X, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Y, PropertyValue(100.0f));
-    layer->setProperty(btn, PropertyId::Width, PropertyValue(200.0f));
-    layer->setProperty(btn, PropertyId::Height, PropertyValue(50.0f));
+    layer->setProperty(btn, JPropertyId::X, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Y, JPropertyValue(100.0f));
+    layer->setProperty(btn, JPropertyId::Width, JPropertyValue(200.0f));
+    layer->setProperty(btn, JPropertyId::Height, JPropertyValue(50.0f));
     
     // 运行一帧
     layer->runFrame();
@@ -260,4 +260,4 @@ TEST_F(LogicLayerTest, DispatchTextInput) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

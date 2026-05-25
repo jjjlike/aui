@@ -2,7 +2,7 @@
  * 组件存储模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 ComponentStorage 类的各项功能
+ * - 测试 JComponentStorage 类的各项功能
  * - 包括组件创建、销毁、查找、遍历等核心功能
  * - 测试用例覆盖：正常逻辑、边界情况、异常处理
  */
@@ -11,21 +11,21 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
  * 组件存储测试的夹具类
- * 每个测试运行前会自动创建一个新的 ComponentStorage 实例
+ * 每个测试运行前会自动创建一个新的 JComponentStorage 实例
  */
 class ComponentStorageTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 初始化一个新的组件存储对象
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
     }
 
-    std::unique_ptr<ComponentStorage> storage;
+    std::unique_ptr<JComponentStorage> storage;
 };
 
 /**
@@ -34,7 +34,7 @@ protected:
  */
 TEST_F(ComponentStorageTest, CreateRootComponent) {
     // 创建一个容器类型的根组件
-    auto root = storage->createComponent(ComponentType::Container);
+    auto root = storage->createComponent(JComponentType::Container);
 
     // 验证返回的组件句柄有效
     ASSERT_TRUE(root.isValid());
@@ -48,9 +48,9 @@ TEST_F(ComponentStorageTest, CreateRootComponent) {
  */
 TEST_F(ComponentStorageTest, CreateChildComponent) {
     // 先创建根组件
-    auto root = storage->createComponent(ComponentType::Container);
+    auto root = storage->createComponent(JComponentType::Container);
     // 再创建一个子组件，父组件是刚才的根组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
 
     // 验证子组件句柄有效
     ASSERT_TRUE(child.isValid());
@@ -71,8 +71,8 @@ TEST_F(ComponentStorageTest, CreateChildComponent) {
  */
 TEST_F(ComponentStorageTest, DestroyComponent) {
     // 创建根组件和子组件
-    auto root = storage->createComponent(ComponentType::Container);
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto root = storage->createComponent(JComponentType::Container);
+    auto child = storage->createComponent(JComponentType::Button, root);
 
     // 销毁子组件
     storage->destroyComponent(child);
@@ -87,10 +87,10 @@ TEST_F(ComponentStorageTest, DestroyComponent) {
  */
 TEST_F(ComponentStorageTest, DestroyRootChildren) {
     // 创建根组件
-    auto root = storage->createComponent(ComponentType::Container);
+    auto root = storage->createComponent(JComponentType::Container);
     // 创建两个子组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Text, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Text, root);
 
     // 销毁根组件
     storage->destroyComponent(root);
@@ -109,9 +109,9 @@ TEST_F(ComponentStorageTest, DestroyRootChildren) {
  */
 TEST_F(ComponentStorageTest, HandleValidity) {
     // 创建一个有效组件
-    auto root = storage->createComponent(ComponentType::Container);
+    auto root = storage->createComponent(JComponentType::Container);
     // 创建一个无效句柄（索引为 -1，代次为 0）
-    ComponentHandle invalid{-1, 0};
+    JComponentHandle invalid{-1, 0};
 
     // 验证根组件有效
     EXPECT_TRUE(root.isValid());
@@ -125,11 +125,11 @@ TEST_F(ComponentStorageTest, HandleValidity) {
  */
 TEST_F(ComponentStorageTest, FindById) {
     // 创建根组件
-    auto root = storage->createComponent(ComponentType::Container);
+    auto root = storage->createComponent(JComponentType::Container);
     // 获取根组件的内部信息
     auto* entry = storage->getComponent(root);
     // 获取组件的唯一 ID
-    ComponentId rootId = entry->id;
+    JComponentId rootId = entry->id;
 
     // 通过 ID 查找组件
     auto found = storage->findById(rootId);
@@ -142,11 +142,11 @@ TEST_F(ComponentStorageTest, FindById) {
  * 测试目标：验证系统能正常创建和管理大量组件
  */
 TEST_F(ComponentStorageTest, MultipleComponents) {
-    std::vector<ComponentHandle> handles;
+    std::vector<JComponentHandle> handles;
 
     // 循环创建 100 个按钮组件
     for (int i = 0; i < 100; ++i) {
-        handles.push_back(storage->createComponent(ComponentType::Button));
+        handles.push_back(storage->createComponent(JComponentType::Button));
     }
 
     // 验证活动组件的数量：总共创建了 100 个组件
@@ -164,13 +164,13 @@ TEST_F(ComponentStorageTest, MultipleComponents) {
  */
 TEST_F(ComponentStorageTest, ComponentIteration) {
     // 创建 3 个组件（容器、按钮、文本）
-    storage->createComponent(ComponentType::Container);
-    storage->createComponent(ComponentType::Button);
-    storage->createComponent(ComponentType::Text);
+    storage->createComponent(JComponentType::Container);
+    storage->createComponent(JComponentType::Button);
+    storage->createComponent(JComponentType::Text);
 
     int count = 0;
     // 遍历所有组件并计数
-    storage->forEach([&count](ComponentHandle) {
+    storage->forEach([&count](JComponentHandle) {
         count++;
     });
 
@@ -184,8 +184,8 @@ TEST_F(ComponentStorageTest, ComponentIteration) {
  */
 TEST_F(ComponentStorageTest, ClearStorage) {
     // 创建两个组件
-    storage->createComponent(ComponentType::Container);
-    storage->createComponent(ComponentType::Button);
+    storage->createComponent(JComponentType::Container);
+    storage->createComponent(JComponentType::Button);
 
     // 清空整个存储
     storage->clear();
@@ -195,4 +195,4 @@ TEST_F(ComponentStorageTest, ClearStorage) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

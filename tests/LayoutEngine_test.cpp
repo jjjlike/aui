@@ -2,7 +2,7 @@
  * 布局引擎模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 LayoutEngine 类的布局计算功能
+ * - 测试 JLayoutEngine 类的布局计算功能
  * - 包括脏标记、布局传播、Flexbox 布局、嵌套布局等
  * - 测试用例覆盖：正常逻辑、边界情况、布局算法
  */
@@ -10,7 +10,7 @@
 #include "aether/LayoutEngine.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -21,21 +21,21 @@ class LayoutEngineTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建组件存储实例
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
         // 创建布局引擎实例，关联到组件存储
-        engine = std::make_unique<LayoutEngine>(*storage);
+        engine = std::make_unique<JLayoutEngine>(*storage);
         
         // 创建根容器组件
-        root = storage->createComponent(ComponentType::Container);
+        root = storage->createComponent(JComponentType::Container);
         // 获取根组件的详细信息
         auto* rootEntry = storage->getComponent(root);
         // 设置根组件的初始布局大小（800x600）
         rootEntry->layoutResult = {0, 0, 800, 600};
     }
     
-    std::unique_ptr<ComponentStorage> storage;  // 组件存储指针
-    std::unique_ptr<LayoutEngine> engine;      // 布局引擎指针
-    ComponentHandle root;                      // 根组件句柄
+    std::unique_ptr<JComponentStorage> storage;  // 组件存储指针
+    std::unique_ptr<JLayoutEngine> engine;      // 布局引擎指针
+    JComponentHandle root;                      // 根组件句柄
 };
 
 /**
@@ -64,7 +64,7 @@ TEST_F(LayoutEngineTest, MarkDirty) {
  */
 TEST_F(LayoutEngineTest, MarkDirtyWithProperty) {
     // 通过宽度属性标记根组件为脏
-    engine->markDirty(root, PropertyId::Width);
+    engine->markDirty(root, JPropertyId::Width);
     // 验证根组件现在是脏的
     EXPECT_TRUE(engine->isDirty(root));
 }
@@ -75,7 +75,7 @@ TEST_F(LayoutEngineTest, MarkDirtyWithProperty) {
  */
 TEST_F(LayoutEngineTest, NonLayoutPropertyDoesNotMarkDirty) {
     // 通过文本属性尝试标记（文本不是布局属性）
-    engine->markDirty(root, PropertyId::Text);
+    engine->markDirty(root, JPropertyId::Text);
     // 验证根组件仍然不是脏的
     EXPECT_FALSE(engine->isDirty(root));
 }
@@ -86,10 +86,10 @@ TEST_F(LayoutEngineTest, NonLayoutPropertyDoesNotMarkDirty) {
  */
 TEST_F(LayoutEngineTest, DirtyPropagationToParent) {
     // 创建一个子按钮组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     
     // 标记子组件的宽度属性为脏
-    engine->markDirty(child, PropertyId::Width);
+    engine->markDirty(child, JPropertyId::Width);
     
     // 验证子组件是脏的
     EXPECT_TRUE(engine->isDirty(child));
@@ -130,22 +130,22 @@ TEST_F(LayoutEngineTest, ForceRelayout) {
 TEST_F(LayoutEngineTest, SimpleFlexboxLayout) {
     // 获取根组件并设置 Flex 方向为水平排列
     auto* rootEntry = storage->getComponent(root);
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
     
     // 创建两个子按钮组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     
     // 设置第一个子组件的宽度和高度属性
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     // 设置第二个子组件的宽度和高度属性
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -166,19 +166,19 @@ TEST_F(LayoutEngineTest, FlexGrowDistribution) {
     rootEntry->layoutResult = {0, 0, 500, 100};
     
     // 创建两个子按钮组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     
     // 设置第一个子组件的初始宽度和 FlexGrow
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     // 设置第二个子组件的初始宽度和 FlexGrow
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -199,8 +199,8 @@ TEST_F(LayoutEngineTest, NestedLayout) {
     rootEntry->layoutResult = {0, 0, 800, 600};
     
     // 创建一个容器组件和子按钮组件
-    auto container = storage->createComponent(ComponentType::Container, root);
-    auto child = storage->createComponent(ComponentType::Button, container);
+    auto container = storage->createComponent(JComponentType::Container, root);
+    auto child = storage->createComponent(JComponentType::Button, container);
     
     // 获取容器和子组件的详细信息
     auto* containerEntry = storage->getComponent(container);
@@ -226,7 +226,7 @@ TEST_F(LayoutEngineTest, NestedLayout) {
  */
 TEST_F(LayoutEngineTest, HiddenComponentNotLayout) {
     // 创建一个子按钮组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     // 将子组件设置为不可见
     childEntry->visible = false;
@@ -244,14 +244,14 @@ TEST_F(LayoutEngineTest, HiddenComponentNotLayout) {
  */
 TEST_F(LayoutEngineTest, LayoutMode) {
     // 设置布局模式为测试模式
-    engine->setMode(LayoutEngineMode::Test);
+    engine->setMode(JLayoutEngineMode::Test);
     // 验证模式设置正确
-    EXPECT_EQ(engine->getMode(), LayoutEngineMode::Test);
+    EXPECT_EQ(engine->getMode(), JLayoutEngineMode::Test);
     
     // 设置布局模式为正常模式
-    engine->setMode(LayoutEngineMode::Normal);
+    engine->setMode(JLayoutEngineMode::Normal);
     // 验证模式设置正确
-    EXPECT_EQ(engine->getMode(), LayoutEngineMode::Normal);
+    EXPECT_EQ(engine->getMode(), JLayoutEngineMode::Normal);
 }
 
 /**
@@ -288,22 +288,22 @@ TEST_F(LayoutEngineTest, FlexShrinkDistribution) {
     rootEntry->layoutResult = {0, 0, 150, 100}; // 小容器
     
     // 创建两个子按钮组件，设置较大的初始宽度
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     
     // 设置第一个子组件的宽度为100，FlexShrink为1
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1));
-    child1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0)); // 不放大
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1));
+    child1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0)); // 不放大
     
     // 设置第二个子组件的宽度为100，FlexShrink为1
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0)); // 不放大
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0)); // 不放大
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -327,13 +327,13 @@ TEST_F(LayoutEngineTest, FlexBasisOverride) {
     rootEntry->layoutResult = {0, 0, 500, 100};
     
     // 创建子按钮组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     
     // 设置Width为100，但FlexBasis为200
-    childEntry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    childEntry->properties.setProperty(PropertyId::FlexBasis, PropertyValue(200));
-    childEntry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    childEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    childEntry->properties.setProperty(JPropertyId::FlexBasis, JPropertyValue(200));
+    childEntry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -356,21 +356,21 @@ TEST_F(LayoutEngineTest, ColumnFlexboxLayoutLegacy) {
     // 获取根组件并设置属性
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 800, 500};
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Column));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Column));
     
     // 创建三个子按钮组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息并设置属性
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     auto* child3Entry = storage->getComponent(child3);
     
-    child1Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child3Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    child1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child3Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -399,12 +399,12 @@ TEST_F(LayoutEngineTest, SingleChildLayout) {
     rootEntry->layoutResult = {0, 0, 800, 600};
     
     // 创建单个子按钮组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     
     // 设置子组件的宽度为200
-    childEntry->properties.setProperty(PropertyId::Width, PropertyValue(200));
-    childEntry->properties.setProperty(PropertyId::Height, PropertyValue(100));
+    childEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(200));
+    childEntry->properties.setProperty(JPropertyId::Height, JPropertyValue(100));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -429,12 +429,12 @@ TEST_F(LayoutEngineTest, ZeroSpaceLayout) {
     rootEntry->layoutResult = {0, 0, 0, 100};
     
     // 创建子按钮组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     
     // 设置子组件的宽度为100
-    childEntry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    childEntry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    childEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    childEntry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -457,9 +457,9 @@ TEST_F(LayoutEngineTest, MixedFlexGrowShrink) {
     rootEntry->layoutResult = {0, 0, 500, 100};
     
     // 创建三个子按钮组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息
     auto* child1Entry = storage->getComponent(child1);
@@ -467,19 +467,19 @@ TEST_F(LayoutEngineTest, MixedFlexGrowShrink) {
     auto* child3Entry = storage->getComponent(child3);
     
     // 设置第一个子组件：FlexGrow=1, FlexShrink=0
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
-    child1Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(0));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
+    child1Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(0));
     
     // 设置第二个子组件：FlexGrow=0, FlexShrink=1
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
-    child2Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
+    child2Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1));
     
     // 设置第三个子组件：FlexGrow=1, FlexShrink=1
-    child3Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child3Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
-    child3Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1));
+    child3Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child3Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
+    child3Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -501,9 +501,9 @@ TEST_F(LayoutEngineTest, FlexGrowDifferentRatios) {
     rootEntry->layoutResult = {0, 0, 600, 100};
     
     // 创建三个子按钮组件
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     // 获取子组件的详细信息
     auto* child1Entry = storage->getComponent(child1);
@@ -511,14 +511,14 @@ TEST_F(LayoutEngineTest, FlexGrowDifferentRatios) {
     auto* child3Entry = storage->getComponent(child3);
     
     // 设置初始宽度和 flex-grow 比例 1:2:1
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(2));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(2));
     
-    child3Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child3Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    child3Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child3Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     
     // 强制执行重新布局
     engine->forceRelayout();
@@ -542,22 +542,22 @@ TEST_F(LayoutEngineTest, FlexGrowSingleItem) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 600, 100};
     
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     auto* child3Entry = storage->getComponent(child3);
     
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1)); // 只有这个有 grow
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1)); // 只有这个有 grow
     
-    child3Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child3Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    child3Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child3Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
     engine->forceRelayout();
     
@@ -575,23 +575,23 @@ TEST_F(LayoutEngineTest, FlexShrinkDifferentRatios) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 600, 100}; // 容器总宽 600
     
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     auto* child3Entry = storage->getComponent(child3);
     
     // 设置初始宽度 300 每个 → 总宽 900，溢出 300
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child1Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1)); // shrink 比例 1:2:1
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child1Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1)); // shrink 比例 1:2:1
     
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child2Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(2));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child2Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(2));
     
-    child3Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child3Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1));
+    child3Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child3Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1));
     
     engine->forceRelayout();
     
@@ -610,22 +610,22 @@ TEST_F(LayoutEngineTest, FlexShrinkSingleItem) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 600, 100};
     
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     auto* child3Entry = storage->getComponent(child3);
     
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child1Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(0));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child1Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(0));
     
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child2Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(1)); // 只有这个有 shrink
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child2Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(1)); // 只有这个有 shrink
     
-    child3Entry->properties.setProperty(PropertyId::Width, PropertyValue(300));
-    child3Entry->properties.setProperty(PropertyId::FlexShrink, PropertyValue(0));
+    child3Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(300));
+    child3Entry->properties.setProperty(JPropertyId::FlexShrink, JPropertyValue(0));
     
     engine->forceRelayout();
     
@@ -641,21 +641,21 @@ TEST_F(LayoutEngineTest, FlexShrinkSingleItem) {
  */
 TEST_F(LayoutEngineTest, MarginTest) {
     auto* rootEntry = storage->getComponent(root);
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
     rootEntry->layoutResult = {0, 0, 800, 100};
     
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
     
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     
-    child1Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child1Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child1Entry->properties.setProperty(PropertyId::MarginRight, PropertyValue(20.0f));
+    child1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child1Entry->properties.setProperty(JPropertyId::MarginRight, JPropertyValue(20.0f));
     
-    child2Entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    child2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    child2Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    child2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     engine->forceRelayout();
     
@@ -671,19 +671,19 @@ TEST_F(LayoutEngineTest, MarginTest) {
 TEST_F(LayoutEngineTest, ColumnFlexboxLayout) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 800, 500};
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Column));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Column));
     
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto child3 = storage->createComponent(ComponentType::Button, root);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto child3 = storage->createComponent(JComponentType::Button, root);
     
     auto* child1Entry = storage->getComponent(child1);
     auto* child2Entry = storage->getComponent(child2);
     auto* child3Entry = storage->getComponent(child3);
     
-    child1Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child3Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    child1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child3Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     engine->forceRelayout();
     
@@ -704,13 +704,13 @@ TEST_F(LayoutEngineTest, FlexBasisComprehensive) {
     // Row方向测试
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 500, 100};
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
     
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
-    childEntry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    childEntry->properties.setProperty(PropertyId::FlexBasis, PropertyValue(200.0f));
-    childEntry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    childEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    childEntry->properties.setProperty(JPropertyId::FlexBasis, JPropertyValue(200.0f));
+    childEntry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
     engine->forceRelayout();
     
@@ -718,19 +718,19 @@ TEST_F(LayoutEngineTest, FlexBasisComprehensive) {
     
     // Column方向测试
     // 创建新的根组件测试
-    auto storage2 = std::make_unique<ComponentStorage>();
-    auto engine2 = std::make_unique<LayoutEngine>(*storage2);
+    auto storage2 = std::make_unique<JComponentStorage>();
+    auto engine2 = std::make_unique<JLayoutEngine>(*storage2);
     
-    auto root2 = storage2->createComponent(ComponentType::Container);
+    auto root2 = storage2->createComponent(JComponentType::Container);
     auto* root2Entry = storage2->getComponent(root2);
     root2Entry->layoutResult = {0, 0, 100, 500};
-    root2Entry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Column));
+    root2Entry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Column));
     
-    auto child2 = storage2->createComponent(ComponentType::Button, root2);
+    auto child2 = storage2->createComponent(JComponentType::Button, root2);
     auto* child2Entry = storage2->getComponent(child2);
-    child2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    child2Entry->properties.setProperty(PropertyId::FlexBasis, PropertyValue(100.0f));
-    child2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(0));
+    child2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    child2Entry->properties.setProperty(JPropertyId::FlexBasis, JPropertyValue(100.0f));
+    child2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(0));
     
     engine2->forceRelayout();
     
@@ -744,39 +744,39 @@ TEST_F(LayoutEngineTest, FlexBasisComprehensive) {
 TEST_F(LayoutEngineTest, AdvancedNestedLayout) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 800, 600};
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Column));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Column));
     
     // 第一层：容器和按钮
-    auto container1 = storage->createComponent(ComponentType::Container, root);
+    auto container1 = storage->createComponent(JComponentType::Container, root);
     auto* container1Entry = storage->getComponent(container1);
-    container1Entry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
-    container1Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    container1Entry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
+    container1Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     // 不设置 layoutResult，让布局引擎自己处理
     
     // 容器1中的子项
-    auto item1 = storage->createComponent(ComponentType::Button, container1);
-    auto item2 = storage->createComponent(ComponentType::Container, container1);
+    auto item1 = storage->createComponent(JComponentType::Button, container1);
+    auto item2 = storage->createComponent(JComponentType::Container, container1);
     
     auto* item1Entry = storage->getComponent(item1);
     auto* item2Entry = storage->getComponent(item2);
     
-    item1Entry->properties.setProperty(PropertyId::Width, PropertyValue(200));
-    item1Entry->properties.setProperty(PropertyId::Height, PropertyValue(100));
+    item1Entry->properties.setProperty(JPropertyId::Width, JPropertyValue(200));
+    item1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(100));
     
-    item2Entry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Column));
-    item2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    item2Entry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Column));
+    item2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     
     // item2容器中的子项
-    auto subItem1 = storage->createComponent(ComponentType::Button, item2);
-    auto subItem2 = storage->createComponent(ComponentType::Button, item2);
+    auto subItem1 = storage->createComponent(JComponentType::Button, item2);
+    auto subItem2 = storage->createComponent(JComponentType::Button, item2);
     
     auto* subItem1Entry = storage->getComponent(subItem1);
     auto* subItem2Entry = storage->getComponent(subItem2);
     
-    subItem1Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    subItem1Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
-    subItem2Entry->properties.setProperty(PropertyId::Height, PropertyValue(50));
-    subItem2Entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
+    subItem2Entry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
+    subItem2Entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
     
     engine->forceRelayout();
     
@@ -808,11 +808,11 @@ TEST_F(LayoutEngineTest, ZeroSpaceWithItems) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 0, 0}; // 零空间容器
     
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     
-    childEntry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-    childEntry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    childEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+    childEntry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     engine->forceRelayout();
     
@@ -833,26 +833,26 @@ TEST_F(LayoutEngineTest, ZeroSpaceWithItems) {
 TEST_F(LayoutEngineTest, DeepNestedLayout) {
     auto* rootEntry = storage->getComponent(root);
     rootEntry->layoutResult = {0, 0, 800, 600};
-    rootEntry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
+    rootEntry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
     
     // 创建10层嵌套的容器
-    ComponentHandle current = root;
+    JComponentHandle current = root;
     for (int i = 0; i < 10; i++) {
-        auto container = storage->createComponent(ComponentType::Container, current);
+        auto container = storage->createComponent(JComponentType::Container, current);
         auto* entry = storage->getComponent(container);
-        entry->properties.setProperty(PropertyId::FlexDirection, PropertyValue(FlexDirection::Row));
-        entry->properties.setProperty(PropertyId::FlexGrow, PropertyValue(1));
-        entry->properties.setProperty(PropertyId::Width, PropertyValue(100));
-        entry->properties.setProperty(PropertyId::Height, PropertyValue(100));
+        entry->properties.setProperty(JPropertyId::JFlexDirection, JPropertyValue(JFlexDirection::Row));
+        entry->properties.setProperty(JPropertyId::FlexGrow, JPropertyValue(1));
+        entry->properties.setProperty(JPropertyId::Width, JPropertyValue(100));
+        entry->properties.setProperty(JPropertyId::Height, JPropertyValue(100));
         // 不设置 layoutResult，让布局引擎自己处理
         current = container;
     }
     
     // 在最内层添加一个按钮
-    auto finalButton = storage->createComponent(ComponentType::Button, current);
+    auto finalButton = storage->createComponent(JComponentType::Button, current);
     auto* buttonEntry = storage->getComponent(finalButton);
-    buttonEntry->properties.setProperty(PropertyId::Width, PropertyValue(50));
-    buttonEntry->properties.setProperty(PropertyId::Height, PropertyValue(50));
+    buttonEntry->properties.setProperty(JPropertyId::Width, JPropertyValue(50));
+    buttonEntry->properties.setProperty(JPropertyId::Height, JPropertyValue(50));
     
     // 执行布局
     engine->forceRelayout();
@@ -873,4 +873,4 @@ TEST_F(LayoutEngineTest, DeepNestedLayout) {
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

@@ -1,4 +1,4 @@
-﻿// IPCClient.cpp
+﻿// JIPCClient.cpp
 // IPC通信模块 - 进程间通信（Windows命名管道）
 //
 // 功能:
@@ -10,21 +10,21 @@
 #include "aether/IPCClient.h"
 #include <iostream>
 
-namespace aether {
+namespace jaether {
 
 // IPC客户端构造函数
-IPCClient::IPCClient() {
+JIPCClient::JIPCClient() {
 }
 
 // IPC客户端析构函数
-IPCClient::~IPCClient() {
+JIPCClient::~JIPCClient() {
     disconnect();
 }
 
 // 连接到命名管道
 // 参数: pipeName - 管道名称
 // 返回值: 成功返回true
-bool IPCClient::connect(const std::string& pipeName) {
+bool JIPCClient::connect(const std::string& pipeName) {
     if (connected_) {
         return true;
     }
@@ -59,7 +59,7 @@ bool IPCClient::connect(const std::string& pipeName) {
 }
 
 // 断开连接
-void IPCClient::disconnect() {
+void JIPCClient::disconnect() {
     stopAsyncRead();
     
     if (pipeHandle_ != INVALID_HANDLE_VALUE) {
@@ -70,14 +70,14 @@ void IPCClient::disconnect() {
 }
 
 // 检查是否已连接
-bool IPCClient::isConnected() const {
+bool JIPCClient::isConnected() const {
     return connected_;
 }
 
 // 发送消息
 // 参数: message - 消息字符串
 // 返回值: 成功返回true
-bool IPCClient::sendMessage(const std::string& message) {
+bool JIPCClient::sendMessage(const std::string& message) {
     if (!connected_ || pipeHandle_ == INVALID_HANDLE_VALUE) {
         return false;
     }
@@ -101,7 +101,7 @@ bool IPCClient::sendMessage(const std::string& message) {
 
 // 接收消息
 // 返回值: 接收到的消息字符串
-std::string IPCClient::receiveMessage() {
+std::string JIPCClient::receiveMessage() {
     if (!connected_ || pipeHandle_ == INVALID_HANDLE_VALUE) {
         return "";
     }
@@ -126,7 +126,7 @@ std::string IPCClient::receiveMessage() {
 }
 
 // 开始异步读取
-void IPCClient::startAsyncRead() {
+void JIPCClient::startAsyncRead() {
     if (reading_) {
         return;
     }
@@ -136,7 +136,7 @@ void IPCClient::startAsyncRead() {
 }
 
 // 停止异步读取
-void IPCClient::stopAsyncRead() {
+void JIPCClient::stopAsyncRead() {
     reading_ = false;
     
     if (readThread_ != INVALID_HANDLE_VALUE) {
@@ -149,14 +149,14 @@ void IPCClient::stopAsyncRead() {
 // 异步读取线程（静态）
 // 参数: param - IPCClient指针
 // 返回值: 线程退出码
-DWORD WINAPI IPCClient::asyncReadThread(LPVOID param) {
-    IPCClient* client = static_cast<IPCClient*>(param);
+DWORD WINAPI JIPCClient::asyncReadThread(LPVOID param) {
+    JIPCClient* client = static_cast<JIPCClient*>(param);
     client->readLoop();
     return 0;
 }
 
 // 读取循环
-void IPCClient::readLoop() {
+void JIPCClient::readLoop() {
     while (reading_ && connected_) {
         std::string message = receiveMessage();
         if (!message.empty() && messageCallback_) {
@@ -287,4 +287,4 @@ void IPCServer::serverLoop() {
     }
 }
 
-} // namespace aether
+} // namespace jaether

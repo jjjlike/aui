@@ -2,7 +2,7 @@
  * 快照序列化模块 - 单元测试文件
  * 
  * 功能说明：
- * - 测试 SnapshotSerializer 类的序列化功能
+ * - 测试 JSnapshotSerializer 类的序列化功能
  * - 包括快照捕获、JSON 序列化、二进制序列化、快照比较等
  * - 测试用例覆盖：正常逻辑、边界情况、往返序列化
  */
@@ -11,7 +11,7 @@
 #include "aether/aether.h"
 #include <gtest/gtest.h>
 
-namespace aether {
+namespace jaether {
 namespace test {
 
 /**
@@ -22,18 +22,18 @@ class SnapshotTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // 创建组件存储实例
-        storage = std::make_unique<ComponentStorage>();
+        storage = std::make_unique<JComponentStorage>();
         
         // 创建根容器组件
-        root = storage->createComponent(ComponentType::Container);
+        root = storage->createComponent(JComponentType::Container);
         // 获取根组件的详细信息
         auto* rootEntry = storage->getComponent(root);
         // 设置根组件的布局大小（800x600）
         rootEntry->layoutResult = {0, 0, 800, 600};
     }
     
-    std::unique_ptr<ComponentStorage> storage;  // 组件存储指针
-    ComponentHandle root;                      // 根组件句柄
+    std::unique_ptr<JComponentStorage> storage;  // 组件存储指针
+    JComponentHandle root;                      // 根组件句柄
 };
 
 /**
@@ -42,7 +42,7 @@ protected:
  */
 TEST_F(SnapshotTest, CaptureEmptyStorage) {
     // 捕获组件存储的快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 验证快照中的组件计数为 1（只有根组件）
     EXPECT_EQ(snapshot.componentCount, 1);
@@ -56,7 +56,7 @@ TEST_F(SnapshotTest, CaptureEmptyStorage) {
  */
 TEST_F(SnapshotTest, CaptureWithComponents) {
     // 创建一个按钮组件作为根组件的子组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -66,7 +66,7 @@ TEST_F(SnapshotTest, CaptureWithComponents) {
     buttonEntry->enabled = true;
     
     // 捕获组件存储的快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 验证快照中的组件计数为 2（根组件和按钮）
     EXPECT_EQ(snapshot.componentCount, 2);
@@ -80,9 +80,9 @@ TEST_F(SnapshotTest, CaptureWithComponents) {
  */
 TEST_F(SnapshotTest, ToJSON) {
     // 捕获组件存储的快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     // 将快照序列化为 JSON 字符串
-    auto json = SnapshotSerializer::toJSON(snapshot);
+    auto json = JSnapshotSerializer::toJSON(snapshot);
     
     // 验证 JSON 字符串不为空
     EXPECT_FALSE(json.empty());
@@ -98,12 +98,12 @@ TEST_F(SnapshotTest, ToJSON) {
  */
 TEST_F(SnapshotTest, FromJSON) {
     // 捕获原始快照
-    auto original = SnapshotSerializer::capture(*storage);
+    auto original = JSnapshotSerializer::capture(*storage);
     // 将原始快照序列化为 JSON
-    auto json = SnapshotSerializer::toJSON(original);
+    auto json = JSnapshotSerializer::toJSON(original);
     
     // 从 JSON 反序列化为快照
-    auto restored = SnapshotSerializer::fromJSON(json);
+    auto restored = JSnapshotSerializer::fromJSON(json);
     
     // 验证恢复的快照中的组件计数与原始快照相同
     EXPECT_EQ(restored.componentCount, original.componentCount);
@@ -115,9 +115,9 @@ TEST_F(SnapshotTest, FromJSON) {
  */
 TEST_F(SnapshotTest, ToBinary) {
     // 捕获组件存储的快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     // 将快照序列化为二进制格式
-    auto binary = SnapshotSerializer::toBinary(snapshot);
+    auto binary = JSnapshotSerializer::toBinary(snapshot);
     
     // 验证二进制数据大小大于 0
     EXPECT_GT(binary.size(), 0);
@@ -129,12 +129,12 @@ TEST_F(SnapshotTest, ToBinary) {
  */
 TEST_F(SnapshotTest, FromBinary) {
     // 捕获原始快照
-    auto original = SnapshotSerializer::capture(*storage);
+    auto original = JSnapshotSerializer::capture(*storage);
     // 将原始快照序列化为二进制格式
-    auto binary = SnapshotSerializer::toBinary(original);
+    auto binary = JSnapshotSerializer::toBinary(original);
     
     // 从二进制反序列化为快照
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证恢复的快照中的组件计数与原始快照相同
     EXPECT_EQ(restored.componentCount, original.componentCount);
@@ -146,7 +146,7 @@ TEST_F(SnapshotTest, FromBinary) {
  */
 TEST_F(SnapshotTest, RoundTripBinary) {
     // 创建一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
@@ -156,11 +156,11 @@ TEST_F(SnapshotTest, RoundTripBinary) {
     buttonEntry->enabled = false;
     
     // 捕获原始快照
-    auto original = SnapshotSerializer::capture(*storage);
+    auto original = JSnapshotSerializer::capture(*storage);
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(original);
+    auto binary = JSnapshotSerializer::toBinary(original);
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证恢复的快照中的组件计数与原始快照相同
     EXPECT_EQ(restored.componentCount, original.componentCount);
@@ -176,15 +176,15 @@ TEST_F(SnapshotTest, RoundTripBinary) {
  */
 TEST_F(SnapshotTest, CompareSnapshots) {
     // 捕获第一个快照（只有根组件）
-    auto snapshot1 = SnapshotSerializer::capture(*storage);
+    auto snapshot1 = JSnapshotSerializer::capture(*storage);
     
     // 添加一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     // 捕获第二个快照（根组件和按钮）
-    auto snapshot2 = SnapshotSerializer::capture(*storage);
+    auto snapshot2 = JSnapshotSerializer::capture(*storage);
     
     // 验证两个快照不相等
-    EXPECT_FALSE(SnapshotSerializer::compare(snapshot1, snapshot2));
+    EXPECT_FALSE(JSnapshotSerializer::compare(snapshot1, snapshot2));
 }
 
 /**
@@ -193,11 +193,11 @@ TEST_F(SnapshotTest, CompareSnapshots) {
  */
 TEST_F(SnapshotTest, CompareIdenticalSnapshots) {
     // 捕获两个相同的快照
-    auto snapshot1 = SnapshotSerializer::capture(*storage);
-    auto snapshot2 = SnapshotSerializer::capture(*storage);
+    auto snapshot1 = JSnapshotSerializer::capture(*storage);
+    auto snapshot2 = JSnapshotSerializer::capture(*storage);
     
     // 验证两个快照相等
-    EXPECT_TRUE(SnapshotSerializer::compare(snapshot1, snapshot2));
+    EXPECT_TRUE(JSnapshotSerializer::compare(snapshot1, snapshot2));
 }
 
 /**
@@ -206,19 +206,19 @@ TEST_F(SnapshotTest, CompareIdenticalSnapshots) {
  */
 TEST_F(SnapshotTest, DiffSnapshots) {
     // 捕获第一个快照（只有根组件）
-    auto snapshot1 = SnapshotSerializer::capture(*storage);
+    auto snapshot1 = JSnapshotSerializer::capture(*storage);
     
     // 添加一个按钮组件
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     // 设置按钮的布局区域
     buttonEntry->layoutResult = {100, 100, 200, 50};
     
     // 捕获第二个快照（根组件和按钮）
-    auto snapshot2 = SnapshotSerializer::capture(*storage);
+    auto snapshot2 = JSnapshotSerializer::capture(*storage);
     
     // 计算两个快照的差异
-    auto diff = SnapshotSerializer::diff(snapshot1, snapshot2);
+    auto diff = JSnapshotSerializer::diff(snapshot1, snapshot2);
     
     // 验证差异不为空
     EXPECT_FALSE(diff.empty());
@@ -230,14 +230,14 @@ TEST_F(SnapshotTest, DiffSnapshots) {
  */
 TEST_F(SnapshotTest, ComponentHierarchy) {
     // 创建一个按钮组件作为根组件的子组件
-    auto child = storage->createComponent(ComponentType::Button, root);
+    auto child = storage->createComponent(JComponentType::Button, root);
     auto* childEntry = storage->getComponent(child);
     auto* rootEntry = storage->getComponent(root);
     // 设置子组件的布局区域
     childEntry->layoutResult = {50, 50, 100, 30};
     
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     bool foundChild = false;
     // 遍历快照中的所有组件
@@ -263,12 +263,12 @@ TEST_F(SnapshotTest, ComponentHierarchy) {
  */
 TEST_F(SnapshotTest, MultiLevelHierarchy) {
     // 创建多层嵌套的组件结构
-    auto child1 = storage->createComponent(ComponentType::Button, root);
-    auto child2 = storage->createComponent(ComponentType::Button, root);
-    auto grandchild = storage->createComponent(ComponentType::Button, child1);
+    auto child1 = storage->createComponent(JComponentType::Button, root);
+    auto child2 = storage->createComponent(JComponentType::Button, root);
+    auto grandchild = storage->createComponent(JComponentType::Button, child1);
     
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 验证快照包含所有组件（根 + 2个子 + 1个孙 = 4）
     EXPECT_EQ(snapshot.componentCount, 4);
@@ -300,21 +300,21 @@ TEST_F(SnapshotTest, MultiLevelHierarchy) {
  */
 TEST_F(SnapshotTest, AllComponentTypes) {
     // 创建不同类型的组件
-    auto container = storage->createComponent(ComponentType::Container, root);
-    auto button = storage->createComponent(ComponentType::Button, root);
-    auto text = storage->createComponent(ComponentType::Text, root);
-    auto image = storage->createComponent(ComponentType::Image, root);
-    auto input = storage->createComponent(ComponentType::Input, root);
-    auto custom = storage->createComponent(ComponentType::Custom, root);
+    auto container = storage->createComponent(JComponentType::Container, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
+    auto text = storage->createComponent(JComponentType::Text, root);
+    auto image = storage->createComponent(JComponentType::Image, root);
+    auto input = storage->createComponent(JComponentType::Input, root);
+    auto custom = storage->createComponent(JComponentType::Custom, root);
     
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 验证快照包含所有组件（根 + 6个子 = 7）
     EXPECT_EQ(snapshot.componentCount, 7);
     
     // 验证每种类型的组件都存在
-    std::set<ComponentType> foundTypes;
+    std::set<JComponentType> foundTypes;
     for (const auto& comp : snapshot.components) {
         foundTypes.insert(comp.type);
     }
@@ -333,7 +333,7 @@ TEST_F(SnapshotTest, AllComponentTypes) {
  */
 TEST_F(SnapshotTest, BinarySerializationCompleteness) {
     // 创建组件并设置所有属性
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     buttonEntry->layoutResult = {100, 200, 300, 400};
     buttonEntry->visible = false;
@@ -341,16 +341,16 @@ TEST_F(SnapshotTest, BinarySerializationCompleteness) {
     buttonEntry->debugName = "TestButton";
     
     // 捕获快照
-    auto original = SnapshotSerializer::capture(*storage);
+    auto original = JSnapshotSerializer::capture(*storage);
     
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(original);
+    auto binary = JSnapshotSerializer::toBinary(original);
     
     // 验证二进制数据长度大于基本头部
     EXPECT_GT(binary.size(), 20);
     
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证恢复的快照包含按钮组件
     EXPECT_EQ(restored.componentCount, 2); // 根 + 按钮
@@ -366,19 +366,19 @@ TEST_F(SnapshotTest, BinarySerializationCompleteness) {
  */
 TEST_F(SnapshotTest, EmptySnapshotSerialization) {
     // 创建空的快照
-    Snapshot emptySnapshot;
+    JSnapshot emptySnapshot;
     emptySnapshot.timestamp = 1234567890;
     emptySnapshot.version = AETHER_VERSION;
     emptySnapshot.componentCount = 0;
     
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(emptySnapshot);
+    auto binary = JSnapshotSerializer::toBinary(emptySnapshot);
     
     // 验证二进制数据不为空（包含头部）
     EXPECT_GT(binary.size(), 0);
     
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证恢复的快照为空
     EXPECT_EQ(restored.componentCount, 0);
@@ -397,7 +397,7 @@ TEST_F(SnapshotTest, CorruptedBinaryData) {
     std::vector<uint8_t> corruptedData = {0x00, 0x01, 0x02};
     
     // 从损坏的数据反序列化
-    auto restored = SnapshotSerializer::fromBinary(corruptedData);
+    auto restored = JSnapshotSerializer::fromBinary(corruptedData);
     
     // 验证返回的快照是空的或基本的
     // （根据具体实现，可能返回空快照或部分数据）
@@ -415,13 +415,13 @@ TEST_F(SnapshotTest, CorruptedBinaryData) {
  */
 TEST_F(SnapshotTest, VersionVerification) {
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(snapshot);
+    auto binary = JSnapshotSerializer::toBinary(snapshot);
     
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证版本信息正确传递
     EXPECT_EQ(restored.version, snapshot.version);
@@ -439,25 +439,25 @@ TEST_F(SnapshotTest, LargeSnapshot) {
     // 创建大量组件
     const int numComponents = 100;
     for (int i = 0; i < numComponents; ++i) {
-        auto component = storage->createComponent(ComponentType::Button, root);
+        auto component = storage->createComponent(JComponentType::Button, root);
         auto* entry = storage->getComponent(component);
         entry->layoutResult = {static_cast<float>(i * 10), static_cast<float>(i * 10), 100, 30};
     }
     
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 验证快照包含所有组件（根 + 100个子）
     EXPECT_EQ(snapshot.componentCount, numComponents + 1);
     
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(snapshot);
+    auto binary = JSnapshotSerializer::toBinary(snapshot);
     
     // 验证二进制数据长度合理
     EXPECT_GT(binary.size(), numComponents * 10); // 每个组件至少10字节
     
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 验证恢复的快照包含所有组件
     EXPECT_EQ(restored.componentCount, numComponents + 1);
@@ -473,9 +473,9 @@ TEST_F(SnapshotTest, LargeSnapshot) {
  */
 TEST_F(SnapshotTest, VisibilityAndEnabledState) {
     // 创建按钮并设置不同的可见性和启用状态
-    auto button1 = storage->createComponent(ComponentType::Button, root);
-    auto button2 = storage->createComponent(ComponentType::Button, root);
-    auto button3 = storage->createComponent(ComponentType::Button, root);
+    auto button1 = storage->createComponent(JComponentType::Button, root);
+    auto button2 = storage->createComponent(JComponentType::Button, root);
+    auto button3 = storage->createComponent(JComponentType::Button, root);
     
     auto* entry1 = storage->getComponent(button1);
     auto* entry2 = storage->getComponent(button2);
@@ -489,20 +489,20 @@ TEST_F(SnapshotTest, VisibilityAndEnabledState) {
     entry3->enabled = true;
     
     // 捕获快照
-    auto snapshot = SnapshotSerializer::capture(*storage);
+    auto snapshot = JSnapshotSerializer::capture(*storage);
     
     // 序列化为二进制
-    auto binary = SnapshotSerializer::toBinary(snapshot);
+    auto binary = JSnapshotSerializer::toBinary(snapshot);
     
     // 从二进制反序列化
-    auto restored = SnapshotSerializer::fromBinary(binary);
+    auto restored = JSnapshotSerializer::fromBinary(binary);
     
     // 查找按钮组件并验证状态
     // 注意：根据实现，可能需要通过ID或其他方式匹配
     // 这里我们验证至少有3个按钮类型的组件
     int buttonCount = 0;
     for (const auto& comp : restored.components) {
-        if (comp.type == ComponentType::Button) {
+        if (comp.type == JComponentType::Button) {
             buttonCount++;
         }
     }
@@ -519,26 +519,26 @@ TEST_F(SnapshotTest, VisibilityAndEnabledState) {
  */
 TEST_F(SnapshotTest, SnapshotContentDifference) {
     // 捕获第一个快照
-    auto snapshot1 = SnapshotSerializer::capture(*storage);
+    auto snapshot1 = JSnapshotSerializer::capture(*storage);
     
     // 修改组件属性
-    auto button = storage->createComponent(ComponentType::Button, root);
+    auto button = storage->createComponent(JComponentType::Button, root);
     auto* buttonEntry = storage->getComponent(button);
     buttonEntry->layoutResult = {100, 100, 200, 50};
     buttonEntry->visible = false;
     
     // 捕获第二个快照
-    auto snapshot2 = SnapshotSerializer::capture(*storage);
+    auto snapshot2 = JSnapshotSerializer::capture(*storage);
     
     // 验证两个快照不相等
-    EXPECT_FALSE(SnapshotSerializer::compare(snapshot1, snapshot2));
+    EXPECT_FALSE(JSnapshotSerializer::compare(snapshot1, snapshot2));
     
     // 创建第三个快照，内容与snapshot2相同
-    auto snapshot3 = SnapshotSerializer::capture(*storage);
+    auto snapshot3 = JSnapshotSerializer::capture(*storage);
     
     // 验证snapshot2和snapshot3相等
-    EXPECT_TRUE(SnapshotSerializer::compare(snapshot2, snapshot3));
+    EXPECT_TRUE(JSnapshotSerializer::compare(snapshot2, snapshot3));
 }
 
 } // namespace test
-} // namespace aether
+} // namespace jaether

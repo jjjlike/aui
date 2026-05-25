@@ -1,4 +1,4 @@
-// ComponentStorage.cpp
+// JComponentStorage.cpp
 // 组件存储模块 - 管理所有UI组件的创建、销毁和层次结构
 //
 // 功能:
@@ -12,11 +12,11 @@
 #include "aether/Logger.h"
 #include <algorithm>
 
-namespace aether {
+namespace jaether {
 
 // 分配一个可用的组件槽位
 // 返回值: 分配到的槽位索引
-int32_t ComponentStorage::allocateSlot() {
+int32_t JComponentStorage::allocateSlot() {
     // 优先从空闲链表中回收槽位
     if (!freeList_.empty()) {
         int32_t slot = freeList_.back();
@@ -31,7 +31,7 @@ int32_t ComponentStorage::allocateSlot() {
 
 // 释放指定索引的组件槽位
 // 参数: index - 要释放的槽位索引
-void ComponentStorage::freeSlot(int32_t index) {
+void JComponentStorage::freeSlot(int32_t index) {
     // 检查索引是否有效
     if (index >= 0 && index < static_cast<int32_t>(entries_.size())) {
         // 将组件ID标记为无效
@@ -48,7 +48,7 @@ void ComponentStorage::freeSlot(int32_t index) {
 //   type - 组件类型
 //   parent - 父组件句柄（可选）
 // 返回值: 新创建的组件句柄
-ComponentHandle ComponentStorage::createComponent(ComponentType type, ComponentHandle parent) {
+JComponentHandle JComponentStorage::createComponent(JComponentType type, JComponentHandle parent) {
     // 分配槽位
     int32_t slot = allocateSlot();
     auto& entry = entries_[slot];
@@ -68,20 +68,20 @@ ComponentHandle ComponentStorage::createComponent(ComponentType type, ComponentH
         entries_[parent.index].childrenIndices.push_back(slot);
     } else if (!root_.isValid()) {
         // 如果没有父组件且根组件未设置，设为根组件
-        root_ = ComponentHandle{slot, entry.generation};
+        root_ = JComponentHandle{slot, entry.generation};
     }
     
-    ComponentHandle handle{slot, entry.generation};
+    JComponentHandle handle{slot, entry.generation};
     
     // 输出日志
-    Logger::getInstance().logComponentCreate(handle, type, parent);
+    JLogger::getInstance().logComponentCreate(handle, type, parent);
     
     return handle;
 }
 
 // 销毁指定的组件及其所有子组件
 // 参数: handle - 要销毁的组件句柄
-void ComponentStorage::destroyComponent(ComponentHandle handle) {
+void JComponentStorage::destroyComponent(JComponentHandle handle) {
     // 检查句柄是否有效
     if (!isValid(handle)) return;
     
@@ -89,7 +89,7 @@ void ComponentStorage::destroyComponent(ComponentHandle handle) {
     
     // 递归销毁所有子组件
     for (int32_t childIdx : entry.childrenIndices) {
-        destroyComponent(ComponentHandle{childIdx, entries_[childIdx].generation});
+        destroyComponent(JComponentHandle{childIdx, entries_[childIdx].generation});
     }
     
     // 从父组件的子列表中移除
@@ -103,11 +103,11 @@ void ComponentStorage::destroyComponent(ComponentHandle handle) {
     
     // 如果是根组件，清空根引用
     if (root_.index == handle.index) {
-        root_ = ComponentHandle{};
+        root_ = JComponentHandle{};
     }
     
     // 输出日志
-    Logger::getInstance().logComponentDestroy(handle);
+    JLogger::getInstance().logComponentDestroy(handle);
     
     // 释放槽位
     freeSlot(handle.index);
@@ -116,7 +116,7 @@ void ComponentStorage::destroyComponent(ComponentHandle handle) {
 // 检查组件句柄是否有效
 // 参数: handle - 要检查的组件句柄
 // 返回值: 有效返回true，否则返回false
-bool ComponentStorage::isValid(ComponentHandle handle) const {
+bool JComponentStorage::isValid(JComponentHandle handle) const {
     // 检查索引范围
     if (handle.index < 0 || handle.index >= static_cast<int32_t>(entries_.size())) {
         return false;
@@ -129,7 +129,7 @@ bool ComponentStorage::isValid(ComponentHandle handle) const {
 // 获取组件的可变指针
 // 参数: handle - 组件句柄
 // 返回值: 组件指针，无效句柄返回nullptr
-ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) {
+JComponentEntry* JComponentStorage::getComponent(JComponentHandle handle) {
     if (!isValid(handle)) return nullptr;
     return &entries_[handle.index];
 }
@@ -137,7 +137,7 @@ ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) {
 // 获取组件的常量指针
 // 参数: handle - 组件句柄
 // 返回值: 组件指针，无效句柄返回nullptr
-const ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) const {
+const JComponentEntry* JComponentStorage::getComponent(JComponentHandle handle) const {
     if (!isValid(handle)) return nullptr;
     return &entries_[handle.index];
 }
@@ -145,7 +145,7 @@ const ComponentEntry* ComponentStorage::getComponent(ComponentHandle handle) con
 // 通过索引获取组件的可变指针
 // 参数: index - 槽位索引
 // 返回值: 组件指针，无效索引返回nullptr
-ComponentEntry* ComponentStorage::getComponentByIndex(int32_t index) {
+JComponentEntry* JComponentStorage::getComponentByIndex(int32_t index) {
     if (index < 0 || index >= static_cast<int32_t>(entries_.size())) return nullptr;
     if (entries_[index].id == INVALID_COMPONENT_ID) return nullptr;
     return &entries_[index];
@@ -154,14 +154,14 @@ ComponentEntry* ComponentStorage::getComponentByIndex(int32_t index) {
 // 通过索引获取组件的常量指针
 // 参数: index - 槽位索引
 // 返回值: 组件指针，无效索引返回nullptr
-const ComponentEntry* ComponentStorage::getComponentByIndex(int32_t index) const {
+const JComponentEntry* JComponentStorage::getComponentByIndex(int32_t index) const {
     if (index < 0 || index >= static_cast<int32_t>(entries_.size())) return nullptr;
     if (entries_[index].id == INVALID_COMPONENT_ID) return nullptr;
     return &entries_[index];
 }
 
 // 获取活动组件数量（活跃的）
-size_t ComponentStorage::activeCount() const {
+size_t JComponentStorage::activeCount() const {
     size_t count = 0;
     for (const auto& entry : entries_) {
         if (entry.id != INVALID_COMPONENT_ID) {
@@ -174,36 +174,36 @@ size_t ComponentStorage::activeCount() const {
 // 通过组件ID查找组件
 // 参数: id - 组件ID
 // 返回值: 找到的组件句柄，未找到返回无效句柄
-ComponentHandle ComponentStorage::findById(ComponentId id) const {
+JComponentHandle JComponentStorage::findById(JComponentId id) const {
     // 遍历所有组件查找
     for (size_t i = 0; i < entries_.size(); ++i) {
         if (entries_[i].id == id) {
-            return ComponentHandle{static_cast<int32_t>(i), entries_[i].generation};
+            return JComponentHandle{static_cast<int32_t>(i), entries_[i].generation};
         }
     }
-    return ComponentHandle{};
+    return JComponentHandle{};
 }
 
 // 清空所有组件
-void ComponentStorage::clear() {
+void JComponentStorage::clear() {
     entries_.clear();
     freeList_.clear();
     nextId_ = 1;
-    root_ = ComponentHandle{};
+    root_ = JComponentHandle{};
 }
 
 // 计算组件的绝对位置（通过索引）
 // 参数: index - 组件索引
 // 返回值: 组件的绝对矩形
-Rect ComponentStorage::getAbsoluteBounds(int32_t index) const {
+JRect JComponentStorage::getAbsoluteBounds(int32_t index) const {
     if (index < 0 || index >= static_cast<int32_t>(entries_.size())) {
-        return Rect{0, 0, 0, 0};
+        return JRect{0, 0, 0, 0};
     }
     
     const auto& entry = entries_[index];
     
     // 初始化绝对位置为相对位置
-    Rect absoluteBounds = entry.layoutResult;
+    JRect absoluteBounds = entry.layoutResult;
     
     // 遍历所有父组件，累加位置
     int32_t currentParentIdx = entry.parentIndex;
@@ -223,9 +223,9 @@ Rect ComponentStorage::getAbsoluteBounds(int32_t index) const {
 // 计算组件的绝对位置（通过句柄）
 // 参数: handle - 组件句柄
 // 返回值: 组件的绝对矩形
-Rect ComponentStorage::getAbsoluteBounds(ComponentHandle handle) const {
+JRect JComponentStorage::getAbsoluteBounds(JComponentHandle handle) const {
     if (!isValid(handle)) {
-        return Rect{0, 0, 0, 0};
+        return JRect{0, 0, 0, 0};
     }
     
     return getAbsoluteBounds(handle.index);
@@ -234,9 +234,9 @@ Rect ComponentStorage::getAbsoluteBounds(ComponentHandle handle) const {
 // 获取组件的相对位置（相对于父组件）
 // 参数: handle - 组件句柄
 // 返回值: 组件的相对矩形
-Rect ComponentStorage::getRelativeBounds(ComponentHandle handle) const {
+JRect JComponentStorage::getRelativeBounds(JComponentHandle handle) const {
     if (!isValid(handle)) {
-        return Rect{0, 0, 0, 0};
+        return JRect{0, 0, 0, 0};
     }
     
     const auto& entry = entries_[handle.index];
@@ -246,16 +246,16 @@ Rect ComponentStorage::getRelativeBounds(ComponentHandle handle) const {
 // 检查点是否在组件的绝对位置范围内
 // 参数: handle - 组件句柄, x - 点的x坐标, y - 点的y坐标
 // 返回值: 是否在范围内
-bool ComponentStorage::containsPoint(ComponentHandle handle, float x, float y) const {
-    Rect absoluteBounds = getAbsoluteBounds(handle);
+bool JComponentStorage::containsPoint(JComponentHandle handle, float x, float y) const {
+    JRect absoluteBounds = getAbsoluteBounds(handle);
     return absoluteBounds.contains(x, y);
 }
 
 // 检查点是否在组件的绝对位置范围内
 // 参数: handle - 组件句柄, point - 点
 // 返回值: 是否在范围内
-bool ComponentStorage::containsPoint(ComponentHandle handle, Point point) const {
+bool JComponentStorage::containsPoint(JComponentHandle handle, JPoint point) const {
     return containsPoint(handle, point.x, point.y);
 }
 
-} // namespace aether
+} // namespace jaether

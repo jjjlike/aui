@@ -1,4 +1,4 @@
-// TodoApp.cpp
+// JTodoApp.cpp
 // 待办列表应用实现
 // 
 // 功能:
@@ -12,111 +12,111 @@
 #include <sstream>
 #include <iostream>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 待办应用构造函数
  * @param logicLayer 逻辑层引用
  */
-TodoApp::TodoApp(LogicLayer& logicLayer) 
+JTodoApp::JTodoApp(JLogicLayer& logicLayer) 
     : logicLayer_(logicLayer) {
 }
 
 /**
  * 待办应用析构函数
  */
-TodoApp::~TodoApp() {
+JTodoApp::~JTodoApp() {
 }
 
 /**
  * 初始化应用UI
  * 创建所有UI组件并设置布局
  */
-void TodoApp::initialize() {
-    Logger::getInstance().info("TodoApp::initialize() 开始初始化UI");
+void JTodoApp::initialize() {
+    JLogger::getInstance().info("JTodoApp::initialize() 开始初始化UI");
     
     // 创建根容器
-    rootContainer_ = logicLayer_.createComponent(ComponentType::Container);
-    Logger::getInstance().info("创建根容器，handle=" + std::to_string(rootContainer_.index));
-    logicLayer_.setProperty(rootContainer_, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_.setProperty(rootContainer_, PropertyId::Height, PropertyValue(600.0f));
-    logicLayer_.setProperty(rootContainer_, PropertyId::FlexDirection, PropertyValue(static_cast<int>(FlexDirection::Column)));
+    rootContainer_ = logicLayer_.createComponent(JComponentType::Container);
+    JLogger::getInstance().info("创建根容器，handle=" + std::to_string(rootContainer_.index));
+    logicLayer_.setProperty(rootContainer_, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_.setProperty(rootContainer_, JPropertyId::Height, JPropertyValue(600.0f));
+    logicLayer_.setProperty(rootContainer_, JPropertyId::JFlexDirection, JPropertyValue(static_cast<int>(JFlexDirection::Column)));
     
     // 创建标题
-    title_ = logicLayer_.createComponent(ComponentType::Text, rootContainer_);
-    Logger::getInstance().info("创建标题，handle=" + std::to_string(title_.index));
-    logicLayer_.setProperty(title_, PropertyId::Text, PropertyValue(std::string("我的待办列表")));
-    logicLayer_.setProperty(title_, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_.setProperty(title_, PropertyId::Height, PropertyValue(60.0f));
-    logicLayer_.setProperty(title_, PropertyId::PaddingLeft, PropertyValue(20.0f));
-    logicLayer_.setProperty(title_, PropertyId::PaddingTop, PropertyValue(20.0f));
-    logicLayer_.setProperty(title_, PropertyId::FontSize, PropertyValue(24.0f));
-    logicLayer_.setProperty(title_, PropertyId::FlexShrink, PropertyValue(1.0f));
+    title_ = logicLayer_.createComponent(JComponentType::Text, rootContainer_);
+    JLogger::getInstance().info("创建标题，handle=" + std::to_string(title_.index));
+    logicLayer_.setProperty(title_, JPropertyId::Text, JPropertyValue(std::string("我的待办列表")));
+    logicLayer_.setProperty(title_, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_.setProperty(title_, JPropertyId::Height, JPropertyValue(60.0f));
+    logicLayer_.setProperty(title_, JPropertyId::PaddingLeft, JPropertyValue(20.0f));
+    logicLayer_.setProperty(title_, JPropertyId::PaddingTop, JPropertyValue(20.0f));
+    logicLayer_.setProperty(title_, JPropertyId::FontSize, JPropertyValue(24.0f));
+    logicLayer_.setProperty(title_, JPropertyId::FlexShrink, JPropertyValue(1.0f));
     
     // 创建输入区域容器
-    inputContainer_ = logicLayer_.createComponent(ComponentType::Container, rootContainer_);
-    Logger::getInstance().info("创建输入区域容器，handle=" + std::to_string(inputContainer_.index));
-    logicLayer_.setProperty(inputContainer_, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_.setProperty(inputContainer_, PropertyId::Height, PropertyValue(60.0f));
-    logicLayer_.setProperty(inputContainer_, PropertyId::FlexDirection, PropertyValue(static_cast<int>(FlexDirection::Row)));
-    logicLayer_.setProperty(inputContainer_, PropertyId::PaddingLeft, PropertyValue(20.0f));
-    logicLayer_.setProperty(inputContainer_, PropertyId::PaddingRight, PropertyValue(20.0f));
-    logicLayer_.setProperty(inputContainer_, PropertyId::FlexShrink, PropertyValue(1.0f));
+    inputContainer_ = logicLayer_.createComponent(JComponentType::Container, rootContainer_);
+    JLogger::getInstance().info("创建输入区域容器，handle=" + std::to_string(inputContainer_.index));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::Height, JPropertyValue(60.0f));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::JFlexDirection, JPropertyValue(static_cast<int>(JFlexDirection::Row)));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::PaddingLeft, JPropertyValue(20.0f));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::PaddingRight, JPropertyValue(20.0f));
+    logicLayer_.setProperty(inputContainer_, JPropertyId::FlexShrink, JPropertyValue(1.0f));
     
     // 创建输入框
-    inputBox_ = logicLayer_.createComponent(ComponentType::Input, inputContainer_);
-    Logger::getInstance().info("创建输入框，handle=" + std::to_string(inputBox_.index));
-    logicLayer_.setProperty(inputBox_, PropertyId::Width, PropertyValue(400.0f));
-    logicLayer_.setProperty(inputBox_, PropertyId::Height, PropertyValue(40.0f));
-    logicLayer_.setProperty(inputBox_, PropertyId::PaddingLeft, PropertyValue(10.0f));
-    logicLayer_.setProperty(inputBox_, PropertyId::PaddingTop, PropertyValue(10.0f));
-    logicLayer_.setProperty(inputBox_, PropertyId::FlexShrink, PropertyValue(1.0f));
+    inputBox_ = logicLayer_.createComponent(JComponentType::Input, inputContainer_);
+    JLogger::getInstance().info("创建输入框，handle=" + std::to_string(inputBox_.index));
+    logicLayer_.setProperty(inputBox_, JPropertyId::Width, JPropertyValue(400.0f));
+    logicLayer_.setProperty(inputBox_, JPropertyId::Height, JPropertyValue(40.0f));
+    logicLayer_.setProperty(inputBox_, JPropertyId::PaddingLeft, JPropertyValue(10.0f));
+    logicLayer_.setProperty(inputBox_, JPropertyId::PaddingTop, JPropertyValue(10.0f));
+    logicLayer_.setProperty(inputBox_, JPropertyId::FlexShrink, JPropertyValue(1.0f));
     
     // 创建添加按钮
-    addButton_ = logicLayer_.createComponent(ComponentType::Button, inputContainer_);
-    Logger::getInstance().info("创建添加按钮，handle=" + std::to_string(addButton_.index) + " 父容器=" + std::to_string(inputContainer_.index));
-    logicLayer_.setProperty(addButton_, PropertyId::Text, PropertyValue(std::string("添加")));
-    logicLayer_.setProperty(addButton_, PropertyId::Width, PropertyValue(100.0f));
-    logicLayer_.setProperty(addButton_, PropertyId::Height, PropertyValue(40.0f));
-    logicLayer_.setProperty(addButton_, PropertyId::MarginLeft, PropertyValue(10.0f));
+    addButton_ = logicLayer_.createComponent(JComponentType::Button, inputContainer_);
+    JLogger::getInstance().info("创建添加按钮，handle=" + std::to_string(addButton_.index) + " 父容器=" + std::to_string(inputContainer_.index));
+    logicLayer_.setProperty(addButton_, JPropertyId::Text, JPropertyValue(std::string("添加")));
+    logicLayer_.setProperty(addButton_, JPropertyId::Width, JPropertyValue(100.0f));
+    logicLayer_.setProperty(addButton_, JPropertyId::Height, JPropertyValue(40.0f));
+    logicLayer_.setProperty(addButton_, JPropertyId::MarginLeft, JPropertyValue(10.0f));
     
     // 创建待办列表容器
-    todoListContainer_ = logicLayer_.createComponent(ComponentType::Container, rootContainer_);
-    Logger::getInstance().info("创建待办列表容器，handle=" + std::to_string(todoListContainer_.index));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::Height, PropertyValue(400.0f));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::FlexDirection, PropertyValue(static_cast<int>(FlexDirection::Column)));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::PaddingLeft, PropertyValue(20.0f));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::PaddingRight, PropertyValue(20.0f));
-    logicLayer_.setProperty(todoListContainer_, PropertyId::FlexShrink, PropertyValue(1.0f));
+    todoListContainer_ = logicLayer_.createComponent(JComponentType::Container, rootContainer_);
+    JLogger::getInstance().info("创建待办列表容器，handle=" + std::to_string(todoListContainer_.index));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::Height, JPropertyValue(400.0f));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::JFlexDirection, JPropertyValue(static_cast<int>(JFlexDirection::Column)));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::PaddingLeft, JPropertyValue(20.0f));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::PaddingRight, JPropertyValue(20.0f));
+    logicLayer_.setProperty(todoListContainer_, JPropertyId::FlexShrink, JPropertyValue(1.0f));
     
     // 创建统计信息
-    statsText_ = logicLayer_.createComponent(ComponentType::Text, rootContainer_);
-    Logger::getInstance().info("创建统计信息，handle=" + std::to_string(statsText_.index));
-    logicLayer_.setProperty(statsText_, PropertyId::Text, PropertyValue(std::string("总计: 0 | 已完成: 0 | 未完成: 0")));
-    logicLayer_.setProperty(statsText_, PropertyId::Width, PropertyValue(800.0f));
-    logicLayer_.setProperty(statsText_, PropertyId::Height, PropertyValue(40.0f));
-    logicLayer_.setProperty(statsText_, PropertyId::PaddingLeft, PropertyValue(20.0f));
-    logicLayer_.setProperty(statsText_, PropertyId::PaddingTop, PropertyValue(10.0f));
-    logicLayer_.setProperty(statsText_, PropertyId::FlexShrink, PropertyValue(1.0f));
+    statsText_ = logicLayer_.createComponent(JComponentType::Text, rootContainer_);
+    JLogger::getInstance().info("创建统计信息，handle=" + std::to_string(statsText_.index));
+    logicLayer_.setProperty(statsText_, JPropertyId::Text, JPropertyValue(std::string("总计: 0 | 已完成: 0 | 未完成: 0")));
+    logicLayer_.setProperty(statsText_, JPropertyId::Width, JPropertyValue(800.0f));
+    logicLayer_.setProperty(statsText_, JPropertyId::Height, JPropertyValue(40.0f));
+    logicLayer_.setProperty(statsText_, JPropertyId::PaddingLeft, JPropertyValue(20.0f));
+    logicLayer_.setProperty(statsText_, JPropertyId::PaddingTop, JPropertyValue(10.0f));
+    logicLayer_.setProperty(statsText_, JPropertyId::FlexShrink, JPropertyValue(1.0f));
     
     // 运行一帧更新
-    Logger::getInstance().info("开始计算布局...");
+    JLogger::getInstance().info("开始计算布局...");
     logicLayer_.runFrame();
-    Logger::getInstance().info("TodoApp::initialize() 完成");
+    JLogger::getInstance().info("JTodoApp::initialize() 完成");
 }
 
 /**
  * 添加新的待办项
  * @param text 待办文本内容
  */
-void TodoApp::addTodo(const std::string& text) {
+void JTodoApp::addTodo(const std::string& text) {
     if (text.empty()) {
         return;
     }
     
     // 创建待办项数据
-    TodoItem item;
+    JTodoItem item;
     item.text = text;
     item.completed = false;
     
@@ -133,35 +133,35 @@ void TodoApp::addTodo(const std::string& text) {
  * 创建单个待办项的UI
  * @param index 待办项索引
  */
-void TodoApp::createTodoItemUI(size_t index) {
+void JTodoApp::createTodoItemUI(size_t index) {
     auto& todo = todos_[index];
     
     // 创建待办项容器
-    todo.handle = logicLayer_.createComponent(ComponentType::Container, todoListContainer_);
-    logicLayer_.setProperty(todo.handle, PropertyId::Width, PropertyValue(760.0f));
-    logicLayer_.setProperty(todo.handle, PropertyId::Height, PropertyValue(50.0f));
-    logicLayer_.setProperty(todo.handle, PropertyId::FlexDirection, PropertyValue(static_cast<int>(FlexDirection::Row)));
+    todo.handle = logicLayer_.createComponent(JComponentType::Container, todoListContainer_);
+    logicLayer_.setProperty(todo.handle, JPropertyId::Width, JPropertyValue(760.0f));
+    logicLayer_.setProperty(todo.handle, JPropertyId::Height, JPropertyValue(50.0f));
+    logicLayer_.setProperty(todo.handle, JPropertyId::JFlexDirection, JPropertyValue(static_cast<int>(JFlexDirection::Row)));
     
     // 创建复选框（用按钮模拟）
-    todo.checkbox = logicLayer_.createComponent(ComponentType::Button, todo.handle);
-    logicLayer_.setProperty(todo.checkbox, PropertyId::Text, PropertyValue(std::string("[ ]")));
-    logicLayer_.setProperty(todo.checkbox, PropertyId::Width, PropertyValue(40.0f));
-    logicLayer_.setProperty(todo.checkbox, PropertyId::Height, PropertyValue(40.0f));
+    todo.checkbox = logicLayer_.createComponent(JComponentType::Button, todo.handle);
+    logicLayer_.setProperty(todo.checkbox, JPropertyId::Text, JPropertyValue(std::string("[ ]")));
+    logicLayer_.setProperty(todo.checkbox, JPropertyId::Width, JPropertyValue(40.0f));
+    logicLayer_.setProperty(todo.checkbox, JPropertyId::Height, JPropertyValue(40.0f));
     
     // 创建文本组件
-    todo.textComp = logicLayer_.createComponent(ComponentType::Text, todo.handle);
-    logicLayer_.setProperty(todo.textComp, PropertyId::Text, PropertyValue(todo.text));
-    logicLayer_.setProperty(todo.textComp, PropertyId::Width, PropertyValue(650.0f));
-    logicLayer_.setProperty(todo.textComp, PropertyId::Height, PropertyValue(40.0f));
-    logicLayer_.setProperty(todo.textComp, PropertyId::PaddingLeft, PropertyValue(10.0f));
-    logicLayer_.setProperty(todo.textComp, PropertyId::PaddingTop, PropertyValue(10.0f));
+    todo.textComp = logicLayer_.createComponent(JComponentType::Text, todo.handle);
+    logicLayer_.setProperty(todo.textComp, JPropertyId::Text, JPropertyValue(todo.text));
+    logicLayer_.setProperty(todo.textComp, JPropertyId::Width, JPropertyValue(650.0f));
+    logicLayer_.setProperty(todo.textComp, JPropertyId::Height, JPropertyValue(40.0f));
+    logicLayer_.setProperty(todo.textComp, JPropertyId::PaddingLeft, JPropertyValue(10.0f));
+    logicLayer_.setProperty(todo.textComp, JPropertyId::PaddingTop, JPropertyValue(10.0f));
     
     // 创建删除按钮
-    todo.deleteBtn = logicLayer_.createComponent(ComponentType::Button, todo.handle);
-    logicLayer_.setProperty(todo.deleteBtn, PropertyId::Text, PropertyValue(std::string("删除")));
-    logicLayer_.setProperty(todo.deleteBtn, PropertyId::Width, PropertyValue(60.0f));
-    logicLayer_.setProperty(todo.deleteBtn, PropertyId::Height, PropertyValue(40.0f));
-    logicLayer_.setProperty(todo.deleteBtn, PropertyId::MarginLeft, PropertyValue(10.0f));
+    todo.deleteBtn = logicLayer_.createComponent(JComponentType::Button, todo.handle);
+    logicLayer_.setProperty(todo.deleteBtn, JPropertyId::Text, JPropertyValue(std::string("删除")));
+    logicLayer_.setProperty(todo.deleteBtn, JPropertyId::Width, JPropertyValue(60.0f));
+    logicLayer_.setProperty(todo.deleteBtn, JPropertyId::Height, JPropertyValue(40.0f));
+    logicLayer_.setProperty(todo.deleteBtn, JPropertyId::MarginLeft, JPropertyValue(10.0f));
     
     // 运行一帧更新
     logicLayer_.runFrame();
@@ -171,7 +171,7 @@ void TodoApp::createTodoItemUI(size_t index) {
  * 切换待办项的完成状态
  * @param index 待办项索引
  */
-void TodoApp::toggleTodo(size_t index) {
+void JTodoApp::toggleTodo(size_t index) {
     if (index >= todos_.size()) {
         return;
     }
@@ -181,13 +181,13 @@ void TodoApp::toggleTodo(size_t index) {
     
     // 更新复选框显示
     if (todo.completed) {
-        logicLayer_.setProperty(todo.checkbox, PropertyId::Text, PropertyValue(std::string("[x]")));
+        logicLayer_.setProperty(todo.checkbox, JPropertyId::Text, JPropertyValue(std::string("[x]")));
         // 完成时添加删除线样式
         std::string crossedText = std::string("[已完成] ") + todo.text;
-        logicLayer_.setProperty(todo.textComp, PropertyId::Text, PropertyValue(crossedText));
+        logicLayer_.setProperty(todo.textComp, JPropertyId::Text, JPropertyValue(crossedText));
     } else {
-        logicLayer_.setProperty(todo.checkbox, PropertyId::Text, PropertyValue(std::string("[ ]")));
-        logicLayer_.setProperty(todo.textComp, PropertyId::Text, PropertyValue(todo.text));
+        logicLayer_.setProperty(todo.checkbox, JPropertyId::Text, JPropertyValue(std::string("[ ]")));
+        logicLayer_.setProperty(todo.textComp, JPropertyId::Text, JPropertyValue(todo.text));
     }
     
     // 更新统计信息
@@ -198,7 +198,7 @@ void TodoApp::toggleTodo(size_t index) {
  * 删除待办项
  * @param index 待办项索引
  */
-void TodoApp::deleteTodo(size_t index) {
+void JTodoApp::deleteTodo(size_t index) {
     if (index >= todos_.size()) {
         return;
     }
@@ -222,20 +222,20 @@ void TodoApp::deleteTodo(size_t index) {
 /**
  * 更新统计信息显示
  */
-void TodoApp::updateStats() {
+void JTodoApp::updateStats() {
     std::ostringstream oss;
     oss << "总计: " << getTotalCount() 
         << " | 已完成: " << getCompletedCount()
         << " | 未完成: " << getPendingCount();
     
-    logicLayer_.setProperty(statsText_, PropertyId::Text, PropertyValue(oss.str()));
+    logicLayer_.setProperty(statsText_, JPropertyId::Text, JPropertyValue(oss.str()));
 }
 
 /**
  * 获取已完成的待办数
  * @return 已完成数
  */
-size_t TodoApp::getCompletedCount() const {
+size_t JTodoApp::getCompletedCount() const {
     size_t count = 0;
     for (const auto& todo : todos_) {
         if (todo.completed) {
@@ -252,9 +252,9 @@ size_t TodoApp::getCompletedCount() const {
  * @param y 点击y坐标
  * @return 是否点击了该组件
  */
-bool TodoApp::isComponentClicked(ComponentHandle handle, float x, float y) {
+bool JTodoApp::isComponentClicked(JComponentHandle handle, float x, float y) {
     if (!handle.isValid()) {
-        Logger::getInstance().debug("isComponentClicked - handle无效");
+        JLogger::getInstance().debug("isComponentClicked - handle无效");
         return false;
     }
     
@@ -262,9 +262,9 @@ bool TodoApp::isComponentClicked(ComponentHandle handle, float x, float y) {
     bool result = logicLayer_.getStorage().containsPoint(handle, x, y);
     
     // 同时获取位置信息用于日志输出
-    Rect absoluteBounds = logicLayer_.getStorage().getAbsoluteBounds(handle);
+    JRect absoluteBounds = logicLayer_.getStorage().getAbsoluteBounds(handle);
     
-    Logger::getInstance().debug("isComponentClicked - 点击坐标: (" + 
+    JLogger::getInstance().debug("isComponentClicked - 点击坐标: (" + 
         std::to_string(static_cast<int>(x)) + ", " + 
         std::to_string(static_cast<int>(y)) + "), " +
         "组件绝对位置: (" + 
@@ -282,35 +282,35 @@ bool TodoApp::isComponentClicked(ComponentHandle handle, float x, float y) {
  * 更新每帧的事件处理
  * 检查事件日志并响应
  */
-void TodoApp::update() {
+void JTodoApp::update() {
     // 获取事件分发器
     auto& dispatcher = logicLayer_.getEventDispatcher();
     auto& eventLog = dispatcher.getEventLog();
     
-    Logger::getInstance().debug("TodoApp::update() - 事件数量: " + std::to_string(eventLog.size()));
+    JLogger::getInstance().debug("JTodoApp::update() - 事件数量: " + std::to_string(eventLog.size()));
     
     // 处理事件
     for (const auto& event : eventLog) {
-        Logger::getInstance().debug("TodoApp::update() - 事件类型: " + std::to_string(static_cast<int>(event.type)));
+        JLogger::getInstance().debug("JTodoApp::update() - 事件类型: " + std::to_string(static_cast<int>(event.type)));
         
-        if (event.type == EventType::Click) {
+        if (event.type == JEventType::Click) {
             float x = event.mouse.position.x;
             float y = event.mouse.position.y;
             
-            Logger::getInstance().debug("TodoApp::update() - 点击坐标: (" + 
+            JLogger::getInstance().debug("JTodoApp::update() - 点击坐标: (" + 
                 std::to_string(static_cast<int>(x)) + ", " + 
                 std::to_string(static_cast<int>(y)) + ")");
-            Logger::getInstance().debug("TodoApp::update() - 添加按钮位置: handle=" + 
+            JLogger::getInstance().debug("JTodoApp::update() - 添加按钮位置: handle=" + 
                 std::to_string(addButton_.index));
             
             // 检查添加按钮
             if (isComponentClicked(addButton_, x, y)) {
-                Logger::getInstance().info("TodoApp::update() - 检测到添加按钮被点击！");
+                JLogger::getInstance().info("JTodoApp::update() - 检测到添加按钮被点击！");
                 addTodo(currentInputText_);
                 currentInputText_.clear();
-                logicLayer_.setProperty(inputBox_, PropertyId::Text, PropertyValue(std::string()));
+                logicLayer_.setProperty(inputBox_, JPropertyId::Text, JPropertyValue(std::string()));
             } else {
-                Logger::getInstance().debug("TodoApp::update() - 添加按钮未被点击");
+                JLogger::getInstance().debug("JTodoApp::update() - 添加按钮未被点击");
             }
             
             // 检查待办项
@@ -326,9 +326,9 @@ void TodoApp::update() {
                     break;
                 }
             }
-        } else if (event.type == EventType::TextInput) {
+        } else if (event.type == JEventType::TextInput) {
             currentInputText_ += event.text;
-            logicLayer_.setProperty(inputBox_, PropertyId::Text, PropertyValue(currentInputText_));
+            logicLayer_.setProperty(inputBox_, JPropertyId::Text, JPropertyValue(currentInputText_));
         }
     }
     
@@ -336,4 +336,4 @@ void TodoApp::update() {
     dispatcher.clearEventLog();
 }
 
-} // namespace aether
+} // namespace jaether

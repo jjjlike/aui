@@ -5,7 +5,7 @@
 #include <functional>
 #include <windows.h>
 
-namespace aether {
+namespace jaether {
 
 /**
  * 消息回调类型
@@ -18,17 +18,17 @@ using MessageCallback = std::function<void(const std::string&)>;
  * 用于与IPC服务器通信
  * 支持命名管道通信
  */
-class IPCClient {
+class JIPCClient {
 public:
     /**
      * 构造函数
      */
-    IPCClient();
+    JIPCClient();
     
     /**
      * 析构函数
      */
-    ~IPCClient();
+    ~JIPCClient();
     
     /**
      * 连接到服务器

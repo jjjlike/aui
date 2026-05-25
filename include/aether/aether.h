@@ -70,14 +70,14 @@
  * @code
  * #include "aether/aether.h"
  * 
- * using namespace aether;
+ * using namespace jaether;
  * 
  * int main() {
- *     LogicLayer logic;
+ *     JLogicLayer logic;
  *     
  *     // 创建组件
- *     auto button = logic.createComponent(ComponentType::Button);
- *     logic.setProperty(button, PropertyId::Text, "Click Me");
+ *     auto button = logic.createComponent(JComponentType::Button);
+ *     logic.setProperty(button, JPropertyId::Text, "Click Me");
  *     
  *     // 运行
  *     logic.runFrame();

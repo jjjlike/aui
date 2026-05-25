@@ -7,7 +7,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     
-    aether::AetherApplication app;
+    jaether::JAetherApplication app;
     
     if (!app.initialize(hInstance, nCmdShow)) {
         std::cerr << "Failed to initialize application" << std::endl;

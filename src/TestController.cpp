@@ -1,4 +1,4 @@
-﻿// JTestController.cpp
+// JTestController.cpp
 // 测试控制器模块 - 提供UI自动化测试的控制接口
 //
 // 功能:
@@ -10,6 +10,7 @@
 // - 事件记录和回放
 
 #include "aether/TestController.h"
+#include "aether/A2UIGenerator.h"
 #include <chrono>
 #include <sstream>
 #include <thread>
@@ -330,6 +331,14 @@ void JTestController::playback(const std::string& sessionData) {
     
     // 播放事件
     dispatcher_.playEvents(events);
+}
+
+// 获取A2UI格式的组件树JSON
+std::string JTestController::getComponentTreeA2UI() {
+    if (a2uiGenerator_) {
+        return a2uiGenerator_->getComponentTreeA2UI();
+    }
+    return "{}";
 }
 
 } // namespace jaether

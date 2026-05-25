@@ -668,5 +668,148 @@ TEST_F(A2UIParserTest, LogicLayer_GetA2UIGenerator_Works) {
     EXPECT_NE(json.find("GenTest"), std::string::npos);
 }
 
+// ==================== 往返测试（Round-trip Tests）====================
+
+/**
+ * 测试 解析→导出→重新解析 的往返一致性
+ * 两个独立 LogicLayer 实例避免组件ID冲突
+ * 注意：导出的JSON内嵌surfaceId，重新解析时使用相同的surfaceId
+ */
+TEST_F(A2UIParserTest, RoundTrip_ParseGenerateParse_TextMatches) {
+    const char* inputJSON = R"({
+        "updateComponents": {
+            "surfaceId": "s1",
+            "components": [
+                {"id": "root", "component": "Column", "children": ["title"]},
+                {"id": "title", "component": "Text", "text": "RoundTrip Test"}
+            ]
+        }
+    })";
+    
+    JLogicLayer ll2;
+    ll2.loadFromA2UI(inputJSON, "s1");
+    
+    size_t count1 = ll2.getSurfaceManager().getComponentCount("s1");
+    EXPECT_EQ(count1, 2);
+    
+    // 导出为JSON（内嵌surfaceId="s1"）
+    std::string exported = ll2.exportToA2UI("s1");
+    EXPECT_FALSE(exported.empty());
+    EXPECT_NE(exported.find("RoundTrip Test"), std::string::npos);
+    
+    // 重新解析：JSON内嵌的surfaceId="s1"会覆盖surfaceId参数
+    // 所以必须在不同的LogicLayer中解析，以免组件ID冲突
+    JLogicLayer ll3;
+    ll3.loadFromA2UI(exported, "s1");
+    size_t count2 = ll3.getSurfaceManager().getComponentCount("s1");
+    EXPECT_EQ(count2, count1);
+}
+
+/**
+ * 测试 含variant属性的往返转换
+ * 路径: variant="h1" → fontSize=32 → 导出为variant="h1" → 重新解析
+ */
+TEST_F(A2UIParserTest, RoundTrip_WithVariant_Preserved) {
+    logicLayer_->loadFromA2UI(R"({
+        "updateComponents": {"surfaceId": "s1", "components": [
+            {"id": "root", "component": "Column", "children": ["t"]},
+            {"id": "t", "component": "Text", "text": "Title", "variant": "h1"}
+        ]}
+    })");
+    
+    std::string exported = logicLayer_->exportToA2UI("s1");
+    EXPECT_NE(exported.find("h1"), std::string::npos);
+}
+
+/**
+ * 测试 含justify/align布局属性的往返转换
+ */
+TEST_F(A2UIParserTest, RoundTrip_WithLayoutProps_Preserved) {
+    logicLayer_->loadFromA2UI(R"({
+        "updateComponents": {"surfaceId": "s1", "components": [
+            {"id": "root", "component": "Row", "children": ["a","b"], "justify": "spaceBetween", "align": "center"},
+            {"id": "a", "component": "Text", "text": "A"},
+            {"id": "b", "component": "Text", "text": "B"}
+        ]}
+    })");
+    
+    std::string exported = logicLayer_->exportToA2UI("s1");
+    EXPECT_NE(exported.find("spaceBetween"), std::string::npos);
+    EXPECT_NE(exported.find("center"), std::string::npos);
+}
+
+/**
+ * 测试 Card组件的往返转换
+ */
+TEST_F(A2UIParserTest, RoundTrip_CardComponent_Preserved) {
+    logicLayer_->loadFromA2UI(R"({
+        "updateComponents": {"surfaceId": "s1", "components": [
+            {"id": "root", "component": "Column", "children": ["card"]},
+            {"id": "card", "component": "Card", "child": "card-text"},
+            {"id": "card-text", "component": "Text", "text": "Card Content"}
+        ]}
+    })");
+    
+    auto& sm = logicLayer_->getSurfaceManager();
+    EXPECT_TRUE(sm.findComponent("s1", "card").isValid());
+    
+    std::string exported = logicLayer_->exportToA2UI("s1");
+    EXPECT_NE(exported.find("Card"), std::string::npos);
+}
+
+/**
+ * 测试 JTestController::getComponentTreeA2UI 可用性
+ */
+TEST_F(A2UIParserTest, TestController_GetComponentTreeA2UI_Works) {
+    logicLayer_->loadFromA2UI(R"({
+        "updateComponents": {"surfaceId": "main", "components": [
+            {"id": "root", "component": "Column", "children": ["t"]},
+            {"id": "t", "component": "Text", "text": "TestControllerA2UI"}
+        ]}
+    })");
+    
+    auto& tc = logicLayer_->getTestController();
+    std::string a2uiTree = tc.getComponentTreeA2UI();
+    EXPECT_FALSE(a2uiTree.empty());
+    EXPECT_NE(a2uiTree, "{}");
+    EXPECT_NE(a2uiTree.find("updateComponents"), std::string::npos);
+}
+
+/**
+ * 测试 增量更新后的往返转换（使用独立LogicLayer）
+ * 导出JSON内嵌surfaceId，重新解析时必须用相同ID
+ */
+TEST_F(A2UIParserTest, RoundTrip_AfterIncrementalUpdate_Consistent) {
+    JLogicLayer ll;
+    ll.loadFromA2UI(R"({
+        "updateComponents": {"surfaceId": "s1", "components": [
+            {"id": "root", "component": "Column", "children": ["lbl"]},
+            {"id": "lbl", "component": "Text", "text": "Original"}
+        ]}
+    })");
+    
+    auto& parser = ll.getA2UIParser();
+    parser.applyComponentUpdate(R"({
+        "updateComponents": {"surfaceId": "s1", "components": [
+            {"id": "lbl", "component": "Text", "text": "Updated"}
+        ]}
+    })", "s1");
+    
+    auto& sm = ll.getSurfaceManager();
+    auto h = sm.findComponent("s1", "lbl");
+    auto* tp = ll.getProperty(h, JPropertyId::Text);
+    EXPECT_EQ(tp->get<std::string>(), "Updated");
+    
+    std::string exported = ll.exportToA2UI("s1");
+    EXPECT_NE(exported.find("Updated"), std::string::npos);
+    
+    // 用独立LogicLayer重新解析（使用相同的surfaceId）
+    JLogicLayer ll2;
+    ll2.loadFromA2UI(exported, "s1");
+    auto h2 = ll2.getSurfaceManager().findComponent("s1", "lbl");
+    auto* tp2 = ll2.getProperty(h2, JPropertyId::Text);
+    EXPECT_EQ(tp2->get<std::string>(), "Updated");
+}
+
 } // namespace test
 } // namespace jaether

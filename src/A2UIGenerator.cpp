@@ -84,22 +84,15 @@ JJSONObject JA2UIGenerator::generateComponentJSON(JComponentHandle handle,
     }
     comp["component"] = JJSONValue(a2uiType);
     
-    // 导出children字段
+    // 导出children字段：遍历所有surface查找子组件的A2UI ID
     if (!entry->childrenIndices.empty()) {
-        auto childrenIds = childrenToA2UIIDs(entry->childrenIndices,
-            surfaceManager_.findA2UIId("", handle));  // 需要从surface查找
-        
-        // 实际上需要遍历所有surface来查找
         JJSONArray childrenArray;
         for (int32_t childIdx : entry->childrenIndices) {
-            // 通过所有surface查找子组件的A2UI ID
+            auto* childEntry = logicLayer_.getStorage().getComponentByIndex(childIdx);
+            if (!childEntry) continue;
+            JComponentHandle childHandle{childIdx, childEntry->generation};
+            // 在所有surface中查找子组件的A2UI ID
             for (const auto& sid : surfaceManager_.getAllSurfaceIds()) {
-                JComponentHandle childHandle{childIdx, 0};
-                // 获取正确的generation
-                auto* childEntry = logicLayer_.getStorage().getComponentByIndex(childIdx);
-                if (childEntry) {
-                    childHandle.generation = childEntry->generation;
-                }
                 std::string childA2UIId = surfaceManager_.findA2UIId(sid, childHandle);
                 if (!childA2UIId.empty()) {
                     childrenArray.push_back(JJSONValue(childA2UIId));
@@ -107,7 +100,6 @@ JJSONObject JA2UIGenerator::generateComponentJSON(JComponentHandle handle,
                 }
             }
         }
-        
         if (!childrenArray.empty()) {
             comp["children"] = JJSONValue(childrenArray);
         }
@@ -179,6 +171,9 @@ JJSONObject JA2UIGenerator::generateComponentJSON(JComponentHandle handle,
 std::string JA2UIGenerator::generateDataModelJSON(const std::string& surfaceId) const {
     // 数据模型导出由JJDataModel负责
     // 此处生成包装的updateDataModel消息格式
+    // 注：当前生成器没有直接持有JJDataModel引用，
+    // 数据模型导出通过JLogicLayer间接完成
+    (void)surfaceId;
     return "{}";
 }
 

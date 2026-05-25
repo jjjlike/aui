@@ -47,6 +47,11 @@ set(AETHER_SOURCES
     ${AETHER_SOURCE_DIR}/src/Direct2DRenderer.cpp
     ${AETHER_SOURCE_DIR}/src/IPCClient.cpp
     ${AETHER_SOURCE_DIR}/src/RPCServer.cpp
+    ${AETHER_SOURCE_DIR}/src/ComponentCatalog.cpp
+    ${AETHER_SOURCE_DIR}/src/SurfaceManager.cpp
+    ${AETHER_SOURCE_DIR}/src/DataModel.cpp
+    ${AETHER_SOURCE_DIR}/src/A2UIParser.cpp
+    ${AETHER_SOURCE_DIR}/src/A2UIGenerator.cpp
 )
 
 # TodoApp核心源文件（不含main）

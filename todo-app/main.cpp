@@ -425,6 +425,12 @@ public:
                         break;
                     }
 
+                    case jaether::JComponentType::Card: {
+                        renderer_->fillRoundedRect(rect, 8.0f, 8.0f, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
+                        renderer_->drawRoundedRect(rect, 8.0f, 8.0f, jaether::JColor(0.85f, 0.85f, 0.85f, 1.0f), 1.0f);
+                        break;
+                    }
+
                     default:
                         break;
                 }

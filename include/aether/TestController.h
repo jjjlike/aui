@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "types.h"
 #include "ComponentStorage.h"
@@ -8,8 +8,13 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <memory>
 
 namespace jaether {
+
+// 前向声明
+class JA2UIGenerator;
+class JJSurfaceManager;
 
 /**
  * 测试控制器接口
@@ -92,6 +97,12 @@ public:
      * @return 事件日志列表
      */
     virtual std::vector<std::string> getEventLog() = 0;
+    
+    /**
+     * 获取A2UI格式的组件树JSON（v0.9 updateComponents消息格式）
+     * @return A2UI JSON字符串
+     */
+    virtual std::string getComponentTreeA2UI() = 0;
     
     /**
      * 根据ID获取组件句柄
@@ -233,6 +244,18 @@ public:
     void playback(const std::string& sessionData) override;
     
     /**
+     * 获取A2UI格式的组件树JSON
+     * @return A2UI JSON字符串
+     */
+    std::string getComponentTreeA2UI() override;
+    
+    /**
+     * 设置A2UI生成器引用（用于导出A2UI格式）
+     * @param generator A2UI生成器引用
+     */
+    void setA2UIGenerator(JA2UIGenerator* generator) { a2uiGenerator_ = generator; }
+    
+    /**
      * 设置当前时间（毫秒）
      * @param time 时间戳
      */
@@ -270,6 +293,7 @@ private:
     
     JStateManager& stateManager_;       // 状态管理器引用
     JEventDispatcher& dispatcher_;     // 事件分发器引用
+    JA2UIGenerator* a2uiGenerator_ = nullptr;  // A2UI生成器引用（可选）
     int64_t currentTime_ = 0;         // 当前时间
     std::chrono::steady_clock::time_point startTime_;  // 开始时间
 };

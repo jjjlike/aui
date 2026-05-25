@@ -93,6 +93,11 @@ void JLogicLayer::ensureA2UIInitialized() {
     if (!a2uiParser_) {
         a2uiParser_ = std::make_unique<JA2UIParser>(*this);
     }
+    if (!a2uiGenerator_) {
+        a2uiGenerator_ = std::make_unique<JA2UIGenerator>(*this, a2uiParser_->getSurfaceManager());
+    }
+    // 将A2UI生成器关联到测试控制器，使getComponentTreeA2UI()可用
+    testController_.setA2UIGenerator(a2uiGenerator_.get());
 }
 
 // 获取A2UI解析器引用
@@ -104,10 +109,6 @@ JA2UIParser& JLogicLayer::getA2UIParser() {
 // 获取A2UI生成器引用
 JA2UIGenerator& JLogicLayer::getA2UIGenerator() {
     ensureA2UIInitialized();
-    // 生成器从解析器获取SurfaceManager引用
-    if (!a2uiGenerator_) {
-        a2uiGenerator_ = std::make_unique<JA2UIGenerator>(*this, a2uiParser_->getSurfaceManager());
-    }
     return *a2uiGenerator_;
 }
 

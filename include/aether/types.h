@@ -212,6 +212,7 @@ enum class JComponentType : uint8_t {
     Input,         // 输入框
     ScrollView,    // 滚动视图
     Image,         // 图片
+    Card,          // 卡片容器（A2UI扩展）
     Custom         // 自定义
 };
 

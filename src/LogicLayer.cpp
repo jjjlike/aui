@@ -1,4 +1,4 @@
-﻿// JLogicLayer.cpp
+// JLogicLayer.cpp
 // 逻辑层模块 - UI引擎的核心逻辑协调层
 //
 // 功能:
@@ -8,6 +8,10 @@
 // - 提供测试控制接口
 
 #include "aether/LogicLayer.h"
+#include "aether/A2UIParser.h"
+#include "aether/A2UIGenerator.h"
+#include "aether/SurfaceManager.h"
+#include "aether/DataModel.h"
 
 namespace jaether {
 
@@ -80,6 +84,66 @@ void JLogicLayer::dispatchKeyUp(int keyCode) {
 // 参数: text - 输入的文本
 void JLogicLayer::dispatchTextInput(const std::string& text) {
     eventDispatcher_.onTextInput(text);
+}
+
+// ========== A2UI JSON界面描述接口实现 ==========
+
+// 确保A2UI模块已初始化
+void JLogicLayer::ensureA2UIInitialized() {
+    if (!a2uiParser_) {
+        a2uiParser_ = std::make_unique<JA2UIParser>(*this);
+    }
+}
+
+// 获取A2UI解析器引用
+JA2UIParser& JLogicLayer::getA2UIParser() {
+    ensureA2UIInitialized();
+    return *a2uiParser_;
+}
+
+// 获取A2UI生成器引用
+JA2UIGenerator& JLogicLayer::getA2UIGenerator() {
+    ensureA2UIInitialized();
+    // 生成器从解析器获取SurfaceManager引用
+    if (!a2uiGenerator_) {
+        a2uiGenerator_ = std::make_unique<JA2UIGenerator>(*this, a2uiParser_->getSurfaceManager());
+    }
+    return *a2uiGenerator_;
+}
+
+// 获取Surface管理器引用
+JJSurfaceManager& JLogicLayer::getSurfaceManager() {
+    ensureA2UIInitialized();
+    return a2uiParser_->getSurfaceManager();
+}
+
+// 获取数据模型引用
+JJDataModel& JLogicLayer::getDataModel() {
+    ensureA2UIInitialized();
+    return a2uiParser_->getDataModel();
+}
+
+// 从A2UI JSON加载界面
+std::string JLogicLayer::loadFromA2UI(const std::string& json, const std::string& surfaceId) {
+    ensureA2UIInitialized();
+    return a2uiParser_->parseAndApply(json, surfaceId);
+}
+
+// 将当前界面导出为A2UI JSON
+std::string JLogicLayer::exportToA2UI(const std::string& surfaceId) const {
+    // 由于生成器需要SurfaceManager引用，这里通过解析器间接获取
+    // 如果尚未初始化，返回空
+    if (!a2uiParser_) {
+        return "{}";
+    }
+    JA2UIGenerator generator(*this, a2uiParser_->getSurfaceManager());
+    return generator.generateSurfaceJSON(surfaceId);
+}
+
+// 流式添加组件
+void JLogicLayer::streamComponent(const std::string& json, const std::string& surfaceId) {
+    ensureA2UIInitialized();
+    a2uiParser_->parseJSONL(json);
 }
 
 } // namespace jaether

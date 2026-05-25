@@ -23,6 +23,11 @@ set(AETHER_SOURCES
     src/Snapshot.cpp
     src/TestController.cpp
     src/LogicLayer.cpp
+    src/ComponentCatalog.cpp
+    src/SurfaceManager.cpp
+    src/DataModel.cpp
+    src/A2UIParser.cpp
+    src/A2UIGenerator.cpp
 )
 
 if(WIN32)

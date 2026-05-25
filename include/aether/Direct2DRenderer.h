@@ -26,6 +26,17 @@
 namespace jaether {
 
 /**
+ * 文本水平对齐方式枚举
+ * 
+ * 控件渲染器使用此枚举指定文本在矩形区域内的水平对齐方式
+ */
+enum class JTextAlignment : uint8_t {
+    Left,    // 左对齐
+    Center,  // 居中对齐
+    Right    // 右对齐
+};
+
+/**
  * Direct2D渲染器类
  * 
  * 使用Direct2D进行UI渲染
@@ -135,6 +146,44 @@ public:
     void drawText(const std::string& text, const JRect& rect, const JColor& color, float fontSize = 16.0f, const std::string& fontName = "Segoe UI");
     
     /**
+     * 绘制文本（支持水平对齐方式）
+     * @param text 文本内容
+     * @param rect 文本区域
+     * @param color 文本颜色
+     * @param fontSize 字体大小
+     * @param fontName 字体名称
+     * @param alignment 水平对齐方式，默认居中
+     */
+    void drawTextAligned(const std::string& text, const JRect& rect, const JColor& color,
+                         float fontSize = 16.0f, const std::string& fontName = "Segoe UI",
+                         JTextAlignment alignment = JTextAlignment::Center);
+
+    /**
+     * 测量文本的像素尺寸
+     * @param text 文本内容
+     * @param fontSize 字体大小
+     * @param fontName 字体名称
+     * @return 文本的宽度和高度（DIP单位），失败返回{0,0}
+     */
+    JSize measureText(const std::string& text, float fontSize = 16.0f,
+                      const std::string& fontName = "Segoe UI") const;
+
+    /**
+     * 绘制椭圆边框
+     * @param rect 外接矩形
+     * @param color 边框颜色
+     * @param strokeWidth 线条宽度
+     */
+    void drawEllipse(const JRect& rect, const JColor& color, float strokeWidth = 1.0f);
+
+    /**
+     * 填充椭圆
+     * @param rect 外接矩形
+     * @param color 填充颜色
+     */
+    void fillEllipse(const JRect& rect, const JColor& color);
+    
+    /**
      * 获取渲染目标
      * @return Direct2D渲染目标指针
      */
@@ -182,6 +231,16 @@ private:
     ID2D1SolidColorBrush* getBrush(const JColor& color);
     
     /**
+     * 获取或创建带对齐方式的文本格式
+     * @param fontSize 字体大小
+     * @param fontName 字体名称
+     * @param alignment 对齐方式
+     * @return 文本格式指针
+     */
+    IDWriteTextFormat* getTextFormat(float fontSize, const std::string& fontName,
+                                     JTextAlignment alignment);
+    
+    /**
      * 创建设备无关资源
      * @return 是否成功
      */
@@ -210,9 +269,12 @@ private:
     
     std::unordered_map<uint32_t, ID2D1SolidColorBrush*> brushCache_;  // 画刷缓存
     std::unordered_map<std::string, IDWriteTextFormat*> textFormatCache_;  // 文本格式缓存
+    std::unordered_map<std::string, IDWriteTextFormat*> alignedTextFormatCache_;  // 带对齐的文本格式缓存
     
     float dpiX_ = 96.0f;  // 当前DPI X方向
     float dpiY_ = 96.0f;  // 当前DPI Y方向
+    
+    bool shutdown_ = false;  // 是否已关闭（防止双重释放）
     
     HWND hwnd_ = nullptr;  // 窗口句柄
 };

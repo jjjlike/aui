@@ -30,6 +30,7 @@ set(TEST_SOURCES
     SurfaceManager_test.cpp
     DataModel_test.cpp
     A2UIIntegration_test.cpp
+    ControlRenderer_test.cpp
 )
 
 add_executable(aether_tests ${TEST_SOURCES})

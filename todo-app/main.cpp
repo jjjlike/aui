@@ -17,6 +17,7 @@
 
 #include "TodoApp.h"
 #include <aether/Direct2DRenderer.h>
+#include <aether/ControlRenderer.h>
 #include <aether/Logger.h>
 #include <windows.h>
 #include <windowsx.h>
@@ -33,8 +34,10 @@ private:
     std::unique_ptr<jaether::JLogicLayer> logicLayer_;
     std::unique_ptr<jaether::JTodoApp> todoApp_;
     std::unique_ptr<jaether::JDirect2DRenderer> renderer_;
+    std::unique_ptr<jaether::JRendererFacade> renderFacade_;  // 控件渲染门面
     bool running_ = false;
-    int renderFrameCount_ = 0;
+    float mouseX_ = -1.0f;  // 当前鼠标X坐标（DIP）
+    float mouseY_ = -1.0f;  // 当前鼠标Y坐标（DIP）
 
     // 窗口过程函数（静态回调）
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -246,7 +249,9 @@ public:
         if (logicLayer_ && renderer_) {
             float dpiScaleX = 96.0f / renderer_->getDpiX();
             float dpiScaleY = 96.0f / renderer_->getDpiY();
-            logicLayer_->dispatchMouseMove(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY);
+            mouseX_ = static_cast<float>(x) * dpiScaleX;
+            mouseY_ = static_cast<float>(y) * dpiScaleY;
+            logicLayer_->dispatchMouseMove(mouseX_, mouseY_);
         }
     }
 
@@ -311,142 +316,15 @@ public:
         BeginPaint(hwnd_, &ps);
 
         if (renderer_ && logicLayer_) {
-            renderer_->beginDraw();
-            renderer_->clear(jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
-
-            // 渲染所有组件
-            auto& storage = logicLayer_->getStorage();
-            auto& dispatcher = logicLayer_->getEventDispatcher();
-            float mouseX = dispatcher.getLastMouseX();
-            float mouseY = dispatcher.getLastMouseY();
-            
-            renderFrameCount_++;
-            if (renderFrameCount_ <= 3) {
-                jaether::JLogger::getInstance().info("--- 开始渲染第" + std::to_string(renderFrameCount_) + "帧 ---");
+            // 惰性初始化渲染门面
+            if (!renderFacade_) {
+                renderFacade_ = std::make_unique<jaether::JRendererFacade>(
+                    renderer_.get(), logicLayer_->getStorage());
             }
             
-            storage.forEach([this, &storage, mouseX, mouseY](jaether::JComponentHandle handle) {
-                auto* entry = storage.getComponent(handle);
-                if (!entry || !entry->visible) return;
-
-                // 使用组件存储中的绝对位置计算函数
-                jaether::JRect rect = storage.getAbsoluteBounds(handle);
-
-                // 输出组件布局信息
-                if (renderFrameCount_ <= 3) {
-                    std::string typeName;
-                    switch (entry->type) {
-                        case jaether::JComponentType::Container: typeName = "Container"; break;
-                        case jaether::JComponentType::Button: typeName = "Button"; break;
-                        case jaether::JComponentType::Text: typeName = "Text"; break;
-                        case jaether::JComponentType::Input: typeName = "Input"; break;
-                        default: typeName = "Unknown"; break;
-                    }
-                    jaether::JLogger::getInstance().info("渲染组件: handle=" + std::to_string(handle.index) + 
-                        " type=" + typeName + 
-                        " rect=(" + std::to_string(static_cast<int>(rect.x)) + "," + 
-                        std::to_string(static_cast<int>(rect.y)) + "," +
-                        std::to_string(static_cast<int>(rect.width)) + "x" + 
-                        std::to_string(static_cast<int>(rect.height)) + ")");
-                }
-
-                switch (entry->type) {
-                    case jaether::JComponentType::Container: {
-                        renderer_->fillRect(rect, jaether::JColor(0.95f, 0.95f, 0.95f, 1.0f));
-                        break;
-                    }
-
-                    case jaether::JComponentType::Button: {
-                        if (renderFrameCount_ <= 3) {
-                            jaether::JLogger::getInstance().info("  [渲染按钮 handle=" + std::to_string(handle.index) + " 开始");
-                        }
-                        
-                        // 打印按钮位置对比信息
-                        jaether::JRect relativeRect = entry->layoutResult;
-                        jaether::JLogger::getInstance().info("  [渲染按钮位置对比] 相对位置: (" + 
-                            std::to_string(static_cast<int>(relativeRect.x)) + "," + 
-                            std::to_string(static_cast<int>(relativeRect.y)) + "," + 
-                            std::to_string(static_cast<int>(relativeRect.width)) + "x" + 
-                            std::to_string(static_cast<int>(relativeRect.height)) + "), " + 
-                            "绝对位置: (" + 
-                            std::to_string(static_cast<int>(rect.x)) + "," + 
-                            std::to_string(static_cast<int>(rect.y)) + "," + 
-                            std::to_string(static_cast<int>(rect.width)) + "x" + 
-                            std::to_string(static_cast<int>(rect.height)) + ")");
-                        
-                        // 检查鼠标是否在按钮上（使用统一接口）
-                        bool isHovered = storage.containsPoint(handle, mouseX, mouseY);
-                        
-                        // 红色按钮，不同状态透明度不同
-                        jaether::JColor btnColor;
-                        if (isHovered) {
-                            // 悬停状态：半透明红色
-                            btnColor = jaether::JColor(1.0f, 1.0f, 0.0f, 1.0f);
-                        } else {
-                            // 普通状态：完全不透明红色
-                            btnColor = jaether::JColor(1.0f, 0.0f, 0.0f, 1.0f);
-                        }
-                        
-                        if (renderFrameCount_ <= 3) {
-                            jaether::JLogger::getInstance().info("  [渲染按钮] 填充背景 rect=(" + 
-                                std::to_string(static_cast<int>(rect.x)) + "," + 
-                                std::to_string(static_cast<int>(rect.y)) + "," + 
-                                std::to_string(static_cast<int>(rect.width)) + "x" + 
-                                std::to_string(static_cast<int>(rect.height)) + "), isHovered=" + 
-                                std::to_string(isHovered));
-                        }
-                        
-                        renderer_->fillRoundedRect(rect, 5.0f, 5.0f, btnColor);
-                        
-                        // 渲染按钮文本
-                        auto* btnTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
-                        if (btnTextProp) {
-                            if (renderFrameCount_ <= 3) {
-                                jaether::JLogger::getInstance().info("  [渲染按钮] 渲染文本: " + btnTextProp->get<std::string>());
-                            }
-                            renderer_->drawText(btnTextProp->get<std::string>(), rect, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
-                        } else {
-                            if (renderFrameCount_ <= 3) {
-                                jaether::JLogger::getInstance().warning("  [渲染按钮] 无文本属性");
-                            }
-                        }
-                        
-                        if (renderFrameCount_ <= 3) {
-                            jaether::JLogger::getInstance().info("  [渲染按钮] 完成");
-                        }
-                        break;
-                    }
-
-                    case jaether::JComponentType::Text: {
-                        auto* txtTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
-                        if (txtTextProp) {
-                            renderer_->drawText(txtTextProp->get<std::string>(), rect, jaether::JColor(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
-                        }
-                        break;
-                    }
-
-                    case jaether::JComponentType::Input: {
-                        renderer_->fillRect(rect, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
-                        renderer_->drawRect(rect, jaether::JColor(0.6f, 0.6f, 0.6f, 1.0f));
-                        
-                        auto* inpTextProp = entry->properties.getProperty(jaether::JPropertyId::Text);
-                        if (inpTextProp) {
-                            renderer_->drawText(inpTextProp->get<std::string>(), rect, jaether::JColor(0.0f, 0.0f, 0.0f, 1.0f), 16.0f);
-                        }
-                        break;
-                    }
-
-                    case jaether::JComponentType::Card: {
-                        renderer_->fillRoundedRect(rect, 8.0f, 8.0f, jaether::JColor(1.0f, 1.0f, 1.0f, 1.0f));
-                        renderer_->drawRoundedRect(rect, 8.0f, 8.0f, jaether::JColor(0.85f, 0.85f, 0.85f, 1.0f), 1.0f);
-                        break;
-                    }
-
-                    default:
-                        break;
-                }
-            });
-
+            renderer_->beginDraw();
+            renderFacade_->clearCanvas();
+            renderFacade_->renderAll(mouseX_, mouseY_);
             renderer_->endDraw();
         }
 

@@ -20,6 +20,9 @@
 
 namespace jaether {
 
+// 前向声明
+class JRendererFacade;
+
 /**
  * Aether应用程序类
  * 
@@ -152,11 +155,14 @@ private:
     
     std::unique_ptr<JLogicLayer> logicLayer_;          // 逻辑层
     std::unique_ptr<JDirect2DRenderer> renderer_;       // 渲染器
+    std::unique_ptr<JRendererFacade> renderFacade_;     // 控件渲染门面（惰性初始化）
     JJSONValue stateNode_;                              // 状态节点
     
     HWND hwnd_ = nullptr;       // 窗口句柄
     HINSTANCE hInstance_ = nullptr;  // 应用实例句柄
     bool running_ = false;     // 运行状态
+    float lastMouseX_ = -1.0f;  // 最后一次鼠标X坐标
+    float lastMouseY_ = -1.0f;  // 最后一次鼠标Y坐标
 };
 
 }

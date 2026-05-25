@@ -28,6 +28,8 @@ set(AETHER_SOURCES
     src/DataModel.cpp
     src/A2UIParser.cpp
     src/A2UIGenerator.cpp
+    src/ControlRenderer.cpp
+    src/StyleSheet.cpp
 )
 
 if(WIN32)

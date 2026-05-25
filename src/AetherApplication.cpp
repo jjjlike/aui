@@ -20,6 +20,7 @@
 // - 测试UI创建
 
 #include "aether/AetherApplication.h"
+#include "aether/ControlRenderer.h"
 #include <iostream>
 #include <windowsx.h>
 
@@ -283,7 +284,11 @@ void JAetherApplication::onMouseMove(int x, int y) {
     if (logicLayer_ && renderer_) {
         float dpiScaleX = 96.0f / renderer_->getDpiX();
         float dpiScaleY = 96.0f / renderer_->getDpiY();
-        logicLayer_->dispatchMouseMove(static_cast<float>(x) * dpiScaleX, static_cast<float>(y) * dpiScaleY);
+        float dipX = static_cast<float>(x) * dpiScaleX;
+        float dipY = static_cast<float>(y) * dpiScaleY;
+        lastMouseX_ = dipX;
+        lastMouseY_ = dipY;
+        logicLayer_->dispatchMouseMove(dipX, dipY);
     }
 }
 
@@ -347,53 +352,19 @@ void JAetherApplication::onChar(char ch) {
     }
 }
 
-// 渲染UI
+// 渲染UI — 使用统一的控件渲染器体系替代原先分散的switch/case
 void JAetherApplication::render() {
     if (!renderer_ || !logicLayer_) return;
     
+    // 惰性初始化渲染门面
+    if (!renderFacade_) {
+        renderFacade_ = std::make_unique<JRendererFacade>(
+            renderer_.get(), logicLayer_->getStorage());
+    }
+    
     renderer_->beginDraw();
-    renderer_->clear(JColor(0.95f, 0.95f, 0.95f, 1.0f));
-    
-    auto& storage = logicLayer_->getStorage();
-    
-    // 遍历所有组件并渲染
-    storage.forEach([this, &storage](JComponentHandle handle) {
-        auto* entry = storage.getComponent(handle);
-        if (!entry) return;
-        
-        JRect rect = storage.getAbsoluteBounds(handle);
-        
-        switch (entry->type) {
-            case JComponentType::Container:
-                // 绘制容器背景
-                renderer_->fillRect(rect, JColor(0.9f, 0.9f, 0.9f, 1.0f));
-                break;
-                
-            case JComponentType::Button: {
-                // 绘制按钮（圆角矩形）
-                renderer_->fillRoundedRect(rect, 5.0f, 5.0f, JColor(0.2f, 0.5f, 0.9f, 1.0f));
-                // 绘制按钮文本
-                auto* textProp = entry->properties.getProperty(JPropertyId::Text);
-                if (textProp) {
-                    renderer_->drawText(textProp->get<std::string>(), rect, JColor(1.0f, 1.0f, 1.0f, 1.0f), 16.0f);
-                }
-                break;
-            }
-                
-            case JComponentType::Text: {
-                // 绘制文本
-                auto* textProp = entry->properties.getProperty(JPropertyId::Text);
-                if (textProp) {
-                    renderer_->drawText(textProp->get<std::string>(), rect, JColor(0.0f, 0.0f, 0.0f, 1.0f), 20.0f);
-                }
-                break;
-            }
-                
-            default:
-                break;
-        }
-    });
-    
+    renderFacade_->clearCanvas();
+    renderFacade_->renderAll(lastMouseX_, lastMouseY_);
     renderer_->endDraw();
 }
 

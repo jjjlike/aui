@@ -57,8 +57,14 @@ JDirect2DRenderer::JDirect2DRenderer() {
 }
 
 // Direct2D渲染器析构函数
+// 注意：不在析构函数中调用shutdown()，避免与AetherApplication::shutdown()
+// 中已经调用的renderer_->shutdown()产生双重释放
+// shutdown()由外部显式调用（或通过JAetherApplication::shutdown()间接调用）
 JDirect2DRenderer::~JDirect2DRenderer() {
-    shutdown();
+    // 仅当外部未调用shutdown()时做清理（如测试中直接delete renderer_）
+    if (!shutdown_) {
+        shutdown();
+    }
 }
 
 // 初始化渲染器
@@ -78,8 +84,12 @@ bool JDirect2DRenderer::initialize(HWND hwnd) {
     return true;
 }
 
-// 关闭渲染器
+// 关闭渲染器（幂等操作，可安全重复调用）
 void JDirect2DRenderer::shutdown() {
+    // 防止双重释放：如果已经关闭过，直接返回
+    if (shutdown_) return;
+    shutdown_ = true;
+    
     releaseDeviceResources();
     releaseDeviceIndependentResources();
 }
@@ -153,6 +163,12 @@ void JDirect2DRenderer::releaseDeviceResources() {
         if (pair.second) pair.second->Release();
     }
     textFormatCache_.clear();
+    
+    // 释放带对齐方式的文本格式缓存
+    for (auto& pair : alignedTextFormatCache_) {
+        if (pair.second) pair.second->Release();
+    }
+    alignedTextFormatCache_.clear();
     
     // 释放渲染目标
     if (renderTarget_) {
@@ -319,49 +335,26 @@ void JDirect2DRenderer::drawLine(const JPoint& p1, const JPoint& p2, const JColo
     }
 }
 
-// 绘制文本
+// 绘制文本（委托给 drawTextAligned，保持向后兼容）
+// 参数: text, rect, color, fontSize, fontName
+void JDirect2DRenderer::drawText(const std::string& text, const JRect& rect, const JColor& color, float fontSize, const std::string& fontName) {
+    drawTextAligned(text, rect, color, fontSize, fontName, JTextAlignment::Center);
+}
+
+// 绘制文本（支持水平对齐方式）
 // 参数:
 //   text - 文本内容
 //   rect - 文本区域
 //   color - 文本颜色
 //   fontSize - 字体大小
 //   fontName - 字体名称
-void JDirect2DRenderer::drawText(const std::string& text, const JRect& rect, const JColor& color, float fontSize, const std::string& fontName) {
+//   alignment - 水平对齐方式（Left/Center/Right）
+void JDirect2DRenderer::drawTextAligned(const std::string& text, const JRect& rect, const JColor& color,
+                                         float fontSize, const std::string& fontName, JTextAlignment alignment) {
     if (!renderTarget_ || !writeFactory_) return;
     
-    // 查找或创建文本格式
-    std::string key = fontName + "_" + std::to_string(fontSize);
-    IDWriteTextFormat* textFormat = nullptr;
-    
-    auto it = textFormatCache_.find(key);
-    if (it != textFormatCache_.end()) {
-        textFormat = it->second;
-    } else {
-        // 转换字体名称为宽字符
-        int len = MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, NULL, 0);
-        std::wstring wFontName(len, 0);
-        MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, &wFontName[0], len);
-        
-        // 创建文本格式
-        HRESULT hr = writeFactory_->CreateTextFormat(
-            wFontName.c_str(),
-            NULL,
-            DWRITE_FONT_WEIGHT_NORMAL,
-            DWRITE_FONT_STYLE_NORMAL,
-            DWRITE_FONT_STRETCH_NORMAL,
-            fontSize,
-            L"en-us",
-            &textFormat
-        );
-        
-        if (SUCCEEDED(hr)) {
-            // 设置文本对齐方式
-            textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-            textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-            textFormatCache_[key] = textFormat;
-        }
-    }
-    
+    // 获取或创建带对齐方式的文本格式
+    IDWriteTextFormat* textFormat = getTextFormat(fontSize, fontName, alignment);
     if (!textFormat) return;
     
     // 转换文本为宽字符
@@ -380,6 +373,127 @@ void JDirect2DRenderer::drawText(const std::string& text, const JRect& rect, con
             brush
         );
     }
+}
+
+// 测量文本的像素尺寸（DIP单位）
+// 使用 IDWriteTextLayout 进行精确测量
+JSize JDirect2DRenderer::measureText(const std::string& text, float fontSize, const std::string& fontName) const {
+    if (!writeFactory_) return JSize{0, 0};
+    if (text.empty()) return JSize{0, 0};
+    
+    // 转换文本为宽字符
+    int len = MultiByteToWideChar(CP_UTF8, 0, text.c_str(), -1, NULL, 0);
+    std::wstring wText(len, 0);
+    MultiByteToWideChar(CP_UTF8, 0, text.c_str(), -1, &wText[0], len);
+    
+    // 获取文本格式（不需要缓存，这里用局部创建）
+    // 转换字体名称为宽字符
+    int fnLen = MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, NULL, 0);
+    std::wstring wFontName(fnLen, 0);
+    MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, &wFontName[0], fnLen);
+    
+    IDWriteTextFormat* format = nullptr;
+    HRESULT hr = writeFactory_->CreateTextFormat(
+        wFontName.c_str(), NULL,
+        DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+        fontSize, L"en-us", &format);
+    
+    if (FAILED(hr) || !format) return JSize{0, 0};
+    
+    // 创建 TextLayout 进行测量（使用足够大的宽度和高度）
+    IDWriteTextLayout* layout = nullptr;
+    hr = writeFactory_->CreateTextLayout(
+        wText.c_str(), static_cast<UINT32>(wText.length()),
+        format, 1e6f, 1e6f, &layout);
+    
+    format->Release();
+    
+    if (FAILED(hr) || !layout) return JSize{0, 0};
+    
+    DWRITE_TEXT_METRICS metrics;
+    layout->GetMetrics(&metrics);
+    layout->Release();
+    
+    return JSize{metrics.width, metrics.height};
+}
+
+// 绘制椭圆边框
+void JDirect2DRenderer::drawEllipse(const JRect& rect, const JColor& color, float strokeWidth) {
+    if (!renderTarget_) return;
+    
+    ID2D1SolidColorBrush* brush = getBrush(color);
+    if (brush) {
+        // 椭圆中心 = 矩形中心，半径 = 矩形半宽/半高
+        D2D1_ELLIPSE ellipse;
+        ellipse.point = D2D1::Point2F(rect.x + rect.width / 2.0f, rect.y + rect.height / 2.0f);
+        ellipse.radiusX = rect.width / 2.0f;
+        ellipse.radiusY = rect.height / 2.0f;
+        renderTarget_->DrawEllipse(ellipse, brush, strokeWidth);
+    }
+}
+
+// 填充椭圆
+void JDirect2DRenderer::fillEllipse(const JRect& rect, const JColor& color) {
+    if (!renderTarget_) return;
+    
+    ID2D1SolidColorBrush* brush = getBrush(color);
+    if (brush) {
+        D2D1_ELLIPSE ellipse;
+        ellipse.point = D2D1::Point2F(rect.x + rect.width / 2.0f, rect.y + rect.height / 2.0f);
+        ellipse.radiusX = rect.width / 2.0f;
+        ellipse.radiusY = rect.height / 2.0f;
+        renderTarget_->FillEllipse(ellipse, brush);
+    }
+}
+
+// 获取或创建带对齐方式的文本格式
+IDWriteTextFormat* JDirect2DRenderer::getTextFormat(float fontSize, const std::string& fontName,
+                                                     JTextAlignment alignment) {
+    // 构建缓存键：字体名_字号_对齐方式
+    std::string cacheKey = fontName + "_" + std::to_string(fontSize) + "_" + std::to_string(static_cast<int>(alignment));
+    
+    // 先从带对齐的缓存中查找
+    auto it = alignedTextFormatCache_.find(cacheKey);
+    if (it != alignedTextFormatCache_.end()) {
+        return it->second;
+    }
+    
+    // 转换字体名称为宽字符
+    int len = MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, NULL, 0);
+    std::wstring wFontName(len, 0);
+    MultiByteToWideChar(CP_UTF8, 0, fontName.c_str(), -1, &wFontName[0], len);
+    
+    // 创建文本格式
+    IDWriteTextFormat* textFormat = nullptr;
+    HRESULT hr = writeFactory_->CreateTextFormat(
+        wFontName.c_str(),
+        NULL,
+        DWRITE_FONT_WEIGHT_NORMAL,
+        DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL,
+        fontSize,
+        L"en-us",
+        &textFormat
+    );
+    
+    if (SUCCEEDED(hr)) {
+        // 根据对齐方式设置文本对齐
+        switch (alignment) {
+            case JTextAlignment::Left:
+                textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+                break;
+            case JTextAlignment::Center:
+                textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+                break;
+            case JTextAlignment::Right:
+                textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_TRAILING);
+                break;
+        }
+        textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+        alignedTextFormatCache_[cacheKey] = textFormat;
+    }
+    
+    return textFormat;
 }
 
 } // namespace jaether

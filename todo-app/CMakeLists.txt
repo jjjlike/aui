@@ -52,6 +52,8 @@ set(AETHER_SOURCES
     ${AETHER_SOURCE_DIR}/src/DataModel.cpp
     ${AETHER_SOURCE_DIR}/src/A2UIParser.cpp
     ${AETHER_SOURCE_DIR}/src/A2UIGenerator.cpp
+    ${AETHER_SOURCE_DIR}/src/ControlRenderer.cpp
+    ${AETHER_SOURCE_DIR}/src/StyleSheet.cpp
 )
 
 # TodoApp核心源文件（不含main）

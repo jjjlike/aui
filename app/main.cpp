@@ -273,6 +273,42 @@ struct SampleAppContext {
      * @param outNewComponents 输出参数，存储新创建的控件列表
      * @return 加载成功返回true
      */
+    /** 将UTF-8字符串转换为宽字符，用于MessageBoxW等Win32 API */
+    static std::wstring toWide(const std::string& utf8) {
+        if (utf8.empty()) return L"";
+        int len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, NULL, 0);
+        std::wstring result(len, 0);
+        MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, &result[0], len);
+        while (!result.empty() && result.back() == L'\0') result.pop_back();
+        return result;
+    }
+
+    /** 从A2UI JSON中提取surfaceId，JSON中无surfaceId时返回空字符串 */
+    static std::string extractSurfaceIdFromJSON(const std::string& jsonContent) {
+        auto parsed = JJSONParser::parse(jsonContent);
+        if (!std::holds_alternative<JJSONObject>(parsed.value)) return "";
+        const auto& rootObj = std::get<JJSONObject>(parsed.value);
+        // 尝试 updateComponents.surfaceId
+        auto ucIt = rootObj.find("updateComponents");
+        if (ucIt != rootObj.end() && std::holds_alternative<JJSONObject>(ucIt->second.value)) {
+            const auto& ucObj = std::get<JJSONObject>(ucIt->second.value);
+            auto sidIt = ucObj.find("surfaceId");
+            if (sidIt != ucObj.end() && std::holds_alternative<std::string>(sidIt->second.value)) {
+                return std::get<std::string>(sidIt->second.value);
+            }
+        }
+        // 尝试 surfaceUpdate.surfaceId（v0.8格式）
+        auto suIt = rootObj.find("surfaceUpdate");
+        if (suIt != rootObj.end() && std::holds_alternative<JJSONObject>(suIt->second.value)) {
+            const auto& suObj = std::get<JJSONObject>(suIt->second.value);
+            auto sidIt = suObj.find("surfaceId");
+            if (sidIt != suObj.end() && std::holds_alternative<std::string>(sidIt->second.value)) {
+                return std::get<std::string>(sidIt->second.value);
+            }
+        }
+        return "";
+    }
+
     bool loadControlsFromJSONFile(
         JLogicLayer& ll,
         JComponentHandle parent,
@@ -288,46 +324,52 @@ struct SampleAppContext {
         // 步骤2：读取文件内容
         std::string jsonContent;
         if (!readFileContent(filepath, jsonContent)) {
-            MessageBoxA(hwnd_, ("无法读取文件:\n" + filepath).c_str(),
-                       "文件读取错误", MB_OK | MB_ICONERROR);
+            MessageBoxW(hwnd_, toWide("无法读取文件:\n" + filepath).c_str(),
+                        L"文件读取错误", MB_OK | MB_ICONERROR);
             return false;
         }
 
         if (jsonContent.empty()) {
-            MessageBoxA(hwnd_, "JSON文件内容为空", "格式错误", MB_OK | MB_ICONWARNING);
+            MessageBoxW(hwnd_, L"JSON 文件内容为空", L"格式错误", MB_OK | MB_ICONWARNING);
             return false;
         }
 
         // 步骤3：验证JSON格式
         std::string validationError;
         if (!validateA2UIJSON(jsonContent, validationError)) {
-            MessageBoxA(hwnd_, validationError.c_str(), "JSON验证失败", MB_OK | MB_ICONWARNING);
+            MessageBoxW(hwnd_, toWide(validationError).c_str(), L"JSON验证失败", MB_OK | MB_ICONWARNING);
             return false;
         }
 
-        // 步骤4：销毁之前加载的控件（如果存在）
+        // 步骤4：提取JSON中的实际surfaceId（parseAndApply内部使用此ID创建surface）
+        std::string jsonSurfaceId = extractSurfaceIdFromJSON(jsonContent);
+        if (jsonSurfaceId.empty()) {
+            jsonSurfaceId = fileNameToSurfaceId(filepath);  // JSON中无surfaceId则用文件名生成
+        }
+
+        // 步骤5：销毁之前加载的控件（如果存在）
         for (auto& h : existingComponents) {
             if (h.isValid()) ll.destroyComponent(h);
         }
         existingComponents.clear();
         outNewComponents.clear();
 
-        // 步骤5：使用A2UI解析器加载JSON并创建组件
-        std::string surfaceId = fileNameToSurfaceId(filepath);
+        // 步骤6：使用A2UI解析器加载JSON并创建组件
+        // 传入jsonSurfaceId确保parseAndApply使用与后续查找相同的surfaceId
         auto& parser = ll.getA2UIParser();
-        std::string rootId = parser.parseAndApply(jsonContent, surfaceId);
+        std::string rootId = parser.parseAndApply(jsonContent, jsonSurfaceId);
 
         if (rootId.empty()) {
-            MessageBoxA(hwnd_, "JSON解析失败，无法创建控件。\n请检查JSON格式是否正确。",
-                       "解析错误", MB_OK | MB_ICONERROR);
+            MessageBoxW(hwnd_, L"JSON 解析失败，无法创建控件。\n请检查 JSON 格式是否正确。",
+                        L"解析错误", MB_OK | MB_ICONERROR);
             return false;
         }
 
-        // 步骤6：将创建的组件挂到目标父容器下
+        // 步骤7：查找根组件（使用与parseAndApply相同的surfaceId）
         auto& sm = parser.getSurfaceManager();
-        JComponentHandle jsonRoot = sm.findComponent(surfaceId, rootId);
+        JComponentHandle jsonRoot = sm.findComponent(jsonSurfaceId, rootId);
         if (!jsonRoot.isValid()) {
-            MessageBoxA(hwnd_, "JSON解析成功但未找到根组件", "内部错误", MB_OK | MB_ICONERROR);
+            MessageBoxW(hwnd_, L"JSON 解析成功但未找到根组件", L"内部错误", MB_OK | MB_ICONERROR);
             return false;
         }
 
@@ -339,39 +381,32 @@ struct SampleAppContext {
             pe->childrenIndices.push_back(jsonRoot.index);
         }
 
-        // 步骤7：收集所有创建的控件句柄
-        auto allIds = sm.getAllComponentIds(surfaceId);
+        // 步骤8：收集所有创建的控件句柄
+        auto allIds = sm.getAllComponentIds(jsonSurfaceId);
         float baseY = 30.0f;
 
         for (const auto& id : allIds) {
-            JComponentHandle hdl = sm.findComponent(surfaceId, id);
+            JComponentHandle hdl = sm.findComponent(jsonSurfaceId, id);
             if (!hdl.isValid()) continue;
-
-            // 记录控件句柄
             outNewComponents.push_back(hdl);
 
-            // 设置位置和尺寸（初始Y值，后续由布局引擎根据JSON中的属性覆盖）
             auto* entry = ll.getStorage().getComponent(hdl);
-            if (entry) {
-                // 只对根组件设置X/Y
-                if (id == rootId && !entry->properties.hasProperty(JPropertyId::X)) {
+            if (entry && id == rootId) {
+                if (!entry->properties.hasProperty(JPropertyId::X)) {
                     ll.setProperty(hdl, JPropertyId::X, JPropertyValue(0.0f));
                 }
-                if (id == rootId && !entry->properties.hasProperty(JPropertyId::Y)) {
+                if (!entry->properties.hasProperty(JPropertyId::Y)) {
                     ll.setProperty(hdl, JPropertyId::Y, JPropertyValue(baseY));
                 }
             }
         }
 
-        // 步骤8：触发布局更新并重绘
+        // 步骤9：触发布局更新并重绘
         ll.runFrame();
 
-        // 步骤9：反馈加载结果
-        std::string successMsg = "成功从当前文件加载 " +
-                                 std::to_string(outNewComponents.size()) +
-                                 " 个控件";
-        // 使用AppendMenu风格的轻量提示（不阻塞，仅在标题栏短暂显示）
-        SetWindowTextA(hwnd_, ("jaether — " + successMsg).c_str());
+        // 步骤10：反馈加载结果
+        std::wstring successMsg = L"成功加载 " + std::to_wstring(outNewComponents.size()) + L" 个控件";
+        SetWindowTextW(hwnd_, (std::wstring(L"jaether — ") + successMsg).c_str());
 
         return true;
     }
